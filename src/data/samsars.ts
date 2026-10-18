@@ -21,15 +21,30 @@ export interface Samsar {
   reputationBadge: string;
   typicalCommission: string;
   coffeeSpot: string; // Café de référence dans le quartier
+  lat?: number;
+  lng?: number;
   isCustom?: boolean; // True if created by the user
   customVoiceAudioUrl?: string; // Live voice recording blob URL or base64
+}
+
+export interface DistrictData {
+  id: string;
+  name: string;
+  nameAr: string;
+  popularTypes: string;
+  lat: number;
+  lng: number;
+  zoom?: number;
 }
 
 export interface CityData {
   id: string;
   name: string;
   nameAr: string;
-  districts: { id: string; name: string; nameAr: string; popularTypes: string }[];
+  lat: number;
+  lng: number;
+  defaultZoom: number;
+  districts: DistrictData[];
 }
 
 export const CITIES_DATA: CityData[] = [
@@ -37,48 +52,86 @@ export const CITIES_DATA: CityData[] = [
     id: 'casablanca',
     name: 'Casablanca',
     nameAr: 'الدار البيضاء',
+    lat: 33.5731,
+    lng: -7.5898,
+    defaultZoom: 12,
     districts: [
-      { id: 'maarif', name: 'Maârif & Racine', nameAr: 'المعاريف و راسين', popularTypes: 'Appartements, Studios, Bureaux' },
-      { id: 'bourgogne', name: 'Bourgogne & Gauthier', nameAr: 'بوركون و كوتييه', popularTypes: 'Résidentiel, Rénové, Proche corniche' },
-      { id: 'ain-diab', name: 'Aïn Diab & Anfa Supérieur', nameAr: 'عين الذئاب و أنفا', popularTypes: 'Villas haut standing, Terrains' },
-      { id: 'hay-hassani', name: 'Hay Hassani & Oulfa', nameAr: 'الحي الحسني و الألفة', popularTypes: 'Économique, Moyen standing, Magasins' },
-      { id: 'sidi-maarouf', name: 'Sidi Maârouf & Casanearshore', nameAr: 'سيدي معروف', popularTypes: 'Location cadres, Appartements neufs' },
-      { id: 'roches-noires', name: 'Roches Noires & Belvédère', nameAr: 'روش نوار و بيلفيدير', popularTypes: 'Ancien français, Haussmannien, Commercial' },
-      { id: 'hay-mohammadi', name: 'Hay Mohammadi & Ain Sebaa', nameAr: 'الحي المحمدي و عين السبع', popularTypes: 'Populaire, Dépôts, Maisons R+2' },
+      { id: 'maarif', name: 'Maârif & Racine', nameAr: 'المعاريف و راسين', popularTypes: 'Appartements, Studios, Bureaux', lat: 33.5822, lng: -7.6366, zoom: 15 },
+      { id: 'bourgogne', name: 'Bourgogne & Gauthier', nameAr: 'بوركون و كوتييه', popularTypes: 'Résidentiel, Rénové, Proche corniche', lat: 33.5954, lng: -7.6441, zoom: 15 },
+      { id: 'ain-diab', name: 'Aïn Diab & Anfa Supérieur', nameAr: 'عين الذئاب و أنفا', popularTypes: 'Villas haut standing, Terrains', lat: 33.5855, lng: -7.6828, zoom: 15 },
+      { id: 'hay-hassani', name: 'Hay Hassani & Oulfa', nameAr: 'الحي الحسني و الألفة', popularTypes: 'Économique, Moyen standing, Magasins', lat: 33.5552, lng: -7.6742, zoom: 15 },
+      { id: 'sidi-maarouf', name: 'Sidi Maârouf & Casanearshore', nameAr: 'سيدي معروف', popularTypes: 'Location cadres, Appartements neufs', lat: 33.5284, lng: -7.6385, zoom: 15 },
+      { id: 'roches-noires', name: 'Roches Noires & Belvédère', nameAr: 'روش نوار و بيلفيدير', popularTypes: 'Ancien français, Haussmannien, Commercial', lat: 33.6022, lng: -7.5831, zoom: 15 },
+      { id: 'hay-mohammadi', name: 'Hay Mohammadi & Ain Sebaa', nameAr: 'الحي المحمدي و عين السبع', popularTypes: 'Populaire, Dépôts, Maisons R+2', lat: 33.5968, lng: -7.5510, zoom: 15 },
     ]
   },
   {
     id: 'marrakech',
     name: 'Marrakech',
     nameAr: 'مراكش',
+    lat: 31.6295,
+    lng: -7.9811,
+    defaultZoom: 12,
     districts: [
-      { id: 'gueliz', name: 'Guéliz & Hivernage', nameAr: 'كليز و الحي الشتوي', popularTypes: 'Appartements touristiques, Commerces' },
-      { id: 'medina', name: 'Médina & Riad Zitoun', nameAr: 'المدينة القديمة و رياض الزيتون', popularTypes: 'Riads traditionnels, Maisons d\'hôtes' },
-      { id: 'targa', name: 'Targa & Massira', nameAr: 'تاركة و المسيرة', popularTypes: 'Villas familiales, Duplex' },
-      { id: 'palmeraie', name: 'La Palmeraie & Route de Fès', nameAr: 'النخيل و طريق فاس', popularTypes: 'Domaines, Palais, Grands terrains' },
-      { id: 'mhamid', name: 'M\'hamid & Agdal', nameAr: 'المحاميد و أكدال', popularTypes: 'Logement accessible, Projets neufs' }
+      { id: 'gueliz', name: 'Guéliz & Hivernage', nameAr: 'كليز و الحي الشتوي', popularTypes: 'Appartements touristiques, Commerces', lat: 31.6346, lng: -8.0125, zoom: 15 },
+      { id: 'medina', name: 'Médina & Riad Zitoun', nameAr: 'المدينة القديمة و رياض الزيتون', popularTypes: 'Riads traditionnels, Maisons d\'hôtes', lat: 31.6258, lng: -7.9891, zoom: 15 },
+      { id: 'targa', name: 'Targa & Massira', nameAr: 'تاركة و المسيرة', popularTypes: 'Villas familiales, Duplex', lat: 31.6582, lng: -8.0531, zoom: 15 },
+      { id: 'palmeraie', name: 'La Palmeraie & Route de Fès', nameAr: 'النخيل و طريق فاس', popularTypes: 'Domaines, Palais, Grands terrains', lat: 31.6687, lng: -7.9554, zoom: 14 },
+      { id: 'mhamid', name: 'M\'hamid & Agdal', nameAr: 'المحاميد و أكدال', popularTypes: 'Logement accessible, Projets neufs', lat: 31.5975, lng: -8.0425, zoom: 15 },
+      { id: 'chwiter', name: 'Chwiter & Route de Ouarzazate', nameAr: 'الشويطر و طريق ورزازات', popularTypes: 'Terrains 3 façades, Fermes, Villas', lat: 31.5831, lng: -7.7885, zoom: 15 }
     ]
   },
   {
     id: 'tanger',
     name: 'Tanger',
     nameAr: 'طنجة',
+    lat: 35.7595,
+    lng: -5.8340,
+    defaultZoom: 12,
     districts: [
-      { id: 'malabata', name: 'Malabata & Baie de Tanger', nameAr: 'مالاباطا و الكورنيش', popularTypes: 'Vue mer, Appartements standing' },
-      { id: 'marshan', name: 'Marshan & Vieille Montagne', nameAr: 'مرشان و الجبل الكبير', popularTypes: 'Villas coloniales, Propriétés de prestige' },
-      { id: 'boukhalef', name: 'Boukhalef & Mesnana', nameAr: 'بوخالف و مسنانة', popularTypes: 'Location étudiants, Économique' },
-      { id: 'centre-ville', name: 'Centre-Ville & Iberia', nameAr: 'وسط المدينة و إيبيريا', popularTypes: 'Immeubles de standing, Bureaux' }
+      { id: 'malabata', name: 'Malabata & Baie de Tanger', nameAr: 'مالاباطا و الكورنيش', popularTypes: 'Vue mer, Appartements standing', lat: 35.7765, lng: -5.7865, zoom: 15 },
+      { id: 'marshan', name: 'Marshan & Vieille Montagne', nameAr: 'مرشان و الجبل الكبير', popularTypes: 'Villas coloniales, Propriétés de prestige', lat: 35.7915, lng: -5.8214, zoom: 15 },
+      { id: 'boukhalef', name: 'Boukhalef & Mesnana', nameAr: 'بوخالف و مسنانة', popularTypes: 'Location étudiants, Économique', lat: 35.7285, lng: -5.8978, zoom: 15 },
+      { id: 'centre-ville', name: 'Centre-Ville & Iberia', nameAr: 'وسط المدينة و إيبيريا', popularTypes: 'Immeubles de standing, Bureaux', lat: 35.7725, lng: -5.8115, zoom: 15 }
     ]
   },
   {
     id: 'rabat',
     name: 'Rabat',
     nameAr: 'الرباط',
+    lat: 34.0209,
+    lng: -6.8416,
+    defaultZoom: 12,
     districts: [
-      { id: 'agdal', name: 'Agdal', nameAr: 'أكدال', popularTypes: 'Appartements, Bureaux, Commerces' },
-      { id: 'hay-riad', name: 'Hay Riad & Souissi', nameAr: 'حي الرياض و السويسي', popularTypes: 'Villas d\'ambassadeurs, Haut standing' },
-      { id: 'hassan', name: 'Hassan & Centre', nameAr: 'حسان و المركز', popularTypes: 'Appartements hauts plafonds, Ministères' },
-      { id: 'ocean', name: 'L\'Océan & Diour Jamaa', nameAr: 'المحيط و ديور الجامع', popularTypes: 'Populaire, Rénovation, Proche tramway' }
+      { id: 'agdal', name: 'Agdal', nameAr: 'أكدال', popularTypes: 'Appartements, Bureaux, Commerces', lat: 34.0028, lng: -6.8505, zoom: 15 },
+      { id: 'hay-riad', name: 'Hay Riad & Souissi', nameAr: 'حي الرياض و السويسي', popularTypes: 'Villas d\'ambassadeurs, Haut standing', lat: 33.9632, lng: -6.8795, zoom: 15 },
+      { id: 'hassan', name: 'Hassan & Centre', nameAr: 'حسان و المركز', popularTypes: 'Appartements hauts plafonds, Ministères', lat: 34.0195, lng: -6.8285, zoom: 15 },
+      { id: 'ocean', name: 'L\'Océan & Diour Jamaa', nameAr: 'المحيط و ديور الجامع', popularTypes: 'Populaire, Rénovation, Proche tramway', lat: 34.0225, lng: -6.8475, zoom: 15 }
+    ]
+  },
+  {
+    id: 'agadir',
+    name: 'Agadir',
+    nameAr: 'أكادير',
+    lat: 30.4278,
+    lng: -9.5981,
+    defaultZoom: 12,
+    districts: [
+      { id: 'taghazout', name: 'Taghazout Bay & Tamraght', nameAr: 'تغازوت و تامرغت', popularTypes: 'Villas vue mer, Surf, Tourisme', lat: 30.5432, lng: -9.7088, zoom: 15 },
+      { id: 'sonaba', name: 'Sonaba & Founty', nameAr: 'صونابا و فونتي', popularTypes: 'Haut standing, Résidences hôtelières', lat: 30.4042, lng: -9.5892, zoom: 15 },
+      { id: 'dakhla-agadir', name: 'Dakhla & Salam', nameAr: 'حي الداخلة و السلام', popularTypes: 'Résidentiel familial, Économique', lat: 30.4195, lng: -9.5582, zoom: 15 }
+    ]
+  },
+  {
+    id: 'fes',
+    name: 'Fès',
+    nameAr: 'فاس',
+    lat: 34.0181,
+    lng: -5.0078,
+    defaultZoom: 12,
+    districts: [
+      { id: 'medina-fes', name: 'Médina Fès El-Bali', nameAr: 'فاس البالي', popularTypes: 'Riads historiques, Dars authentiques', lat: 34.0628, lng: -4.9754, zoom: 15 },
+      { id: 'ville-nouvelle-fes', name: 'Ville Nouvelle & Champs de Course', nameAr: 'المدينة الجديدة', popularTypes: 'Appartements, Bureaux, Commerces', lat: 34.0335, lng: -5.0025, zoom: 15 }
     ]
   }
 ];
@@ -107,6 +160,8 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: 'Amine du Quartier (Certifié)',
     typicalCommission: '2.5% acquéreur (négociable au café)',
     coffeeSpot: 'Café de France, Bd Bir Anzarane (tous les matins 9h - 12h)',
+    lat: 33.5822,
+    lng: -7.6366,
     isCustom: false
   },
   {
@@ -132,6 +187,8 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: 'Kbir L\'Houma (Homme de parole)',
     typicalCommission: '2.5% sans intermédiaire supplémentaire',
     coffeeSpot: 'Café Al Wifaq, Terminus Hay Hassani',
+    lat: 33.5552,
+    lng: -7.6742,
     isCustom: false
   },
   {
@@ -157,6 +214,8 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: '100% Titres Fonciers Vérifiés',
     typicalCommission: '2.5% standard marché',
     coffeeSpot: 'La Sqala ou Starbucks Anfa',
+    lat: 33.5855,
+    lng: -7.6828,
     isCustom: false
   },
   {
@@ -182,6 +241,8 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: 'Doyen des Riads de Marrakech',
     typicalCommission: '2.5% acheteur',
     coffeeSpot: 'Café de France, Place Jemaa El-Fna (Terrasse du bas)',
+    lat: 31.6258,
+    lng: -7.9891,
     isCustom: false
   },
   {
@@ -207,6 +268,35 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: 'Réactivité WhatsApp (< 3 min)',
     typicalCommission: '2.5% ou 1 mois de loyer',
     coffeeSpot: 'Café Les Négociants, Bd Mohammed V',
+    lat: 31.6346,
+    lng: -8.0125,
+    isCustom: false
+  },
+  {
+    id: 'samsar-chwiter',
+    name: 'El Houssine Amellal',
+    alias: 'Ba Houssine "Moul L\'Aradi"',
+    city: 'marrakech',
+    districts: ['chwiter', 'palmeraie'],
+    experienceYears: 24,
+    phone: '+212661332211',
+    whatsapp: '+212661332211',
+    rating: 4.8,
+    reviewsCount: 64,
+    specialties: ['terrain', 'villa', 'commercial'],
+    languages: ['Darija', 'Tachelhit', 'Français'],
+    status: 'vip_derb',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
+    bioDarija: 'Specialiste b9a3 ardiya w l\'aradi f Chwiter, tri9 Ouarzazate w Sidi Ghiat. 3andi aradi titrées w chwaki 2 w 3 façades pour projets w villas.',
+    bioFrench: 'Expert foncier incontournable de Chouiter et l\'axe Marrakech - Ouarzazate. Connaît l\'historique des parcelles, largeurs de voies (16m, 12m, 6m) et opportunités investisseurs.',
+    audioPromptDarija: 'Salam o marhba! Ba Houssine f Chwiter. L\'aradi f triq Ouarzazate kolha 3andi fiha chwaki nqiyin titrés. Marhba b khoutna MRE f WhatsApp.',
+    audioDarijaArabic: 'السلام عليكم و مرحبا بيكم، با الحسين ف الشويطر طريق ورزازات. البقاع الأرضية الشواكي النقيين بجوج وتلاتة واجهات راهم كاينين. مرحبا بخوتنا الجالية فالواتساب.',
+    activeListingsEstimate: '~18 parcelles & terrains titrés',
+    reputationBadge: 'Expert Terrains & Chwaki Chouiter',
+    typicalCommission: '2.5% standard foncier',
+    coffeeSpot: 'Café Atlas Chwiter (Centre bourg)',
+    lat: 31.5831,
+    lng: -7.7885,
     isCustom: false
   },
   {
@@ -232,6 +322,8 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: 'Confiance & Notabilité du Nord',
     typicalCommission: '2.5% standard Tanger',
     coffeeSpot: 'Café Hafa ou Gran Café de Paris',
+    lat: 35.7765,
+    lng: -5.7865,
     isCustom: false
   },
   {
@@ -257,6 +349,62 @@ export const INITIAL_DEMO_SAMSARS: Samsar[] = [
     reputationBadge: 'Dossiers Juridiques Clairs',
     typicalCommission: '2.5% sans surprise',
     coffeeSpot: 'Café Paul Agdal ou Majestic Hassan',
+    lat: 34.0028,
+    lng: -6.8505,
+    isCustom: false
+  },
+  {
+    id: 'samsar-agadir',
+    name: 'Hassan Ait Oumghar',
+    alias: 'Hassan "Souss 3aqar"',
+    city: 'agadir',
+    districts: ['taghazout', 'sonaba'],
+    experienceYears: 19,
+    phone: '+212661224499',
+    whatsapp: '+212661224499',
+    rating: 4.88,
+    reviewsCount: 46,
+    specialties: ['villa', 'terrain', 'location'],
+    languages: ['Darija', 'Tamazight (Soussi)', 'Français'],
+    status: 'vip_derb',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&auto=format&fit=crop&q=80',
+    bioDarija: '19 3am f Agadir w Taghazout Bay. Villas b la piscine, terainat vue mer w appartements Sonaba. Khedma n9ia.',
+    bioFrench: 'Référent de la côte d\'Agadir et Taghazout Bay. Spécialiste des villas pieds dans l\'eau et parcelles constructibles.',
+    audioPromptDarija: 'Marhba bikom f Agadir. Hassan d Souss. Pour les investissements bord de mer ou résidences de standing, contactez-moi direct f WhatsApp.',
+    audioDarijaArabic: 'مرحبا بيكم ف أكادير و سوس العالمة. حسن د سوس. بالنسبة للعقارات الشاطئية وتغازوت باي، تواصلو معايا مباشرة ف الواتساب.',
+    activeListingsEstimate: '~15 villas et terrains à Agadir',
+    reputationBadge: 'Expert Littoral Souss-Massa',
+    typicalCommission: '2.5% acquéreur',
+    coffeeSpot: 'Café La Fontaine, Boulevard Mohammed V',
+    lat: 30.4278,
+    lng: -9.5981,
+    isCustom: false
+  },
+  {
+    id: 'samsar-fes',
+    name: 'Si Driss Benjelloun',
+    alias: 'Si Driss "Moul Fès El-Bali"',
+    city: 'fes',
+    districts: ['medina-fes', 'ville-nouvelle-fes'],
+    experienceYears: 32,
+    phone: '+212661998877',
+    whatsapp: '+212661998877',
+    rating: 4.92,
+    reviewsCount: 79,
+    specialties: ['riad', 'commercial', 'appartement'],
+    languages: ['Darija fassie', 'Français'],
+    status: 'vip_derb',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&auto=format&fit=crop&q=80',
+    bioDarija: 'Men chikh l\'herfa f Fès. Riads s7a7 f Rcif w Batha, w appartements modernes f Ville Nouvelle. Kalma wahda.',
+    bioFrench: 'Doyen des transactions patrimoniales de Fès. Maîtrise absolue du cadastre et des titres fonciers ancestraux.',
+    audioPromptDarija: 'Salam o 3alaykom, Si Driss f Fès. Li bgha riad assil wla dar kbira f la médina, marhba bikom 3andi f café.',
+    audioDarijaArabic: 'السلام عليكم ورحمة الله، السي ادريس من فاس. اللي بغا رياض أصيل ولا دار ف فاس البالي، مرحبا بيكم.',
+    activeListingsEstimate: '~22 riads et commerces',
+    reputationBadge: 'Mémoire Foncier de Fès',
+    typicalCommission: '2.5% notarié',
+    coffeeSpot: 'Café de la Renaissance, Av Hassan II Ville Nouvelle',
+    lat: 34.0181,
+    lng: -5.0078,
     isCustom: false
   }
 ];

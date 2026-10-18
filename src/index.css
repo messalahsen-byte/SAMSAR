@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@layer utilities {
+  .font-arabic {
+    font-family: 'Tajawal', 'Noto Sans Arabic', 'Cairo', sans-serif;
+  }
+}
+

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
+import { CleanBuyerFlow } from './components/CleanBuyerFlow';
 import { BuyerDirectory } from './components/BuyerDirectory';
 import { SamsarVoiceSpace } from './components/SamsarVoiceSpace';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { StartupAccompanimentGuide } from './components/StartupAccompanimentGuide';
 import { FeasibilityAudit } from './components/FeasibilityAudit';
+import { FullDiscussionViewer } from './components/FullDiscussionViewer';
 import { BroadcastModal } from './components/BroadcastModal';
 import { 
   Building2, 
@@ -16,37 +18,87 @@ import {
   Coffee,
   CheckCircle2,
   Sparkles,
-  Compass
+  Compass,
+  BookOpen
 } from 'lucide-react';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState<'directory' | 'samsar_mode' | 'whatsapp_sim' | 'incubation_guide' | 'audit'>('directory');
-  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
-  const [broadcastCity, setBroadcastCity] = useState('casablanca');
-  const [broadcastDistrict, setBroadcastDistrict] = useState('maarif');
+import { DirectSamsarApp } from './components/DirectSamsarApp';
 
-  const handleOpenBroadcastWithTarget = (city: string, district: string) => {
-    setBroadcastCity(city);
-    setBroadcastDistrict(district);
+export default function App() {
+  const [activeTab, setActiveTab] = useState<'search' | 'directory' | 'samsar_mode' | 'whatsapp_sim' | 'incubation_guide' | 'audit' | 'discussion'>('search');
+  const [directScreen, setDirectScreen] = useState<'home' | 'samsar_choice' | 'samsar_city' | 'samsar_district' | 'samsar_list' | 'samsar_map' | 'transact_choice' | 'transact_buy' | 'transact_sell' | 'transact'>('home');
+  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
+  const [broadcastCity, setBroadcastCity] = useState('marrakech');
+  const [broadcastDistrict, setBroadcastDistrict] = useState('chwiter');
+
+  const handleOpenBroadcastWithTarget = (city?: string, district?: string) => {
+    if (city) setBroadcastCity(city);
+    if (district) setBroadcastDistrict(district);
     setIsBroadcastOpen(true);
   };
 
+  // Les écrans d'accueil et de choix (Samsar ou Acheter/Vendre) sont plein écran sans sticky header
+  const isFullScreenMobile = activeTab === 'search' && (
+    directScreen === 'home' || 
+    directScreen === 'samsar_choice' || 
+    directScreen === 'transact_choice' || 
+    directScreen === 'transact'
+  );
+
+  const handleTabChange = (tab: any) => {
+    setActiveTab(tab);
+    if (tab === 'search') {
+      setDirectScreen('home');
+    }
+  };
+
+  const handleBack = () => {
+    if (activeTab !== 'search') {
+      setActiveTab('search');
+      setDirectScreen('home');
+    } else if (directScreen === 'samsar_list') {
+      setDirectScreen('samsar_district');
+    } else if (directScreen === 'samsar_district') {
+      setDirectScreen('samsar_city');
+    } else if (directScreen === 'samsar_city' || directScreen === 'samsar_map') {
+      setDirectScreen('samsar_choice');
+    } else if (directScreen === 'transact_buy' || directScreen === 'transact_sell') {
+      setDirectScreen('transact_choice');
+    } else {
+      setDirectScreen('home');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col font-sans selection:bg-amber-600 selection:text-white">
-      {/* Header */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenBroadcast={() => setIsBroadcastOpen(true)}
-        selectedCity={broadcastCity}
-      />
+    <div className="bg-[#FAFAFA] text-stone-900 flex flex-col h-[100dvh] overflow-hidden font-sans selection:bg-amber-600 selection:text-white">
+      {/* Header uniquement pour les onglets secondaires hors parcours principal */}
+      {activeTab !== 'search' && (
+        <Header
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          onOpenBroadcast={() => setIsBroadcastOpen(true)}
+          selectedCity={broadcastCity}
+          onGoHome={handleBack}
+          onNavigateDirectScreen={(sc) => {
+            setDirectScreen(sc);
+            setActiveTab('search');
+          }}
+        />
+      )}
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-        {activeTab === 'directory' && (
-          <BuyerDirectory
-            onOpenBroadcastWithDistrict={handleOpenBroadcastWithTarget}
+      <main className={activeTab === 'search' ? 'flex-1 w-full h-[100dvh] overflow-hidden p-0' : 'flex-1 overflow-y-auto max-w-4xl w-full mx-auto px-3 sm:px-6 pt-3 sm:pt-5 pb-6'}>
+        {activeTab === 'search' && (
+          <DirectSamsarApp 
+            onOpenBroadcast={handleOpenBroadcastWithTarget}
+            onNavigateToTab={handleTabChange}
+            screen={directScreen}
+            onScreenChange={setDirectScreen}
           />
+        )}
+
+        {activeTab === 'directory' && (
+          <CleanBuyerFlow />
         )}
 
         {activeTab === 'samsar_mode' && (
@@ -64,6 +116,10 @@ export default function App() {
         {activeTab === 'audit' && (
           <FeasibilityAudit />
         )}
+
+        {activeTab === 'discussion' && (
+          <FullDiscussionViewer />
+        )}
       </main>
 
       {/* Broadcast Flash Modal */}
@@ -73,55 +129,6 @@ export default function App() {
         defaultCity={broadcastCity}
         defaultDistrict={broadcastDistrict}
       />
-
-      {/* Footer */}
-      <footer className="bg-stone-950 text-stone-300 border-t border-stone-800 text-xs py-10 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-stone-800/80 pb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-lg">
-                د
-              </div>
-              <div>
-                <span className="font-bold text-sm text-stone-100 font-serif">Daleel Samsar • دليل السمسار</span>
-                <p className="text-[11px] text-stone-400">
-                  Réseau d'intermédiation immobilière hyper-local par la voix et WhatsApp au Maroc
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs">
-              <button 
-                onClick={() => setActiveTab('incubation_guide')}
-                className="text-amber-400 hover:text-amber-300 font-semibold"
-              >
-                Dossier Candidature Incubateurs (212 Founders, Tamwilcom)
-              </button>
-              <button 
-                onClick={() => setActiveTab('samsar_mode')}
-                className="text-stone-400 hover:text-white"
-              >
-                Espace Vocal Samsar
-              </button>
-              <button 
-                onClick={() => setActiveTab('whatsapp_sim')}
-                className="text-stone-400 hover:text-white"
-              >
-                Architecture WhatsApp & IA
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-stone-400 text-[11px]">
-            <p>
-              Conçu pour résoudre le paradoxe du marché immobilier informel au Maroc : valoriser l'humain et le terrain sans court-circuiter le Samsar.
-            </p>
-            <div className="flex items-center gap-1.5 text-stone-300 shrink-0">
-              <span>Fait avec passion pour l'écosystème entrepreneurial marocain 🇲🇦</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
