@@ -38,6 +38,11 @@ import {
 } from 'lucide-react';
 import { formatWhatsAppUrl, playAudioBeep, speakDarijaNatural } from '../utils/audioDarija';
 import { recordConnection } from '../utils/connectionsTracker';
+import { 
+  normalizeSearchText, 
+  buildListingSearchableText, 
+  matchesSearchQuery 
+} from '../utils/searchUtils';
 
 const PROPERTY_TYPE_CONFIG = [
   { id: 'all', name: 'Tous les biens', icon: Building2 },
@@ -117,17 +122,15 @@ export const GoogleHomeSearch: React.FC<GoogleHomeSearchProps> = ({
 
   // Filter listings based on buy search criteria
   const filteredListings = useMemo(() => {
+    const cleanQuery = searchQuery.trim();
     return listings.filter(item => {
       if (selectedCityId && item.city !== selectedCityId) return false;
       if (selectedDistrictId && selectedDistrictId !== 'all' && item.district !== selectedDistrictId) return false;
       if (selectedType !== 'all' && item.propertyType !== selectedType) return false;
       if (maxBudget && !isNaN(Number(maxBudget)) && item.priceMad > Number(maxBudget)) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesTitle = item.title.toLowerCase().includes(q);
-        const matchesDesc = item.description.toLowerCase().includes(q);
-        const matchesFeatures = item.features.some(f => f.toLowerCase().includes(q));
-        if (!matchesTitle && !matchesDesc && !matchesFeatures) return false;
+      if (cleanQuery) {
+        const searchableText = buildListingSearchableText(item);
+        if (!matchesSearchQuery(searchableText, cleanQuery)) return false;
       }
       return true;
     });

@@ -6,3 +6,26 @@
   }
 }
 
+/* Fix spécifique Safari iOS pour les boutons et réactivité tactile */
+button, a, [role="button"], input[type="button"], input[type="submit"] {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Force Safari à utiliser l'accélération matérielle */
+button:active, a:active, [role="button"]:active {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Supprime le délai de 300ms sur Safari iOS */
+* {
+  touch-action: manipulation;
+}
+

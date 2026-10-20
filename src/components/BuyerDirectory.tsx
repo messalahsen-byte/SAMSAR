@@ -7,6 +7,10 @@ import {
   deleteCustomSamsar
 } from '../data/samsars';
 import { 
+  buildSamsarSearchableText, 
+  matchesSearchQuery 
+} from '../utils/searchUtils';
+import { 
   MapPin, 
   Phone, 
   Star, 
@@ -77,11 +81,10 @@ export const BuyerDirectory: React.FC<BuyerDirectoryProps> = ({ onOpenBroadcastW
     if (sourceFilter === 'demo' && samsar.isCustom) return false;
 
     if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
-      const matchName = samsar.name.toLowerCase().includes(q) || samsar.alias.toLowerCase().includes(q);
-      const matchCoffee = samsar.coffeeSpot.toLowerCase().includes(q);
-      const matchBio = samsar.bioFrench.toLowerCase().includes(q) || samsar.bioDarija.toLowerCase().includes(q);
-      return matchName || matchCoffee || matchBio;
+      const searchable = buildSamsarSearchableText(samsar);
+      if (!matchesSearchQuery(searchable, searchQuery)) {
+        return false;
+      }
     }
 
     return true;

@@ -13,6 +13,7 @@ import {
 import { MoroccoMap } from './MoroccoMap';
 import { GoogleMapDistrictViewer } from './GoogleMapDistrictViewer';
 import { MoroccoInteractiveMap } from './MoroccoInteractiveMap';
+import { MoroccoFlagStarLogo } from './MoroccoFlagStarLogo';
 import { 
   Search, 
   PlusCircle, 
@@ -54,6 +55,11 @@ import {
 } from 'lucide-react';
 import { formatWhatsAppUrl, playAudioBeep, speakDarijaNatural } from '../utils/audioDarija';
 import { recordConnection } from '../utils/connectionsTracker';
+import { 
+  normalizeSearchText, 
+  buildListingSearchableText, 
+  matchesSearchQuery 
+} from '../utils/searchUtils';
 
 const PROPERTY_TYPES = [
   { id: 'all', name: 'Tous les biens', nameAr: 'جميع العقارات', icon: Building2 },
@@ -402,47 +408,55 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
   // - If no city is selected ('' or 'all'), ALL cities are returned.
   // - If a city is selected, listings matching that city ID, city name, or any of its districts are returned.
   // - If no propertyType is selected ('' or 'all'), ALL property types are returned.
+  // Filter listings based on buy search:
+  // - If no city is selected ('' ou 'all'), ALL cities are returned.
+  // - If a city is selected, listings matching that city ID, city name, or any of its districts are returned.
+  // - If no propertyType is selected ('' ou 'all'), ALL property types are returned.
   const filteredListings = useMemo(() => {
-    const normCityFilter = normalizeFilterValue(buyCityId);
-    const normDistrictFilter = normalizeFilterValue(buyDistrictId);
-    const normTypeFilter = normalizeFilterValue(selectedPropertyType);
-    const normKeyword = normalizeFilterValue(keywordSearch);
+    const normCityFilter = normalizeSearchText(buyCityId);
+    const normDistrictFilter = normalizeSearchText(buyDistrictId);
+    const normTypeFilter = normalizeSearchText(selectedPropertyType);
+    const cleanKeyword = keywordSearch.trim();
 
     const targetCityObj = normCityFilter && normCityFilter !== 'all'
       ? CITIES_DATA.find(
           c =>
-            normalizeFilterValue(c.id) === normCityFilter ||
-            normalizeFilterValue(c.name) === normCityFilter
+            normalizeSearchText(c.id) === normCityFilter ||
+            normalizeSearchText(c.name) === normCityFilter ||
+            normalizeSearchText(c.nameAr) === normCityFilter
         )
       : null;
 
     const targetDistrictObj = targetCityObj && normDistrictFilter && normDistrictFilter !== 'all'
       ? targetCityObj.districts.find(
           d =>
-            normalizeFilterValue(d.id) === normDistrictFilter ||
-            normalizeFilterValue(d.name) === normDistrictFilter
+            normalizeSearchText(d.id) === normDistrictFilter ||
+            normalizeSearchText(d.name) === normDistrictFilter ||
+            normalizeSearchText(d.nameAr) === normDistrictFilter
         )
       : null;
 
     return listings.filter(item => {
-      const itemCity = normalizeFilterValue(item.city);
-      const itemDistrict = normalizeFilterValue(item.district);
-      const itemType = normalizeFilterValue(item.propertyType);
+      const itemCity = normalizeSearchText(item.city);
+      const itemDistrict = normalizeSearchText(item.district);
+      const itemType = normalizeSearchText(item.propertyType);
 
       // 1. Filtre Ville (si vide ou 'all', affiche toutes les villes)
       if (normCityFilter && normCityFilter !== 'all') {
         const matchesCityDirect =
           itemCity === normCityFilter ||
           (targetCityObj &&
-            (itemCity === normalizeFilterValue(targetCityObj.id) ||
-             itemCity === normalizeFilterValue(targetCityObj.name)));
+            (itemCity === normalizeSearchText(targetCityObj.id) ||
+             itemCity === normalizeSearchText(targetCityObj.name) ||
+             itemCity === normalizeSearchText(targetCityObj.nameAr)));
 
         const matchesViaDistrict =
           targetCityObj &&
           targetCityObj.districts.some(
             d =>
-              normalizeFilterValue(d.id) === itemDistrict ||
-              normalizeFilterValue(d.name) === itemDistrict
+              normalizeSearchText(d.id) === itemDistrict ||
+              normalizeSearchText(d.name) === itemDistrict ||
+              normalizeSearchText(d.nameAr) === itemDistrict
           );
 
         if (!matchesCityDirect && !matchesViaDistrict) {
@@ -455,8 +469,9 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
         const matchesDistrictDirect =
           itemDistrict === normDistrictFilter ||
           (targetDistrictObj &&
-            (itemDistrict === normalizeFilterValue(targetDistrictObj.id) ||
-             itemDistrict === normalizeFilterValue(targetDistrictObj.name)));
+            (itemDistrict === normalizeSearchText(targetDistrictObj.id) ||
+             itemDistrict === normalizeSearchText(targetDistrictObj.name) ||
+             itemDistrict === normalizeSearchText(targetDistrictObj.nameAr)));
 
         if (!matchesDistrictDirect) {
           return false;
@@ -477,12 +492,10 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
         }
       }
 
-      // 5. Filtre Mots-clés
-      if (normKeyword) {
-        const searchableText = normalizeFilterValue(
-          `${item.title} ${item.description} ${item.city} ${item.district} ${item.propertyType} ${(item.features || []).join(' ')}`
-        );
-        if (!searchableText.includes(normKeyword)) {
+      // 5. Filtre Mots-clés (Français & Arabe, Insensible à la casse, Recherche partielle sur Titre, Description, Ville et Quartier)
+      if (cleanKeyword) {
+        const searchableText = buildListingSearchableText(item);
+        if (!matchesSearchQuery(searchableText, cleanKeyword)) {
           return false;
         }
       }
@@ -626,11 +639,22 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
           <div className="space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-stone-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-700 text-white flex items-center justify-center font-black text-xs font-serif">
-                  DS
-                </div>
+                <img
+                  src="https://postimg.cc/N5TKdpNv"
+                  alt="Logo DirectSamsar"
+                  className="h-10 w-auto object-contain shrink-0"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    const directUrl = 'https://i.postimg.cc/wT4DTrLM/Cre-un-logo-minimaliste-et-moderne-Le-design-est-une-toile-5.jpg';
+                    if (target.src !== directUrl) {
+                      target.src = directUrl;
+                    } else {
+                      target.src = '/logo-etoile.png';
+                    }
+                  }}
+                />
                 <span className="text-xl font-black text-stone-900 font-serif tracking-tight">
-                  DIRECT<span className="text-amber-700">SAMSAR</span>
+                  DIRECT<span className="text-amber-600">SAMSAR</span>
                 </span>
               </div>
               <button
@@ -784,27 +808,27 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
   // =========================================================================
   const renderInnerHeader = (backTarget: DirectSamsarScreen) => (
     <header className="shrink-0 w-full bg-white border-b border-stone-200/80 px-4 py-3 flex items-center justify-between">
-      <button
-        type="button"
-        onClick={() => setCurrentScreen(backTarget)}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-800 text-xs font-bold transition shadow-2xs cursor-pointer"
-      >
-        <ArrowLeft className="w-4 h-4 text-stone-700" />
-        <span>Retour</span>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setCurrentScreen(backTarget)}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-800 text-xs font-bold transition shadow-2xs cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-stone-700" />
+          <span className="hidden sm:inline">Retour</span>
+        </button>
 
-      <button
-        type="button"
-        onClick={() => setCurrentScreen('home')}
-        className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
-      >
-        <div className="w-7 h-7 rounded-xl bg-amber-700 text-white flex items-center justify-center font-black text-xs font-serif shadow-2xs">
-          DS
-        </div>
-        <span className="font-black text-stone-900 text-base font-serif tracking-tight">
-          DIRECT<span className="text-amber-700">SAMSAR</span>
-        </span>
-      </button>
+        <button
+          type="button"
+          onClick={() => setCurrentScreen('home')}
+          className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
+        >
+          <MoroccoFlagStarLogo />
+          <span className="font-black text-stone-900 text-base sm:text-lg font-serif tracking-tight">
+            DIRECT<span className="text-amber-600">SAMSAR</span>
+          </span>
+        </button>
+      </div>
 
       <button
         type="button"
@@ -827,11 +851,9 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
         {/* 1. Header dans le flux normal (shrink-0) */}
         <header className="flex items-center justify-between pt-1 pb-2.5 px-1 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-amber-700 text-white flex items-center justify-center font-black text-sm shadow-xs font-serif">
-              DS
-            </div>
+            <MoroccoFlagStarLogo />
             <h1 className="text-2xl font-black tracking-tight text-stone-900 font-serif">
-              DIRECT<span className="text-amber-700">SAMSAR</span>
+              DIRECT<span className="text-amber-600">SAMSAR</span>
             </h1>
           </div>
 
@@ -871,12 +893,6 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
                 Carte du Maroc & Samsars référents par quartier
               </p>
             </div>
-
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-amber-800">
-              <span className="px-3 py-1 rounded-full bg-amber-100/90 text-amber-900">Carte Maroc</span>
-              <span className="text-amber-300">•</span>
-              <span className="px-3 py-1 rounded-full bg-amber-100/90 text-amber-900">Contact direct</span>
-            </div>
           </button>
 
           {/* Carte 2 (EN BAS) : Acheter / Vendre (flex-1) */}
@@ -901,12 +917,6 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
               <p className="text-xs sm:text-sm text-stone-500 font-medium">
                 Biens vérifiés & dépôt d'annonce
               </p>
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-stone-400">
-              <span className="px-3 py-1 rounded-full bg-stone-100 text-stone-700">Acheter</span>
-              <span className="text-stone-300">•</span>
-              <span className="px-3 py-1 rounded-full bg-stone-100 text-stone-700">Vendre</span>
             </div>
           </button>
         </div>
@@ -934,12 +944,23 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
             <span>Retour</span>
           </button>
 
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentScreen('home')}>
-            <div className="w-8 h-8 rounded-2xl bg-amber-700 text-white flex items-center justify-center font-black text-xs shadow-xs font-serif">
-              DS
-            </div>
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentScreen('home')}>
+            <img
+              src="https://postimg.cc/N5TKdpNv"
+              alt="Logo DirectSamsar"
+              className="h-10 w-auto object-contain shrink-0"
+              onError={(e) => {
+                const target = e.currentTarget;
+                const directUrl = 'https://i.postimg.cc/wT4DTrLM/Cre-un-logo-minimaliste-et-moderne-Le-design-est-une-toile-5.jpg';
+                if (target.src !== directUrl) {
+                  target.src = directUrl;
+                } else {
+                  target.src = '/logo-etoile.png';
+                }
+              }}
+            />
             <h1 className="text-xl font-black tracking-tight text-stone-900 font-serif">
-              DIRECT<span className="text-amber-700">SAMSAR</span>
+              DIRECT<span className="text-amber-600">SAMSAR</span>
             </h1>
           </div>
 
@@ -1423,12 +1444,23 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
             <span>Retour</span>
           </button>
 
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentScreen('home')}>
-            <div className="w-8 h-8 rounded-2xl bg-amber-700 text-white flex items-center justify-center font-black text-xs shadow-xs font-serif">
-              DS
-            </div>
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentScreen('home')}>
+            <img
+              src="https://postimg.cc/N5TKdpNv"
+              alt="Logo DirectSamsar"
+              className="h-10 w-auto object-contain shrink-0"
+              onError={(e) => {
+                const target = e.currentTarget;
+                const directUrl = 'https://i.postimg.cc/wT4DTrLM/Cre-un-logo-minimaliste-et-moderne-Le-design-est-une-toile-5.jpg';
+                if (target.src !== directUrl) {
+                  target.src = directUrl;
+                } else {
+                  target.src = '/logo-etoile.png';
+                }
+              }}
+            />
             <h1 className="text-xl font-black tracking-tight text-stone-900 font-serif">
-              DIRECT<span className="text-amber-700">SAMSAR</span>
+              DIRECT<span className="text-amber-600">SAMSAR</span>
             </h1>
           </div>
 
@@ -1684,7 +1716,13 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
                     placeholder="Mots-clés / كلمات البحث (Chouiter, 3 façades, شقة...)"
                     value={keywordSearch}
                     onFocus={scrollInputIntoView}
-                    onChange={(e) => setKeywordSearch(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setKeywordSearch(val);
+                      if (val.trim().length > 0) {
+                        setHasSearchedBuy(true);
+                      }
+                    }}
                     className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 outline-none"
                     style={{ fontFamily: "'Plus Jakarta Sans', 'Tajawal', 'Noto Sans Arabic', sans-serif" }}
                   />
@@ -2280,13 +2318,24 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
         <button
           type="button"
           onClick={() => setCurrentScreen('home')}
-          className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
+          className="flex items-center gap-2.5 cursor-pointer select-none active:opacity-80 transition"
         >
-          <div className="w-7 h-7 rounded-xl bg-amber-700 text-white flex items-center justify-center font-black text-xs font-serif shadow-2xs">
-            DS
-          </div>
+          <img
+            src="https://postimg.cc/N5TKdpNv"
+            alt="Logo DirectSamsar"
+            className="h-10 w-auto object-contain shrink-0"
+            onError={(e) => {
+              const target = e.currentTarget;
+              const directUrl = 'https://i.postimg.cc/wT4DTrLM/Cre-un-logo-minimaliste-et-moderne-Le-design-est-une-toile-5.jpg';
+              if (target.src !== directUrl) {
+                target.src = directUrl;
+              } else {
+                target.src = '/logo-etoile.png';
+              }
+            }}
+          />
           <span className="font-black text-stone-900 text-base font-serif tracking-tight">
-            DIRECT<span className="text-amber-700">SAMSAR</span>
+            DIRECT<span className="text-amber-600">SAMSAR</span>
           </span>
         </button>
 

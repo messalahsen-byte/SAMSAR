@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MoroccoFlagStarLogo } from './MoroccoFlagStarLogo';
 import { 
   ArrowLeft,
   Menu,
@@ -51,30 +52,29 @@ export const Header: React.FC<HeaderProps> = ({
     <>
       {/* Navigation Mobile Épurée (Flux normal, pas de barre fixe lourde avec onglets) */}
       <div className="w-full bg-white border-b border-stone-200/80 px-4 py-3 flex items-center justify-between shrink-0">
-        {/* Gauche : Bouton ← Retour */}
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-800 text-xs font-bold transition shadow-2xs"
-          title="Retourner à l'accueil"
-        >
-          <ArrowLeft className="w-4 h-4 text-stone-700" />
-          <span>Retour</span>
-        </button>
+        {/* En haut à gauche : Logo DIRECTSAMSAR et éventuel bouton retour */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-800 text-xs font-bold transition shadow-2xs"
+            title="Retourner à l'accueil"
+          >
+            <ArrowLeft className="w-4 h-4 text-stone-700" />
+            <span className="hidden sm:inline">Retour</span>
+          </button>
 
-        {/* Centre : Logo DIRECTSAMSAR épuré */}
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
-        >
-          <div className="w-7 h-7 rounded-xl bg-amber-700 text-white flex items-center justify-center font-black text-xs shadow-2xs">
-            DS
-          </div>
-          <span className="font-black text-stone-900 text-sm sm:text-base font-serif tracking-tight">
-            DIRECT<span className="text-amber-700">SAMSAR</span>
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
+          >
+            <MoroccoFlagStarLogo />
+            <span className="font-black text-stone-900 text-base sm:text-lg font-serif tracking-tight">
+              DIRECT<span className="text-amber-600">SAMSAR</span>
+            </span>
+          </button>
+        </div>
 
         {/* Droite : Bouton ≡ (Menu) */}
         <button
@@ -101,12 +101,23 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="space-y-6">
               {/* Header Menu */}
               <div className="flex items-center justify-between pb-4 border-b border-stone-200">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-amber-700 text-white flex items-center justify-center font-black text-xs">
-                    DS
-                  </div>
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src="https://postimg.cc/N5TKdpNv"
+                    alt="Logo DirectSamsar"
+                    className="h-10 w-auto object-contain shrink-0"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      const directUrl = 'https://i.postimg.cc/wT4DTrLM/Cre-un-logo-minimaliste-et-moderne-Le-design-est-une-toile-5.jpg';
+                      if (target.src !== directUrl) {
+                        target.src = directUrl;
+                      } else {
+                        target.src = '/logo-etoile.png';
+                      }
+                    }}
+                  />
                   <span className="font-black text-stone-900 text-sm font-serif">
-                    DIRECT<span className="text-amber-700">SAMSAR</span>
+                    DIRECT<span className="text-amber-600">SAMSAR</span>
                   </span>
                 </div>
                 <button

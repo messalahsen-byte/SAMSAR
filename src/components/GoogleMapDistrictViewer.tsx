@@ -64,7 +64,7 @@ function MapCameraController({
 }
 
 // Morocco center
-const MOROCCO_CENTER = { lat: 31.7917, lng: -7.0926 };
+const MOROCCO_CENTER = { lat: 32.0, lng: -6.0 };
 const MOROCCO_ZOOM = 6;
 
 export function GoogleMapDistrictViewer({
@@ -81,7 +81,7 @@ export function GoogleMapDistrictViewer({
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyCP4nVZwtEyxb1RxipK4LOlvTCHy1qc4TM";
 
   // Map visual hierarchy: 'morocco' (all country) | 'city' (e.g. Marrakech) | 'district' (e.g. Chouiter)
-  const [navLevel, setNavLevel] = useState<'morocco' | 'city' | 'district'>('district');
+  const [navLevel, setNavLevel] = useState<'morocco' | 'city' | 'district'>('morocco');
 
   // Map state
   const [mapType, setMapType] = useState<'roadmap' | 'satellite' | 'hybrid'>('roadmap');
