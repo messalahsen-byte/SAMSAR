@@ -78,9 +78,9 @@ export default function App() {
   // --------------------------------------------------------------------------
 
   return (
-    <div className="bg-[#FAFAFA] text-stone-900 flex flex-col h-[100dvh] overflow-hidden font-sans selection:bg-amber-600 selection:text-white">
+    <div className="bg-[#FAFAFA] text-stone-900 flex flex-col min-h-[100dvh] font-sans selection:bg-amber-600 selection:text-white">
       {/* Application principale DirectSamsar (Dashboard, Recherche, Samsars, Mode Vocal) */}
-      <div className="flex-1 w-full h-[100dvh] overflow-y-auto">
+      <div className="flex-1 w-full flex flex-col">
         <StartNavigation onRestartSplash={() => setShowSplash(true)} />
       </div>
 

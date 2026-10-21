@@ -14,7 +14,10 @@ import {
   Compass, 
   Layers, 
   Navigation,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft,
+  ArrowRight,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export interface MapSamsarPin {
@@ -132,9 +135,15 @@ const CITY_VIEWS: Record<string, { center: { lat: number; lng: number }; zoom: n
 
 interface SamsarGoogleMapProps {
   language?: 'fr' | 'ar';
+  onBack?: () => void;
+  onSwitchToList?: () => void;
 }
 
-export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ language = 'fr' }) => {
+export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ 
+  language = 'fr',
+  onBack,
+  onSwitchToList
+}) => {
   const isAr = language === 'ar';
   const apiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyCP4nVZwtEyxb1RxipK4LOlvTCHy1qc4TM";
 
@@ -156,15 +165,10 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ language = 'fr
   }, []); // Tableau vide = s'exécute une seule fois
 
   return (
-    <div className="w-full flex-1 flex flex-col bg-white rounded-3xl border border-stone-200/90 shadow-md overflow-hidden">
-      {/* Barre de contrôle supérieure (Vue Rapide & Type de Carte) */}
-      <div className="p-3 bg-stone-900 text-white flex flex-wrap items-center justify-between gap-2.5 z-10">
-        {/* Sélecteurs de vue de ville */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-          <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400 mr-1 shrink-0">
-            <Compass className="w-3.5 h-3.5 animate-pulse" />
-            <span>{isAr ? 'المدن :' : 'Vue :'}</span>
-          </div>
+    <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden bg-stone-100">
+      {/* 2. RENDRE LA BARRE DE FILTRES SCROLLABLE HORIZONTALEMENT */}
+      <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-10 flex items-center justify-between gap-2 bg-white/95 backdrop-blur-md shadow-xl border border-stone-200/90 rounded-2xl p-1 pointer-events-auto">
+        <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-none flex-1 min-w-0 items-center">
           {Object.entries(CITY_VIEWS).map(([key, view]) => {
             const isSelected = activeCityKey === key;
             return (
@@ -177,10 +181,10 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ language = 'fr
                   setCenter(view.center);
                   setZoom(view.zoom);
                 }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1 ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700'
+                    ? 'bg-[#006233] text-white shadow-xs'
+                    : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200/80'
                 }`}
               >
                 <span>{key === 'morocco' ? '🇲🇦' : '📍'}</span>
@@ -190,31 +194,34 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ language = 'fr
           })}
         </div>
 
-        {/* Boutons Plan / Satellite */}
-        <div className="bg-stone-800 p-0.5 rounded-xl border border-stone-700 flex text-[11px] font-semibold shrink-0">
+        {onSwitchToList && (
           <button
             type="button"
-            onClick={() => setMapType('roadmap')}
-            className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-              mapType === 'roadmap' ? 'bg-amber-600 text-white shadow-xs' : 'text-stone-300 hover:text-white'
-            }`}
+            onClick={onSwitchToList}
+            className="px-3 py-1.5 mr-1.5 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white text-xs font-bold transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
+            title={isAr ? 'عرض القائمة' : 'Voir la liste'}
           >
-            {isAr ? 'خريطة' : 'Plan'}
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isAr ? 'عرض القائمة' : 'Liste'}</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setMapType('satellite')}
-            className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-              mapType === 'satellite' ? 'bg-amber-600 text-white shadow-xs' : 'text-stone-300 hover:text-white'
-            }`}
-          >
-            {isAr ? 'قمر صناعي' : 'Satellite'}
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* Conteneur de la Carte Google Maps : prend toute la largeur et la hauteur */}
-      <div className="relative w-full h-[58vh] sm:h-[64vh] min-h-[460px] bg-stone-100">
+      {/* 3. DISCRÉTISER LE BOUTON PLAN/SATELLITE : petite icône flottante (🗺️) en bas à droite au-dessus du zoom */}
+      <button
+        type="button"
+        onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}
+        className="absolute bottom-20 right-4 z-10 bg-white hover:bg-stone-50 rounded-full p-2 shadow-lg border border-stone-200/80 text-stone-800 transition active:scale-90 cursor-pointer flex items-center justify-center pointer-events-auto"
+        title={mapType === 'roadmap' ? (isAr ? 'التبديل إلى القمر الصناعي' : 'Passer en vue Satellite') : (isAr ? 'التبديل إلى الخريطة' : 'Passer en vue Plan')}
+        aria-label="Basculer Plan / Satellite"
+      >
+        <span className="text-xl leading-none select-none" role="img" aria-label="Carte">
+          🗺️
+        </span>
+      </button>
+
+      {/* 1. FORCER LA HAUTEUR PLEIN ÉCRAN DE LA CARTE : occupe 100% de l'espace restant sous le header */}
+      <div className="w-full h-full flex-1 relative">
         <APIProvider apiKey={apiKey}>
           <GoogleMap
             defaultCenter={{ lat: 32.0, lng: -6.0 }}
@@ -322,37 +329,11 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ language = 'fr
           </GoogleMap>
         </APIProvider>
 
-        {/* Infobulle guide flottante en haut à gauche */}
-        <div className="absolute top-3 left-3 bg-stone-900/90 backdrop-blur-xs text-white border border-stone-700/80 rounded-2xl px-3 py-2 shadow-lg text-[11px] max-w-xs pointer-events-auto flex items-center gap-2">
-          <span className="text-base">📍</span>
-          <div>
-            <span className="font-bold text-amber-300 block">
-              {isAr ? 'انقر على أي نقطة على الخريطة :' : 'Touchez un marqueur vert :'}
-            </span>
-            <span className="text-[10px] text-stone-300">
-              {isAr 
-                ? 'لإظهار بيانات السمسار، رقمه والتواصل معه مباشرة'
-                : 'Pour afficher sa fiche et le contacter directement par WhatsApp ou appel'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Barre de statut inférieure */}
-      <div className="p-3 bg-stone-50 border-t border-stone-200 flex flex-wrap items-center justify-between text-xs text-stone-600 gap-2">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-stone-800">
-            {isAr ? 'السماسرة المتاحون على الخريطة :' : 'Samsars géolocalisés :'}
-          </span>
-          <span className="font-bold text-emerald-800">
-            {MOCK_SAMSARS_PINS.length} {isAr ? 'سماسرة معتمدون' : 'agents référents'}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1 text-[11px] text-stone-400">
-          <span>Google Maps Platform</span>
-          <span>•</span>
-          <span>Maroc</span>
+        {/* Infobulle guide flottante en bas de la carte */}
+        <div className="absolute bottom-4 left-4 z-10 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-lg text-[11px] text-stone-700 font-semibold">
+          <span className="text-[#006233] font-bold">👤 {MOCK_SAMSARS_PINS.length} {isAr ? 'سماسرة معتمدون' : 'Samsars'}</span>
+          <span className="text-stone-300">•</span>
+          <span>{isAr ? 'انقر على أي نقطة للتواصل عبر واتساب أو الهاتف' : 'Touchez un marqueur vert pour contacter directement par WhatsApp ou Appel'}</span>
         </div>
       </div>
     </div>

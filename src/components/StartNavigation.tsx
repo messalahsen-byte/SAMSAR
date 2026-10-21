@@ -32,8 +32,14 @@ import {
 import { MoroccoFlagStarLogo } from './MoroccoFlagStarLogo';
 import { SamsarGoogleMap } from './SamsarGoogleMap';
 import { VoiceDiagnosticPanel, VoiceDiagnosticData } from './VoiceDiagnosticPanel';
+import { AppHeader } from './AppHeader';
+import { PageTitle } from './PageTitle';
 
 export type StartScreen = 
+  | 'language' 
+  | 'mode' 
+  | 'vocal' 
+  | 'classic'
   | 'mode_choice' 
   | 'language_choice' 
   | 'voice_listening' 
@@ -314,7 +320,16 @@ export const TRUSTED_SAMSARS: TrustedSamsar[] = [
 
 export type Language = 'fr' | 'ar';
 
-export type PropertyType = 'maison' | 'appartement' | 'villa' | 'terrain';
+export type PropertyType = 
+  | 'maison' 
+  | 'appartement' 
+  | 'villa' 
+  | 'terrain' 
+  | 'riad' 
+  | 'studio' 
+  | 'duplex' 
+  | 'local' 
+  | 'bureau';
 
 interface HouseItem {
   id: string;
@@ -415,7 +430,7 @@ const CITIES_DATA = [
   }
 ];
 
-export type OperationType = 'vente' | 'location';
+export type OperationType = 'achat' | 'location';
 
 interface PropertyListing {
   id: string;
@@ -438,7 +453,7 @@ interface PropertyListing {
   bedrooms: number;
   samsarName: string;
   samsarPhone: string;
-  operation?: OperationType;
+  operation: OperationType;
 }
 
 const PROPERTY_LISTINGS: PropertyListing[] = [
@@ -463,7 +478,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '85 m²',
     bedrooms: 2,
     samsarName: 'Samsar Hassan',
-    samsarPhone: '+212 661 22 33 44'
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
   },
   {
     id: 'cas-app-2',
@@ -485,7 +501,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '45 m²',
     bedrooms: 1,
     samsarName: 'Samsar Hassan',
-    samsarPhone: '+212 661 22 33 44'
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
   },
   {
     id: 'cas-app-3',
@@ -507,7 +524,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '135 m²',
     bedrooms: 3,
     samsarName: 'Samsar Hassan',
-    samsarPhone: '+212 661 22 33 44'
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
   },
   {
     id: 'cas-vil-1',
@@ -529,7 +547,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '340 m²',
     bedrooms: 4,
     samsarName: 'Samsar Hassan',
-    samsarPhone: '+212 661 22 33 44'
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
   },
   {
     id: 'cas-vil-2',
@@ -551,7 +570,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '500 m²',
     bedrooms: 5,
     samsarName: 'Samsar Hassan',
-    samsarPhone: '+212 661 22 33 44'
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
   },
   {
     id: 'cas-mai-1',
@@ -574,7 +594,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 4,
     samsarName: 'Samsar Hassan',
     samsarPhone: '+212 661 22 33 44',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'cas-mai-2',
@@ -597,7 +617,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 3,
     samsarName: 'Samsar Hassan',
     samsarPhone: '+212 661 22 33 44',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'cas-mai-3',
@@ -620,7 +640,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 4,
     samsarName: 'Samsar Hassan',
     samsarPhone: '+212 661 22 33 44',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'cas-ter-1',
@@ -642,7 +662,31 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '380 m²',
     bedrooms: 0,
     samsarName: 'Samsar Hassan',
-    samsarPhone: '+212 661 22 33 44'
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
+  },
+  {
+    id: 'cas-com-1',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
+    title: 'Local commercial et boutique avec vitrine à Maarif, Casablanca',
+    titleAr: 'محل تجاري وبوتيك بواجهة زجاجية بالمعاريف، الدار البيضاء',
+    price: '1 250 000 MAD',
+    priceAr: '1.250.000 درهم',
+    priceNum: 1250000,
+    cityId: 'casablanca',
+    city: 'Casablanca',
+    cityAr: 'الدار البيضاء',
+    quarterId: 'maarif',
+    quarter: 'Maârif',
+    quarterAr: 'المعاريف',
+    type: 'local',
+    typeLabel: 'Commerce / Local',
+    typeLabelAr: 'محل تجاري',
+    surface: '65 m²',
+    bedrooms: 0,
+    samsarName: 'Samsar Hassan',
+    samsarPhone: '+212 661 22 33 44',
+    operation: 'achat'
   },
 
   // --- MARRAKECH ---
@@ -666,7 +710,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '92 m²',
     bedrooms: 2,
     samsarName: 'Si Mohamed',
-    samsarPhone: '+212 661 11 22 33'
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'achat'
   },
   {
     id: 'rak-app-2',
@@ -688,7 +733,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '120 m²',
     bedrooms: 3,
     samsarName: 'Si Mohamed',
-    samsarPhone: '+212 661 11 22 33'
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'achat'
   },
   {
     id: 'rak-vil-1',
@@ -710,7 +756,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '450 m²',
     bedrooms: 5,
     samsarName: 'Si Mohamed',
-    samsarPhone: '+212 661 11 22 33'
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'achat'
   },
   {
     id: 'rak-mai-1',
@@ -726,13 +773,14 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     quarterId: 'medina',
     quarter: 'Médina',
     quarterAr: 'المدينة القديمة',
-    type: 'maison',
-    typeLabel: 'Maison',
-    typeLabelAr: 'منزل',
+    type: 'riad',
+    typeLabel: 'Riad',
+    typeLabelAr: 'رياض',
     surface: '190 m²',
     bedrooms: 4,
     samsarName: 'Si Mohamed',
-    samsarPhone: '+212 661 11 22 33'
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'achat'
   },
   {
     id: 'rak-ter-1',
@@ -754,7 +802,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '500 m²',
     bedrooms: 0,
     samsarName: 'Si Mohamed',
-    samsarPhone: '+212 661 11 22 33'
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'achat'
   },
 
   // --- RABAT ---
@@ -778,7 +827,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '105 m²',
     bedrooms: 3,
     samsarName: 'Samsar Driss',
-    samsarPhone: '+212 661 55 66 77'
+    samsarPhone: '+212 661 55 66 77',
+    operation: 'achat'
   },
   {
     id: 'rab-mai-1',
@@ -800,7 +850,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '260 m²',
     bedrooms: 5,
     samsarName: 'Samsar Driss',
-    samsarPhone: '+212 661 55 66 77'
+    samsarPhone: '+212 661 55 66 77',
+    operation: 'achat'
   },
   {
     id: 'rab-vil-1',
@@ -822,7 +873,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '600 m²',
     bedrooms: 6,
     samsarName: 'Samsar Driss',
-    samsarPhone: '+212 661 55 66 77'
+    samsarPhone: '+212 661 55 66 77',
+    operation: 'achat'
   },
   {
     id: 'rab-ter-1',
@@ -844,7 +896,31 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '420 m²',
     bedrooms: 0,
     samsarName: 'Samsar Driss',
-    samsarPhone: '+212 661 55 66 77'
+    samsarPhone: '+212 661 55 66 77',
+    operation: 'achat'
+  },
+  {
+    id: 'rab-com-1',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+    title: 'Local commercial et bureaux modernes à Agdal, Rabat',
+    titleAr: 'محل تجاري ومكاتب عصرية بأكدال، الرباط',
+    price: '1 850 000 MAD',
+    priceAr: '1.850.000 درهم',
+    priceNum: 1850000,
+    cityId: 'rabat',
+    city: 'Rabat',
+    cityAr: 'الرباط',
+    quarterId: 'agdal',
+    quarter: 'Agdal',
+    quarterAr: 'أكدال',
+    type: 'local',
+    typeLabel: 'Commerce / Local',
+    typeLabelAr: 'محل تجاري',
+    surface: '95 m²',
+    bedrooms: 0,
+    samsarName: 'Samsar Driss',
+    samsarPhone: '+212 661 55 66 77',
+    operation: 'achat'
   },
 
   // --- TANGER ---
@@ -868,7 +944,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '88 m²',
     bedrooms: 2,
     samsarName: 'Moulay Rachid',
-    samsarPhone: '+212 661 77 88 99'
+    samsarPhone: '+212 661 77 88 99',
+    operation: 'achat'
   },
   {
     id: 'tan-vil-1',
@@ -890,7 +967,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '420 m²',
     bedrooms: 4,
     samsarName: 'Moulay Rachid',
-    samsarPhone: '+212 661 77 88 99'
+    samsarPhone: '+212 661 77 88 99',
+    operation: 'achat'
   },
   {
     id: 'tan-mai-1',
@@ -912,7 +990,8 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     surface: '210 m²',
     bedrooms: 4,
     samsarName: 'Moulay Rachid',
-    samsarPhone: '+212 661 77 88 99'
+    samsarPhone: '+212 661 77 88 99',
+    operation: 'achat'
   },
   {
     id: 'tan-ter-1',
@@ -935,7 +1014,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 0,
     samsarName: 'Moulay Rachid',
     samsarPhone: '+212 661 77 88 99',
-    operation: 'vente'
+    operation: 'achat'
   },
 
   // --- BIENS À LOUER (LOCATION) ---
@@ -1077,7 +1156,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 2,
     samsarName: 'Samsar Aziz',
     samsarPhone: '+212 661 33 44 55',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'aga-vil-1',
@@ -1100,7 +1179,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 4,
     samsarName: 'Samsar Aziz',
     samsarPhone: '+212 661 33 44 55',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'aga-loc-1',
@@ -1141,14 +1220,14 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     quarterId: 'medina',
     quarter: 'Médina',
     quarterAr: 'المدينة القديمة',
-    type: 'maison',
-    typeLabel: 'Maison',
-    typeLabelAr: 'منزل',
+    type: 'riad',
+    typeLabel: 'Riad',
+    typeLabelAr: 'رياض',
     surface: '260 m²',
     bedrooms: 5,
     samsarName: 'Si Mehdi',
     samsarPhone: '+212 661 88 99 00',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'fes-app-1',
@@ -1171,7 +1250,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 3,
     samsarName: 'Si Mehdi',
     samsarPhone: '+212 661 88 99 00',
-    operation: 'vente'
+    operation: 'achat'
   },
 
   // --- MEKNÈS ---
@@ -1196,7 +1275,7 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 3,
     samsarName: 'Samsar Karim',
     samsarPhone: '+212 661 44 55 66',
-    operation: 'vente'
+    operation: 'achat'
   },
   {
     id: 'mek-vil-1',
@@ -1219,84 +1298,191 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     bedrooms: 5,
     samsarName: 'Samsar Karim',
     samsarPhone: '+212 661 44 55 66',
-    operation: 'vente'
+    operation: 'achat'
   }
 ];
 
 // ============================================================================
-// DICTIONNAIRE DE DÉTECTION DARIJA POUR LE MODE VOCAL
+// DICTIONNAIRES VOCAUX EXHAUSTIFS (FRANÇAIS & DARIJA / ARABE)
 // ============================================================================
-export const DARIJA_DICTIONARY = {
-  // 1. ACTIONS (Ce que le client veut faire) :
-  actions: {
-    // ACHETER : "nchri", "chri", "bghit nchri", "acheter"
-    ACHETER: ['bghit nchri', 'nchri', 'chri', 'acheter', 'achat'],
-    // VENDRE : "nbi3", "bi3", "bghit nbi3", "vendre"
-    VENDRE: ['bghit nbi3', 'nbi3', 'bi3', 'vendre', 'vente'],
-    // LOUER : "nkri", "kra", "bghit nkri", "louer"
-    LOUER: ['bghit nkri', 'nkri', 'kra', 'louer', 'location']
-  },
-  // 2. TYPES DE BIENS (Ce que le client cherche) :
-  types: {
-    // VILLA : "villa", "dar kbira" (prioritaire sur "dar" simple)
-    VILLA: ['dar kbira', 'villa'],
-    // MAISON : "dar", "maison", "riad"
-    MAISON: ['dar', 'maison', 'riad'],
-    // APPARTEMENT : "appart", "ch9a", "appartement", "flat"
-    APPARTEMENT: ['ch9a', 'ch99a', 'chqua', 'chka', 'appart', 'appartement', 'flat'],
-    // TERRAIN : "ard", "terrain", "loca"
-    TERRAIN: ['ard', "l'ard", 'terrain', 'loca', 'lotissement']
-  },
-  // 3. VILLES (Où le client cherche) :
-  villes: {
-    // "casa", "casablanca"
-    CASABLANCA: ['casablanca', 'casa', 'dar lbaida', 'dar beida'],
-    // "rbat", "rabat"
-    RABAT: ['rabat', 'rbat'],
-    // "marrakech", "marrakch"
-    MARRAKECH: ['marrakech', 'marrakch', 'kech'],
-    // "tanja", "tanger"
-    TANGER: ['tanger', 'tanja'],
-    // "agadir"
-    AGADIR: ['agadir'],
-    // "fes"
-    FES: ['fes', 'fès'],
-    // "meknes"
-    MEKNES: ['meknes', 'meknès']
-  }
+
+// TYPES DE BIENS
+export const typeMapping: Record<string, PropertyType> = {
+  // Darija / Arabe
+  'dar': 'maison', 'darb': 'maison', 'douar': 'maison', 'ksar': 'riad', 'qsar': 'riad',
+  'ch9a': 'appartement',
+  'mahal': 'local', 'hanout': 'local', 'maktab': 'bureau',
+  'ard': 'terrain', 'haouch': 'terrain', 'mzra3a': 'terrain',
+  'palais': 'villa',
+  
+  // Français & Mots communs
+  'maison': 'maison', 'villa': 'villa', 'riad': 'riad', 'kasbah': 'riad',
+  'appartement': 'appartement', 'appart': 'appartement', 'studio': 'studio', 'duplex': 'duplex', 'penthouse': 'duplex',
+  'local': 'local', 'commerce': 'local', 'commercial': 'local', 'commerciale': 'local', 'commerciaux': 'local', 'boutique': 'local', 'magasin': 'local', 'bureau': 'bureau', 'office': 'bureau',
+  'terrain': 'terrain', 'lot': 'terrain', 'parcelle': 'terrain', 'ferme': 'terrain', 'propriété': 'terrain',
+
+  // Formes sans accents et pluriels
+  'propriete': 'terrain', 'proprietes': 'terrain',
+  'apparts': 'appartement', 'appartements': 'appartement',
+  'ch99a': 'appartement', 'chqua': 'appartement', 'chka': 'appartement',
+  'villas': 'villa', 'riads': 'riad', 'maisons': 'maison', 'terrains': 'terrain', 'lots': 'terrain', 'parcelles': 'terrain', 'fermes': 'terrain',
+  'locaux': 'local', 'commerces': 'local', 'boutiques': 'local', 'magasins': 'local',
+  'bureaux': 'bureau', 'studios': 'studio', 'duplexes': 'duplex',
+  'bo93a': 'terrain', 'ba93a': 'terrain', 'aradi': 'terrain',
+
+  // Écritures arabes
+  'شقة': 'appartement', 'شقق': 'appartement', 'برطمة': 'appartement', 'برطما': 'appartement',
+  'دار': 'maison', 'منزل': 'maison', 'ديور': 'maison',
+  'فيلا': 'villa', 'فيلات': 'villa', 'قصر': 'villa',
+  'رياض': 'riad', 'قصبة': 'riad',
+  'محل': 'local', 'حانوت': 'local', 'تجاري': 'local', 'متجر': 'local', 'دكان': 'local',
+  'مكتب': 'bureau', 'مكاتب': 'bureau',
+  'ارض': 'terrain', 'أرض': 'terrain', 'بقعة': 'terrain', 'بقع': 'terrain', 'مزرعة': 'terrain',
+  'استوديو': 'studio', 'ستوديو': 'studio', 'دوبلكس': 'duplex'
 };
 
-/**
- * Fonction de détection de mot-clé ou expression dans le texte
- * Gère les expressions multi-mots et les mots uniques avec frontières (compatible 3, 7, 9 darija)
- */
-function matchKeyword(normalizedText: string, keyword: string): boolean {
-  const kw = keyword.toLowerCase().trim();
-  if (!kw) return false;
-  if (kw.includes(' ')) {
-    return normalizedText.includes(kw);
-  }
-  // Détection avec frontière de mots pour éviter les faux-positifs
-  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i');
-  return regex.test(normalizedText);
+// OPÉRATIONS
+export const operationMapping: Record<string, 'location' | 'achat'> = {
+  // Darija / Arabe
+  'nkri': 'location', 'kri': 'location', 'kira': 'location',
+  'nchri': 'achat', 'shri': 'achat', 'buy': 'achat',
+  
+  // Français & Mots communs
+  'location': 'location', 'louer': 'location', 'à louer': 'location',
+  'achat': 'achat', 'acheter': 'achat', 'vente': 'achat', 'à vendre': 'achat',
+
+  // Synonymes et formes normalisées sans accents
+  'a louer': 'location', 'a vendre': 'achat', 'a acheter': 'achat',
+  'kra': 'location', 'kraa': 'location', 'chri': 'achat', 'chiraa': 'achat', 'vendre': 'achat',
+  'كراء': 'location', 'نكري': 'location', 'كري': 'location', 'للكراء': 'location',
+  'شراء': 'achat', 'نشري': 'achat', 'شري': 'achat', 'للبيع': 'achat', 'بيع': 'achat'
+};
+
+// VILLES
+export const cityMapping: Record<string, string> = {
+  'rabat': 'Rabat', 'rbat': 'Rabat', 'agdal': 'Rabat', 'souissi': 'Rabat', 'hassan': 'Rabat',
+  'casablanca': 'Casablanca', 'casa': 'Casablanca', 'maarif': 'Casablanca', 'bourgogne': 'Casablanca', 'anfa': 'Casablanca', 'gauthier': 'Casablanca',
+  'marrakech': 'Marrakech', 'kech': 'Marrakech', 'gueliz': 'Marrakech', 'medina': 'Marrakech', 'palmeraie': 'Marrakech', 'hivernage': 'Marrakech',
+  'tanger': 'Tanger', 'tanja': 'Tanger', 'malabata': 'Tanger',
+  'agadir': 'Agadir', 'taghazout': 'Agadir',
+  'fes': 'Fès', 'fez': 'Fès',
+  'meknes': 'Meknès',
+  'sale': 'Salé', 'sla': 'Salé',
+  'tetouan': 'Tétouan',
+  'kenitra': 'Kénitra',
+  'oujda': 'Oujda',
+  'mohammedia': 'Mohammedia',
+  'essaouira': 'Essaouira',
+  'el jadida': 'El Jadida',
+  'nador': 'Nador',
+  'الرباط': 'Rabat', 'الدار البيضاء': 'Casablanca', 'كازا': 'Casablanca', 'مراكش': 'Marrakech', 'طنجة': 'Tanger', 'أكادير': 'Agadir', 'اكادير': 'Agadir', 'فاس': 'Fès', 'مكناس': 'Meknès', 'سلا': 'Salé', 'تطوان': 'Tétouan', 'وجدة': 'Oujda', 'المحمدية': 'Mohammedia', 'الصويرة': 'Essaouira'
+};
+
+export interface ParsedVoiceFilters {
+  type?: PropertyType;
+  operation?: 'location' | 'achat';
+  city?: string;
+  detectedWords?: string[];
 }
 
-// ============================================================================
-// LOGIQUE STRICTE (IF / ELSE) BASÉE SUR LA VARIABLE texteEcoute
-// - SI texteEcoute contient "nchri" ALORS filtre = "acheter"
-// - SI texteEcoute contient "nkri" ALORS filtre = "louer"
-// - SI texteEcoute contient "casa" ALORS ville = "Casablanca"
-// - SI texteEcoute contient "rabat" ALORS ville = "Rabat"
-// - SINON, ne filtre rien (affiche tout).
-// ============================================================================
-// MODE VOCAL (100% DYNAMIQUE & APPROCHE DOUCE PROGRESSIVE)
-// - SI le nouveau texte contient un mot-clé majeur (ville, type ou action) :
-//   ALORS réinitialise les filtres précédents AVANT d'appliquer les nouveaux.
-// - SINON : conserve les filtres actuels pour enrichir les critères (ex: "2 chambres").
-// ============================================================================
+/**
+ * PARSING VOCAL AVEC DICTIONNAIRES ENRICHIS (CORRECTION STRICTE)
+ * 
+ * CORRECTION LOGIQUE :
+ * - Scanne TOUS les mots de la phrase captée un par un avec forEach sur text.split(' ') nettoyé, sans s'arrêter.
+ * - Pour chaque mot, vérifie s'il existe dans typeMapping, operationMapping ou cityMapping.
+ * - Si oui, met à jour le filtre correspondant.
+ * - Assure que les filtres ne s'écrasent pas entre eux :
+ *   Ex: si je dis "riad" puis "villa", le dernier type écrase le premier, mais "ville" et "type" coexistent !
+ * - Ajoute console.log("Mots détectés:", detectedWords) et console.log("Filtres finaux:", finalFilters).
+ */
+export function parseVoiceCommand(rawText: string): ParsedVoiceFilters {
+  if (!rawText || !rawText.trim()) {
+    const detectedWords: string[] = [];
+    const emptyFilters: ParsedVoiceFilters = {};
+    console.log("Mots détectés:", detectedWords);
+    console.log("Filtres finaux:", emptyFilters);
+    return emptyFilters;
+  }
+
+  // 1. Convertis le texte capté en minuscules et supprime les accents
+  const cleanText = rawText
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+  const detectedWords: string[] = [];
+  let detectedType: PropertyType | undefined;
+  let detectedOperation: 'location' | 'achat' | undefined;
+  let detectedCity: string | undefined;
+
+  // Détection des expressions multi-mots d'opérations (ex: "a louer", "a vendre", "a acheter")
+  if (cleanText.includes('a louer') || cleanText.includes('à louer')) {
+    detectedOperation = 'location';
+    if (!detectedWords.includes('a louer')) detectedWords.push('a louer');
+  } else if (cleanText.includes('a vendre') || cleanText.includes('à vendre')) {
+    detectedOperation = 'achat';
+    if (!detectedWords.includes('a vendre')) detectedWords.push('a vendre');
+  } else if (cleanText.includes('a acheter')) {
+    detectedOperation = 'achat';
+    if (!detectedWords.includes('a acheter')) detectedWords.push('a acheter');
+  }
+
+  // Découpage propre par mot en remplaçant la ponctuation par des espaces (ex: text.split(' '))
+  const words = cleanText
+    .replace(/[,;:.!?/\\()\-]+/g, ' ')
+    .split(' ')
+    .map((w) => w.trim())
+    .filter(Boolean);
+
+  // 2. Boucle forEach sur TOUS les mots de la phrase captée, un par un, sans s'arrêter
+  words.forEach((word) => {
+    // Vérification Type de bien (le dernier écrase le premier, ex: 'riad' puis 'villa')
+    if (typeMapping[word]) {
+      detectedType = typeMapping[word];
+      if (!detectedWords.includes(word)) {
+        detectedWords.push(word);
+      }
+    }
+
+    // Vérification Opération
+    if (operationMapping[word]) {
+      detectedOperation = operationMapping[word];
+      if (!detectedWords.includes(word)) {
+        detectedWords.push(word);
+      }
+    }
+
+    // Vérification Ville (coexiste parfaitement avec type et opération)
+    if (cityMapping[word]) {
+      detectedCity = cityMapping[word];
+      if (!detectedWords.includes(word)) {
+        detectedWords.push(word);
+      }
+    }
+  });
+
+  const finalFilters: ParsedVoiceFilters = {};
+  if (detectedType) finalFilters.type = detectedType;
+  if (detectedOperation) finalFilters.operation = detectedOperation;
+  if (detectedCity) finalFilters.city = detectedCity;
+  finalFilters.detectedWords = detectedWords;
+
+  // TEST OBLIGATOIRE : logs dans la console
+  console.log("Mots détectés:", detectedWords);
+  console.log("Filtres finaux:", finalFilters);
+
+  // 4. Si AUCUN mot n'est trouvé dans les dictionnaires, retourne un objet vide {}
+  if (!detectedType && !detectedOperation && !detectedCity) {
+    return {};
+  }
+
+  return finalFilters;
+}
+
 export interface ResultatFiltreVocal {
-  filtreAction: 'acheter' | 'louer' | null;
+  filtreAction: 'achat' | 'location' | null;
   filtreVille: string | null;
   filtreType: PropertyType | null;
   filtreChambres?: number | null;
@@ -1307,236 +1493,116 @@ export function filtrerParTexteEcoute(
   texte: string,
   listings: PropertyListing[]
 ): ResultatFiltreVocal {
-  const rawText = (texte || '').trim();
-  // Normalisation : minuscules et suppression des accents pour matcher "à", "é", "è", etc.
-  const t = rawText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const parsed = parseVoiceCommand(texte);
 
-  // 1. FORCER LE NETTOYAGE AVANT TOUTE APPLICATION DE CRITÈRE (Reset complet)
-  let filtreAction: 'acheter' | 'louer' | null = null;
-  let filtreVille: string | null = null;
-  let filtreType: PropertyType | null = null;
-  let filtreChambres: number | null = null;
-
-  // 2. PARSER FRANÇAIS & DARIJA (Caractères Latins & Arabes) - OPÉRATION / ACTION
-  // - "je veux louer", "location", "à louer", "louer", "nkri", "كراء", "نكري", "باغي نكري" ➔ operation: 'louer'
-  // - "acheter", "achat", "je cherche à acheter", "vente", "à vendre", "nchri", "شراء", "نشري", "باغي نشري" ➔ operation: 'acheter'
-  const aLocation = 
-    t.includes('louer') || 
-    t.includes('location') || 
-    t.includes('a louer') || 
-    t.includes('veux louer') || 
-    t.includes('cherche a louer') || 
-    t.includes('nkri') || 
-    t.includes('kri') || 
-    t.includes('kraa') ||
-    t.includes('كراء') ||
-    t.includes('نكري') ||
-    t.includes('كري') ||
-    t.includes('للكراء') ||
-    t.includes('باغي نكري') ||
-    t.includes('بغيت نكري') ||
-    t.includes('كرى');
-
-  const aAchat = 
-    t.includes('acheter') || 
-    t.includes('achat') || 
-    t.includes('cherche a acheter') || 
-    t.includes('veux acheter') || 
-    t.includes('a acheter') || 
-    t.includes('a vendre') || 
-    t.includes('vente') || 
-    t.includes('nchri') || 
-    t.includes('chri') || 
-    t.includes('chiraa') ||
-    t.includes('شراء') ||
-    t.includes('نشري') ||
-    t.includes('شري') ||
-    t.includes('للبيع') ||
-    t.includes('بيع') ||
-    t.includes('باغي نشري') ||
-    t.includes('بغيت نشري');
-
-  if (aLocation && !aAchat) {
-    filtreAction = 'louer';
-  } else if (aAchat && !aLocation) {
-    filtreAction = 'acheter';
-  } else if (aLocation && aAchat) {
-    const idxLoc = Math.min(...[t.indexOf('louer'), t.indexOf('location'), t.indexOf('nkri'), t.indexOf('نكري'), t.indexOf('كراء')].filter(i => i >= 0));
-    const idxAch = Math.min(...[t.indexOf('acheter'), t.indexOf('achat'), t.indexOf('nchri'), t.indexOf('نشري'), t.indexOf('شراء')].filter(i => i >= 0));
-    filtreAction = idxLoc < idxAch ? 'louer' : 'acheter';
-  }
-
-  // 3. PARSER FRANÇAIS & DARIJA - VILLE (Caractères Latins & Arabes)
-  // - Rabat, Casablanca, Tanger, Marrakech, Agadir
-  if (
-    t.includes('rabat') || 
-    t.includes('rbat') || 
-    t.includes('agdal') || 
-    t.includes('hay riad') || 
-    t.includes('souissi') || 
-    t.includes('hassan') ||
-    t.includes('الرباط') ||
-    t.includes('رباط') ||
-    t.includes('اكدال') ||
-    t.includes('أكدال') ||
-    t.includes('حي الرياض') ||
-    t.includes('السويسي')
-  ) {
-    filtreVille = 'Rabat';
-  } else if (
-    t.includes('casablanca') || 
-    t.includes('casa') || 
-    t.includes('dar beida') || 
-    t.includes('dar lbaida') || 
-    t.includes('dar el beida') || 
-    t.includes('maarif') || 
-    t.includes('bourgogne') || 
-    t.includes('gauthier') || 
-    t.includes('anfa') ||
-    t.includes('كازا') ||
-    t.includes('الدار البيضاء') ||
-    t.includes('كازابلانكا') ||
-    t.includes('المعاريف') ||
-    t.includes('أنفا') ||
-    t.includes('انفا')
-  ) {
-    filtreVille = 'Casablanca';
-  } else if (
-    t.includes('tanger') || 
-    t.includes('tanja') || 
-    t.includes('malabata') || 
-    t.includes('marshan') || 
-    t.includes('iberia') ||
-    t.includes('طنجة') ||
-    t.includes('مالاباطا')
-  ) {
-    filtreVille = 'Tanger';
-  } else if (
-    t.includes('marrakech') || 
-    t.includes('kech') || 
-    t.includes('gueliz') || 
-    t.includes('hivernage') || 
-    t.includes('palmeraie') || 
-    t.includes('medina') ||
-    t.includes('مراكش') ||
-    t.includes('كليز') ||
-    t.includes('جيليز') ||
-    t.includes('النخيل')
-  ) {
-    filtreVille = 'Marrakech';
-  } else if (
-    t.includes('agadir') || 
-    t.includes('taghazout') || 
-    t.includes('sonaba') || 
-    t.includes('founty') ||
-    t.includes('أكادير') ||
-    t.includes('اكادير') ||
-    t.includes('تغازوت')
-  ) {
-    filtreVille = 'Agadir';
-  }
-
-  // 4. PARSER FRANÇAIS & DARIJA - TYPE DE BIEN
-  // - "appartement", "appart", "studio", "ch9a", "شقة", "برطمة" ➔ type: 'appartement'
-  // - "maison", "villa", "riad", "dar", "فيلا", "دار", "منزل" ➔ type: 'maison'
-  // - "terrain", "ard", "أرض", "بقعة" ➔ type: 'terrain'
-  if (
-    t.includes('appartement') || 
-    t.includes('appart') || 
-    t.includes('studio') || 
-    t.includes('duplex') || 
-    t.includes('ch9a') || 
-    t.includes('ch99a') || 
-    t.includes('chqua') ||
-    t.includes('شقة') ||
-    t.includes('شقق') ||
-    t.includes('برطمة') ||
-    t.includes('برطما') ||
-    t.includes('استوديو') ||
-    t.includes('ستوديو')
-  ) {
-    filtreType = 'appartement';
-  } else if (
-    t.includes('maison') || 
-    t.includes('villa') || 
-    t.includes('riad') || 
-    t.includes('dar') || 
-    t.includes('menzel') ||
-    t.includes('دار') ||
-    t.includes('فيلا') ||
-    t.includes('منزل') ||
-    t.includes('رياض') ||
-    t.includes('ديور')
-  ) {
-    filtreType = 'maison';
-  } else if (
-    t.includes('terrain') || 
-    t.includes('ard') || 
-    t.includes('bo93a') ||
-    t.includes('أرض') ||
-    t.includes('ارض') ||
-    t.includes('بقعة') ||
-    t.includes('بقع')
-  ) {
-    filtreType = 'terrain';
-  }
-
-  // 5. PARSER FRANÇAIS & DARIJA - NOMBRE DE CHAMBRES
-  if (t.includes('1 ch') || t.includes('une ch') || t.includes('1 piece') || t.includes('studio') || t.includes('wahed') || t.includes('wahd') || t.includes('بيت واحد') || t.includes('غرفة واحدة') || t.includes('1 غرف')) {
-    filtreChambres = 1;
-  } else if (t.includes('2 ch') || t.includes('deux ch') || t.includes('2 pieces') || t.includes('jouj') || t.includes('zoj') || t.includes('جوج بيوت') || t.includes('2 بيوت') || t.includes('غرفتين') || t.includes('2 غرف')) {
-    filtreChambres = 2;
-  } else if (t.includes('3 ch') || t.includes('trois ch') || t.includes('3 pieces') || t.includes('tlata') || t.includes('tleta') || t.includes('تلاتة بيوت') || t.includes('3 بيوت') || t.includes('3 غرف')) {
-    filtreChambres = 3;
-  } else if (t.includes('4 ch') || t.includes('quatre ch') || t.includes('4 pieces') || t.includes('reb3a') || t.includes('أربعة غرف') || t.includes('4 بيوت')) {
-    filtreChambres = 4;
-  }
-
-  // 6. APPLICATION DES CRITÈRES SUR LA LISTE DES BIENS
-  const aDesCriteres = filtreAction !== null || filtreVille !== null || filtreType !== null || (filtreChambres !== null && filtreChambres > 0);
-  
-  if (!aDesCriteres) {
+  // 4. Si AUCUN mot n'est trouvé dans les deux dictionnaires, retourne un objet vide {} (ce qui déclenchera le message "Aucun résultat")
+  if (Object.keys(parsed).length === 0 || (!parsed.type && !parsed.operation && !parsed.city)) {
+    const emptyFilters = { city: null, type: null, operation: null };
+    console.log("Filtres actifs:", emptyFilters);
+    console.log("Nombre de biens après filtrage strict:", 0);
     return {
       filtreAction: null,
       filtreVille: null,
       filtreType: null,
       filtreChambres: null,
-      resultats: [...listings]
+      resultats: []
     };
   }
 
-  // Filtrage strict
-  const resultats = listings.filter((item) => {
-    // A. Opération (louer vs acheter)
-    if (filtreAction === 'louer') {
-      if (item.operation !== 'location') return false;
-    } else if (filtreAction === 'acheter') {
-      if (item.operation === 'location') return false;
+  const filters = {
+    city: parsed.city || null,
+    type: parsed.type || null,
+    operation: parsed.operation || null,
+  };
+
+  const allProperties = listings;
+
+  const filteredProperties = allProperties.filter((property) => {
+    // 1. Vérification de la Ville (si un filtre ville est actif)
+    if (filters.city && property.city.toLowerCase() !== filters.city.toLowerCase()) {
+      return false; // Rejeté si la ville ne correspond pas
     }
 
-    // B. Ville
-    if (filtreVille) {
-      if (item.city.toLowerCase() !== filtreVille.toLowerCase()) return false;
+    // 2. Vérification du Type (si un filtre type est actif)
+    if (filters.type && property.type.toLowerCase() !== filters.type.toLowerCase()) {
+      return false; // Rejeté si le type ne correspond pas
     }
 
-    // C. Type de bien ("maison", "villa", "riad" matchent maison et villa)
-    if (filtreType) {
-      if (filtreType === 'maison') {
-        if (item.type !== 'maison' && item.type !== 'villa') return false;
-      } else {
-        if (item.type !== filtreType) return false;
-      }
+    // 3. Vérification de l'Opération (si un filtre opération est actif)
+    if (filters.operation && property.operation.toLowerCase() !== filters.operation.toLowerCase()) {
+      return false; // Rejeté si l'opération (achat/location) ne correspond pas
     }
 
-    // D. Chambres
-    if (filtreChambres !== null && filtreChambres > 0) {
-      if (item.bedrooms < filtreChambres) return false;
-    }
-
+    // Si le bien a passé tous les tests (ou si aucun filtre n'est actif), on le garde
     return true;
   });
 
-  return { filtreAction, filtreVille, filtreType, filtreChambres, resultats };
+  // Ajoute ce log pour qu'on puisse vérifier dans la console du navigateur :
+  console.log("Filtres actifs:", filters);
+  console.log("Nombre de biens après filtrage strict:", filteredProperties.length);
+
+  return {
+    filtreAction: parsed.operation || null,
+    filtreVille: parsed.city || null,
+    filtreType: parsed.type || null,
+    filtreChambres: null,
+    resultats: filteredProperties
+  };
+}
+
+// ----------------------------------------------------------------------------
+// TITRE DYNAMIQUE BILINGUE SELON LA LANGUE CHOISIE (ACTION 3)
+// Exemple : lang === 'fr' ? 'Appartement à louer' : 'شقة للكراء'
+// ----------------------------------------------------------------------------
+export function getListingDynamicTitle(item: PropertyListing, lang: 'fr' | 'ar'): string {
+  const isLocation = item.operation === 'location' || (item.priceNum !== undefined && item.priceNum < 50000);
+  if (lang === 'ar') {
+    switch (item.type) {
+      case 'appartement':
+        return isLocation ? 'شقة للكراء' : 'شقة للبيع';
+      case 'villa':
+        return isLocation ? 'فيلا للكراء' : 'فيلا للبيع';
+      case 'maison':
+        return isLocation ? 'منزل للكراء' : 'منزل للبيع';
+      case 'terrain':
+        return isLocation ? 'أرض للكراء' : 'أرض للبيع';
+      case 'riad':
+        return isLocation ? 'رياض للكراء' : 'رياض للبيع';
+      case 'local':
+        return isLocation ? 'محل تجاري للكراء' : 'محل تجاري للبيع';
+      case 'bureau':
+        return isLocation ? 'مكتب للكراء' : 'مكتب للبيع';
+      case 'studio':
+        return isLocation ? 'استوديو للكراء' : 'استوديو للبيع';
+      case 'duplex':
+        return isLocation ? 'دوبلكس للكراء' : 'دوبلكس للبيع';
+      default:
+        return isLocation ? 'عقار للكراء' : 'عقار للبيع';
+    }
+  } else {
+    switch (item.type) {
+      case 'appartement':
+        return isLocation ? 'Appartement à louer' : 'Appartement à vendre';
+      case 'villa':
+        return isLocation ? 'Villa à louer' : 'Villa à vendre';
+      case 'maison':
+        return isLocation ? 'Maison à louer' : 'Maison à vendre';
+      case 'terrain':
+        return isLocation ? 'Terrain à louer' : 'Terrain à vendre';
+      case 'riad':
+        return isLocation ? 'Riad à louer' : 'Riad à vendre';
+      case 'local':
+        return isLocation ? 'Local commercial à louer' : 'Local commercial à vendre';
+      case 'bureau':
+        return isLocation ? 'Bureau à louer' : 'Bureau à vendre';
+      case 'studio':
+        return isLocation ? 'Studio à louer' : 'Studio à vendre';
+      case 'duplex':
+        return isLocation ? 'Duplex à louer' : 'Duplex à vendre';
+      default:
+        return isLocation ? 'Bien à louer' : 'Bien à vendre';
+    }
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -1573,7 +1639,13 @@ export function genererDiagnosticVocal(
     elementsTraduits.push('Type : Appartement');
   } else if (t.includes('villa') || t.includes('فيلا')) {
     elementsTraduits.push('Type : Villa');
-  } else if (t.includes('maison') || t.includes('riad') || t.includes('dar') || t.includes('دار') || t.includes('منزل') || t.includes('رياض')) {
+  } else if (t.includes('riad') || t.includes('رياض') || t.includes('ksar')) {
+    elementsTraduits.push('Type : Riad');
+  } else if (t.includes('local') || t.includes('commerce') || t.includes('boutique') || t.includes('magasin') || t.includes('mahal') || t.includes('hanout') || t.includes('محل')) {
+    elementsTraduits.push('Type : Local / Commerce');
+  } else if (t.includes('bureau') || t.includes('office') || t.includes('maktab') || t.includes('مكتب')) {
+    elementsTraduits.push('Type : Bureau');
+  } else if (t.includes('maison') || t.includes('dar') || t.includes('دار') || t.includes('منزل')) {
     elementsTraduits.push('Type : Maison');
   } else if (t.includes('terrain') || t.includes('ard') || t.includes('أرض') || t.includes('بقعة')) {
     elementsTraduits.push('Type : Terrain');
@@ -1606,7 +1678,7 @@ export function genererDiagnosticVocal(
   // 3. Ligne 3 : Action déclenchée
   const evalResult = evaluation || filtrerParTexteEcoute(rawText, listings);
   const filtresDesc: string[] = [];
-  if (evalResult.filtreAction) filtresDesc.push(`Opération: ${evalResult.filtreAction === 'louer' ? 'Location' : 'Achat'}`);
+  if (evalResult.filtreAction) filtresDesc.push(`Opération: ${evalResult.filtreAction === 'location' ? 'Location' : 'Achat'}`);
   if (evalResult.filtreVille) filtresDesc.push(`Ville: ${evalResult.filtreVille}`);
   if (evalResult.filtreType) filtresDesc.push(`Type: ${evalResult.filtreType}`);
   if (evalResult.filtreChambres) filtresDesc.push(`Chambres >= ${evalResult.filtreChambres}`);
@@ -1675,8 +1747,11 @@ interface StartNavigationProps {
 }
 
 export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplash }) => {
-  // ACTION 3 : Premier écran par défaut = Dashboard (avec l'interface vocale centrale et principale)
-  const [currentScreen, setCurrentScreen] = useState<StartScreen>('dashboard');
+  // NOUVELLE STRUCTURE (Parcours guidé par étapes) :
+  // 1. Variable d'état currentStep ('language', 'mode', 'vocal', 'classic', etc.)
+  const [currentStep, setCurrentStep] = useState<StartScreen>('language');
+  const currentScreen = currentStep;
+  const setCurrentScreen = setCurrentStep;
   const [language, setLanguage] = useState<Language>('fr');
 
   // ACTION 2 : Double Micro (Darija ar-MA / Français fr-FR)
@@ -1686,7 +1761,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
   const [filters, setFilters] = useState<{
     city: string | null;
     type: PropertyType | null;
-    operation: 'acheter' | 'louer' | null;
+    operation: 'achat' | 'location' | null;
     price: string | null;
   }>({
     city: null,
@@ -1726,6 +1801,41 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     filtrerParTexteEcoute("", PROPERTY_LISTINGS)
   );
 
+  const allProperties = PROPERTY_LISTINGS;
+
+  // Filtrage strict infaillible (ET logique)
+  const filteredProperties = React.useMemo(() => {
+    if (!texteBrutCapte && !texteEcoute && !filters.city && !filters.type && !filters.operation) {
+      return [];
+    }
+
+    const filtered = allProperties.filter((property) => {
+      // 1. Vérification de la Ville (si un filtre ville est actif)
+      if (filters.city && property.city.toLowerCase() !== filters.city.toLowerCase()) {
+        return false; // Rejeté si la ville ne correspond pas
+      }
+
+      // 2. Vérification du Type (si un filtre type est actif)
+      if (filters.type && property.type.toLowerCase() !== filters.type.toLowerCase()) {
+        return false; // Rejeté si le type ne correspond pas
+      }
+
+      // 3. Vérification de l'Opération (si un filtre opération est actif)
+      if (filters.operation && property.operation.toLowerCase() !== filters.operation.toLowerCase()) {
+        return false; // Rejeté si l'opération (achat/location) ne correspond pas
+      }
+
+      // Si le bien a passé tous les tests (ou si aucun filtre n'est actif), on le garde
+      return true;
+    });
+
+    // Ajoute ce log pour qu'on puisse vérifier dans la console du navigateur :
+    console.log("Filtres actifs:", filters);
+    console.log("Nombre de biens après filtrage strict:", filtered.length);
+
+    return filtered;
+  }, [filters, allProperties, texteBrutCapte, texteEcoute]);
+
   // Diagnostic vocal temps réel (Étape C)
   const diagnosticVocal = React.useMemo(() => {
     return genererDiagnosticVocal(texteBrutCapte || texteEcoute, PROPERTY_LISTINGS, voiceEvaluation);
@@ -1733,6 +1843,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
 
   const [countdown, setCountdown] = useState<number>(3);
   const [calledModal, setCalledModal] = useState<PropertyListing | null>(null);
+  const [detailModalListing, setDetailModalListing] = useState<PropertyListing | null>(null);
 
   // État de l'alerte pour "Trouver un Samsar" (remplacé par la vraie page find_samsar)
   const [activeAlert, setActiveAlert] = useState<{ title: string; subtitle: string } | null>(null);
@@ -1761,7 +1872,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     // FORCER LE NETTOYAGE AVANT MISE À JOUR
     setFilters({ city: null, type: null, operation: null, price: null });
 
-    // 3. APPLIQUER LES NOUVEAUX CRITÈRES APRÈS LE RESET
+    // 3. APPLIQUER LES NOUVEAUX CRITÈRES APRÈS LE RESET (STRICT, ZÉRO APPROXIMATION)
     const evaluation = filtrerParTexteEcoute(texteNettoye, PROPERTY_LISTINGS);
 
     setFilters({
@@ -1773,6 +1884,24 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
 
     setVoiceEvaluation(evaluation);
     setCurrentScreen('voice_results');
+    setCurrentStep('voice_results');
+  };
+
+  const handleResetVoiceSearch = () => {
+    if (isListeningMic) stopListening();
+    setTexteBrutCapte('');
+    setTexteEcoute('');
+    texteEcouteRef.current = '';
+    setVoiceEvaluation({
+      filtreAction: null,
+      filtreVille: null,
+      filtreType: null,
+      filtreChambres: null,
+      resultats: []
+    });
+    setFilters({ city: null, type: null, operation: null, price: null });
+    setCurrentScreen('vocal');
+    setCurrentStep('vocal');
   };
 
   const executeVoiceSearch = handleTranslatedText;
@@ -1971,194 +2100,340 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
   /* =============================================================
    * PARCOURS VOCAL : RÉSULTATS VISUELS (100% DYNAMIQUE, ZERO HARDCODING)
    * ============================================================= */
-  if (currentScreen === 'voice_results') {
+  if (currentScreen === 'voice_results' || currentStep === 'voice_results') {
     return (
-      <div className="relative min-h-[100dvh] w-full bg-[#111827] text-white flex flex-col justify-between font-sans">
-        <header className="w-full px-5 py-4 flex items-center justify-between border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <MoroccoFlagStarLogo />
-            <span className="font-black text-white text-lg font-serif tracking-tight">
-              DIRECT<span className="text-amber-500">SAMSAR</span>
-            </span>
-          </div>
+      <div 
+        dir={language === 'ar' ? 'rtl' : 'ltr'} 
+        className={`relative min-h-[100dvh] w-full bg-[#FAFAFA] text-stone-900 flex flex-col font-sans ${language === 'ar' ? 'text-right' : 'text-left'}`}
+      >
+        {/* 1. AppHeader Unifié & Fixe */}
+        <AppHeader
+          showBackButton={true}
+          onBack={handleResetVoiceSearch}
+          language={language}
+          onToggleLanguage={() => setLanguage(language === 'ar' ? 'fr' : 'ar')}
+          onSelectMenuOption={(option) => {
+            if (isListeningMic) stopListening();
+            setCurrentScreen(option as any);
+            setCurrentStep(option as any);
+          }}
+          currentStep="vocal"
+        />
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => startListening()}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
-            >
-              <Mic className="w-4 h-4 animate-pulse" />
-              <span>🎙️ Parler</span>
-            </button>
+        <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-5 flex flex-col gap-6 py-4">
+          <PageTitle
+            title={language === 'ar' ? 'نتائج البحث الصوتي' : 'Résultats de recherche'}
+            subtitle={
+              language === 'ar'
+                ? (voiceEvaluation.resultats.length > 0
+                    ? `${voiceEvaluation.resultats.length} عقار مطابق لبحثك`
+                    : 'العقارات المطابقة لبحثك الصوتي')
+                : (voiceEvaluation.resultats.length > 0
+                    ? `${voiceEvaluation.resultats.length} bien${voiceEvaluation.resultats.length > 1 ? 's' : ''} correspondant${voiceEvaluation.resultats.length > 1 ? 's' : ''}`
+                    : 'Biens correspondants à votre recherche vocale')
+            }
+          />
 
-            <button
-              onClick={() => setCurrentScreen('mode_choice')}
-              className="p-2 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition active:scale-95 cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-5 flex flex-col gap-6 py-6">
-          {/* 1. AUCUN HARDCODING : Tous les badges proviennent exclusivement des variables */}
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {voiceEvaluation.filtreVille && (
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
-                  📍 {voiceEvaluation.filtreVille}
-                </span>
-              )}
-              {voiceEvaluation.filtreType && (
-                <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold capitalize">
-                  🏠 {voiceEvaluation.filtreType}
-                </span>
-              )}
-              {voiceEvaluation.filtreAction && (
-                <span className="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold capitalize">
-                  🏷️ {voiceEvaluation.filtreAction}
-                </span>
-              )}
-              {voiceEvaluation.filtreChambres && (
-                <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold">
-                  🛏️ {voiceEvaluation.filtreChambres}+ ch.
-                </span>
-              )}
+          {/* Badges d'analyse des critères vocaux */}
+          {(voiceEvaluation.filtreVille || voiceEvaluation.filtreType || voiceEvaluation.filtreAction || voiceEvaluation.filtreChambres) && (
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {voiceEvaluation.filtreVille && (
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-[#006233] border border-emerald-200 font-bold">
+                    📍 {voiceEvaluation.filtreVille}
+                  </span>
+                )}
+                {voiceEvaluation.filtreType && (
+                  <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-bold capitalize">
+                    🏠 {voiceEvaluation.filtreType}
+                  </span>
+                )}
+                {voiceEvaluation.filtreAction && (
+                  <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-bold capitalize">
+                    🏷️ {voiceEvaluation.filtreAction === 'location' ? (language === 'ar' ? 'كراء' : 'Location') : (language === 'ar' ? 'شراء' : 'Achat')}
+                  </span>
+                )}
+                {voiceEvaluation.filtreChambres && (
+                  <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-bold">
+                    🛏️ {voiceEvaluation.filtreChambres}+ {language === 'ar' ? 'غرف' : 'ch.'}
+                  </span>
+                )}
+              </div>
+              <span className="text-stone-500 font-bold">
+                {language === 'ar'
+                  ? `${voiceEvaluation.resultats.length} عقار`
+                  : `${voiceEvaluation.resultats.length} bien${voiceEvaluation.resultats.length > 1 ? 's' : ''} trouvé${voiceEvaluation.resultats.length > 1 ? 's' : ''}`}
+              </span>
             </div>
-            <span className="text-stone-400 font-bold">
-              {voiceEvaluation.resultats.length} bien{voiceEvaluation.resultats.length > 1 ? 's' : ''} trouvé{voiceEvaluation.resultats.length > 1 ? 's' : ''}
-            </span>
-          </div>
+          )}
 
+          {/* ACTION 1 & ACTION 3 : Si des biens correspondent strictement, affichage en cartes bilingues avec SCROLL INFINI */}
           {voiceEvaluation.resultats.length > 0 ? (
-            <>
-              {/* Création d'une carte (card) pour CHAQUE bien trouvé */}
+            <div className="flex-1 overflow-y-auto pb-20 space-y-5">
               {voiceEvaluation.resultats.map((house) => (
                 <motion.div
                   key={house.id}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="relative w-full rounded-3xl overflow-hidden bg-stone-900 border border-white/15 shadow-2xl transition hover:border-emerald-500/60"
+                  className="relative w-full rounded-3xl overflow-hidden bg-white border border-stone-200/90 shadow-md hover:shadow-lg transition flex flex-col"
                 >
-                  {/* 1. Grande photo de la propriété */}
-                  <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-stone-950">
+                  {/* Photo et badges contextuels */}
+                  <div className="relative h-56 sm:h-64 w-full overflow-hidden bg-stone-100">
                     <img
                       src={house.image}
-                      alt={house.city}
+                      alt={language === 'ar' ? house.titleAr : house.title}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/5" />
 
                     {/* Badge Ville */}
-                    <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white font-black text-sm tracking-wide shadow-md border border-white/20">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
-                      <span>{house.city}</span>
+                    <div className={`absolute top-3 ${language === 'ar' ? 'right-3' : 'left-3'} flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white font-bold text-xs shadow-md border border-white/20`}>
+                      <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{language === 'ar' ? (house.cityAr || house.city) : house.city}</span>
                     </div>
 
                     {/* Badge Type de bien */}
-                    <div className="absolute top-4 right-4 px-3.5 py-1 rounded-full bg-emerald-600/90 backdrop-blur-xs text-white font-black text-xs uppercase tracking-wider shadow-md">
-                      {house.typeLabel}
+                    <div className={`absolute top-3 ${language === 'ar' ? 'left-3' : 'right-3'} px-3 py-1 rounded-full bg-[#006233] text-white font-black text-xs uppercase tracking-wider shadow-md`}>
+                      {language === 'ar' ? house.typeLabelAr : house.typeLabel}
                     </div>
 
-                    {/* Prix affiché en très gros et en gras */}
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                    {/* Prix affiché en gros sur l'image */}
+                    <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                       <div>
-                        <span className="block text-[11px] font-bold text-amber-300/80 uppercase tracking-wider">
-                          Prix
+                        <span className="block text-[11px] font-bold text-amber-300 uppercase tracking-wider">
+                          {language === 'ar' ? 'السعر' : 'Prix'}
                         </span>
-                        <span className="block text-3xl sm:text-4xl font-black text-amber-400 tracking-tight drop-shadow-lg">
-                          {house.price}
+                        <span className="block text-2xl sm:text-3xl font-black text-amber-400 tracking-tight drop-shadow-md">
+                          {language === 'ar' ? (house.priceAr || house.price) : house.price}
                         </span>
                       </div>
 
                       {house.bedrooms > 0 && (
-                        <div className="px-3 py-1 rounded-xl bg-black/50 backdrop-blur-xs text-xs font-bold text-stone-200 border border-white/10">
-                          {house.bedrooms} ch. • {house.surface}
+                        <div className="px-3 py-1 rounded-xl bg-black/60 backdrop-blur-xs text-xs font-bold text-white border border-white/20">
+                          {language === 'ar' ? `${house.bedrooms} غرف • ${house.surface}` : `${house.bedrooms} ch. • ${house.surface}`}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* 3. Bouton Contacter le Samsar directement sur CHAQUE carte */}
-                  <div className="p-4 bg-stone-900/95 flex items-center justify-between gap-3 border-t border-white/10">
-                    <div className="text-left">
-                      <span className="block text-[11px] font-bold text-stone-400 uppercase tracking-wider">
-                        Samsar
+                  {/* Contenu de la carte avec Titre dynamique et Boutons traduits (Action 3) */}
+                  <div className="p-4 sm:p-5 flex flex-col gap-3">
+                    {/* Titre dynamique traduit selon la langue (ex: 'Appartement à louer' / 'شقة للكراء') */}
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-black text-stone-900 tracking-tight">
+                        {getListingDynamicTitle(house, language)}
+                      </h3>
+                      <p className="text-xs text-stone-500 font-medium line-clamp-1">
+                        {language === 'ar' ? house.titleAr : house.title}
+                      </p>
+                    </div>
+
+                    {/* Samsar référent */}
+                    <div className="flex items-center justify-between text-xs py-1.5 border-y border-stone-100">
+                      <span className="text-stone-500 font-medium">
+                        {language === 'ar' ? 'السمسار المعتمد :' : 'Samsar référent :'}
                       </span>
-                      <span className="block text-sm font-extrabold text-white">
+                      <span className="font-extrabold text-stone-800">
                         {house.samsarName}
                       </span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setCalledModal(house)}
-                      className="py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-emerald-950/40 active:scale-95 transition cursor-pointer"
-                    >
-                      <Phone className="w-4 h-4 animate-pulse" />
-                      <span>APPELER</span>
-                    </button>
+                    {/* Boutons traduits : "Contacter" / "اتصال" et "Détails" / "تفاصيل" (Action 3) */}
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setCalledModal(house)}
+                        className="py-3 px-3 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-black text-sm flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition cursor-pointer"
+                      >
+                        <Phone className="w-4 h-4" />
+                        <span>{language === 'ar' ? 'اتصال' : 'Contacter'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDetailModalListing(house)}
+                        className="py-3 px-3 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-sm flex items-center justify-center gap-1.5 border border-stone-200/80 active:scale-95 transition cursor-pointer"
+                      >
+                        <span>{language === 'ar' ? 'تفاصيل' : 'Détails'}</span>
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
-            </>
+            </div>
           ) : (
-            /* 5. Si aucun bien ne correspond aux mots-clés, affiche un message simple : "Aucun bien trouvé. Essayez une autre ville." */
-            <div className="w-full py-12 px-6 rounded-3xl bg-white/5 border border-white/10 text-center space-y-6 animate-fade-in my-auto">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-                <SearchX className="w-8 h-8 text-amber-400 stroke-[2.2]" />
+            /* ACTION 2 : MESSAGE "AUCUN RÉSULTAT" BILINGUE ET ÉLÉGANT (Zéro approximation, jamais de fourre-tout) */
+            <div className="w-full py-12 px-6 rounded-3xl bg-white border border-stone-200 text-center shadow-sm space-y-6 animate-fade-in my-auto max-w-md mx-auto">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200/60 shadow-xs">
+                <SearchX className="w-8 h-8 text-amber-600 stroke-[2]" />
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  Aucun bien trouvé. Essayez une autre ville.
+                <h3 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
+                  {language === 'ar'
+                    ? 'لا توجد عقارات تطابق بحثك.'
+                    : 'Aucun bien ne correspond à votre recherche.'}
                 </h3>
+                <p className="text-sm text-stone-500 font-medium leading-relaxed">
+                  {language === 'ar'
+                    ? 'حاول تعديل معايير البحث أو تغيير المدينة.'
+                    : 'Essayez de modifier vos critères ou de changer de ville.'}
+                </p>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => startListening()}
-                  className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base flex items-center justify-center gap-2 shadow-xl shadow-emerald-950/40 active:scale-95 transition cursor-pointer"
+                  onClick={handleResetVoiceSearch}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/10 active:scale-95 transition cursor-pointer"
                 >
-                  <Mic className="w-5 h-5 animate-pulse" />
-                  <span>Réessayer une recherche vocale</span>
+                  <RotateCcw className="w-4 h-4" />
+                  <span>
+                    {language === 'ar' ? 'إعادة تعيين البحث' : 'Réinitialiser la recherche'}
+                  </span>
                 </button>
               </div>
             </div>
           )}
         </main>
 
+        {/* Modale "Détails" (Action 3) */}
+        <AnimatePresence>
+          {detailModalListing && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+                className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-stone-200 flex flex-col max-h-[90vh]"
+              >
+                <div className="relative h-48 w-full overflow-hidden bg-stone-100 shrink-0">
+                  <img
+                    src={detailModalListing.image}
+                    alt={detailModalListing.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setDetailModalListing(null)}
+                    className={`absolute top-3 ${language === 'ar' ? 'left-3' : 'right-3'} p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition cursor-pointer`}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <div className={`absolute bottom-3 ${language === 'ar' ? 'right-4' : 'left-4'} px-3 py-1 rounded-full bg-[#006233] text-white font-bold text-xs uppercase`}>
+                    {language === 'ar' ? detailModalListing.typeLabelAr : detailModalListing.typeLabel}
+                  </div>
+                </div>
+
+                <div className="p-6 overflow-y-auto space-y-4 text-left" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-black text-stone-900">
+                      {getListingDynamicTitle(detailModalListing, language)}
+                    </h3>
+                    <p className="text-xs text-stone-500 font-medium">
+                      {language === 'ar' ? detailModalListing.titleAr : detailModalListing.title}
+                    </p>
+                  </div>
+
+                  <div className="text-2xl font-black text-[#006233]">
+                    {language === 'ar' ? (detailModalListing.priceAr || detailModalListing.price) : detailModalListing.price}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-stone-50 border border-stone-200/80 text-xs font-semibold text-stone-700">
+                    <div>
+                      <span className="text-stone-400 block text-[10px] uppercase font-bold">
+                        {language === 'ar' ? 'المدينة' : 'Ville'}
+                      </span>
+                      <span>{language === 'ar' ? (detailModalListing.cityAr || detailModalListing.city) : detailModalListing.city}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 block text-[10px] uppercase font-bold">
+                        {language === 'ar' ? 'الحي' : 'Quartier'}
+                      </span>
+                      <span>{language === 'ar' ? (detailModalListing.quarterAr || detailModalListing.quarter) : detailModalListing.quarter}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 block text-[10px] uppercase font-bold">
+                        {language === 'ar' ? 'المساحة' : 'Surface'}
+                      </span>
+                      <span>{detailModalListing.surface}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 block text-[10px] uppercase font-bold">
+                        {language === 'ar' ? 'الغرف' : 'Chambres'}
+                      </span>
+                      <span>{detailModalListing.bedrooms > 0 ? (language === 'ar' ? `${detailModalListing.bedrooms} غرف` : `${detailModalListing.bedrooms} ch.`) : '-'}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/70 space-y-1">
+                    <div className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">
+                      {language === 'ar' ? 'السمسار المعتمد' : 'Samsar Référent'}
+                    </div>
+                    <div className="text-base font-extrabold text-stone-900">
+                      {detailModalListing.samsarName}
+                    </div>
+                    <div className="text-xs text-stone-600">
+                      {detailModalListing.samsarPhone}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex flex-col gap-2">
+                    <a
+                      href={`tel:${detailModalListing.samsarPhone}`}
+                      className="w-full py-3.5 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>{language === 'ar' ? 'اتصال بالسمسار' : 'Appeler le Samsar'}</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setDetailModalListing(null)}
+                      className="w-full py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs transition cursor-pointer"
+                    >
+                      {language === 'ar' ? 'إغلاق' : 'Fermer'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Modale "Contacter" (Action 3) */}
         <AnimatePresence>
           {calledModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-stone-900 border-2 border-emerald-500/50 rounded-3xl p-6 text-center space-y-6 shadow-2xl"
+                exit={{ scale: 0.95, opacity: 0 }}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+                className="w-full max-w-sm bg-white rounded-3xl p-6 text-center space-y-5 shadow-2xl border border-stone-200"
               >
-                <div className="w-20 h-20 mx-auto rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center border-2 border-emerald-500">
-                  <Phone className="w-10 h-10 animate-bounce" />
+                <div className="w-16 h-16 mx-auto rounded-full bg-emerald-50 text-[#006233] flex items-center justify-center border-2 border-emerald-200">
+                  <Phone className="w-8 h-8 animate-bounce text-[#006233]" />
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-3xl font-black text-amber-400">
-                    {calledModal.price}
+                  <div className="inline-block px-2.5 py-1 rounded-full bg-emerald-50 text-[#006233] text-[11px] font-bold uppercase tracking-wide">
+                    {language === 'ar' ? 'السمسار المعتمد' : 'Samsar Référent'}
                   </div>
-                  <div className="text-xl font-bold text-white flex items-center justify-center gap-1">
-                    <MapPin className="w-5 h-5 text-emerald-400" />
-                    <span>{calledModal.city}</span>
-                  </div>
-                  <div className="text-sm font-bold text-stone-300">
+                  <h3 className="text-xl font-extrabold text-stone-900">
                     {calledModal.samsarName}
+                  </h3>
+                  <p className="text-xs text-stone-500 font-medium">
+                    {getListingDynamicTitle(calledModal, language)}
+                  </p>
+                  <div className="text-lg font-black text-[#006233] pt-1">
+                    {language === 'ar' ? (calledModal.priceAr || calledModal.price) : calledModal.price}
                   </div>
                 </div>
 
                 <a
                   href={`tel:${calledModal.samsarPhone}`}
-                  className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+                  className="w-full py-3.5 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 >
                   <Phone className="w-5 h-5" />
                   <span>{calledModal.samsarPhone}</span>
@@ -2167,9 +2442,9 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                 <button
                   type="button"
                   onClick={() => setCalledModal(null)}
-                  className="w-full py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition"
+                  className="w-full py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-sm transition cursor-pointer"
                 >
-                  Fermer
+                  {language === 'ar' ? 'إغلاق' : 'Fermer'}
                 </button>
               </motion.div>
             </div>
@@ -2177,10 +2452,12 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
         </AnimatePresence>
 
         {/* Zone de Diagnostic Vocal (Étape C) */}
-        <div className="w-full max-w-lg mx-auto px-4">
+        <div className="w-full max-w-lg mx-auto px-4 pb-2">
           <VoiceDiagnosticPanel
             diagnostic={diagnosticVocal}
             isListening={isListeningMic}
+            voiceLanguage={voiceLanguage}
+            initialExpanded={false}
           />
         </div>
 
@@ -2194,557 +2471,252 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
   /* =============================================================
    * PARCOURS PRINCIPAL (FR ou AR)
    * ============================================================= */
-  const isAr = (
-    currentScreen === 'dashboard' || 
-    currentScreen === 'search_property' || 
-    currentScreen === 'find_samsar' ||
-    currentScreen === 'samsar_choice' ||
-    currentScreen === 'samsar_map' ||
-    currentScreen === 'buy_sell_choice' ||
-    currentScreen === 'post_listing'
-  ) && language === 'ar';
+  const isAr = language === 'ar' && currentStep !== 'language';
+  const isMapScreen = currentScreen === 'samsar_map';
   const currentCity = CITIES_DATA.find((c) => c.id === selectedCityId) || CITIES_DATA[0];
+
+  const handleAppBack = () => {
+    if (isListeningMic) stopListening();
+    if (currentStep === 'samsar_map') {
+      setCurrentStep('samsar_choice');
+    } else if ((currentStep as string) === 'voice_results') {
+      setCurrentStep('vocal');
+    } else if (currentStep === 'find_samsar') {
+      setCurrentStep('samsar_choice');
+    } else if (currentStep === 'samsar_choice' || currentStep === 'buy_sell_choice' || currentStep === 'search_property' || currentStep === 'post_listing') {
+      setCurrentStep('classic');
+    } else if (currentStep === 'classic' || currentStep === 'vocal' || currentStep === 'dashboard') {
+      setCurrentStep('mode');
+    } else if (currentStep === 'mode' || currentStep === 'mode_choice') {
+      setCurrentStep('language');
+    } else {
+      setCurrentStep('language');
+    }
+  };
+
+  const handleMenuSelect = (option: string) => {
+    if (isListeningMic) stopListening();
+    setCurrentStep(option as StartScreen);
+  };
 
   return (
     <div 
       dir={isAr ? 'rtl' : 'ltr'} 
-      className={`relative min-h-[100dvh] w-full bg-[#FAFAFA] text-stone-900 flex flex-col justify-between font-sans ${isAr ? 'text-right' : 'text-left'}`}
+      className={`w-full ${isMapScreen ? 'flex flex-col h-screen overflow-hidden' : 'flex flex-col h-full overflow-y-auto justify-between'} bg-[#FAFAFA] text-stone-900 font-sans ${isAr ? 'text-right' : 'text-left'}`}
     >
-      {/* Header DirectSamsar avec logo et drapeau */}
-      <header className="w-full px-5 py-4 flex items-center justify-between border-b border-stone-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-xs">
-        <div 
-          onClick={() => {
-            if (currentScreen !== 'mode_choice') {
-              setCurrentScreen('dashboard');
-            }
-          }}
-          className={`flex items-center gap-3 select-none ${currentScreen !== 'mode_choice' ? 'cursor-pointer hover:opacity-90 active:scale-98 transition' : ''}`}
-          title={currentScreen !== 'mode_choice' ? (isAr ? 'الرجوع إلى الرئيسية' : 'Retour à l\'accueil') : undefined}
-        >
-          <MoroccoFlagStarLogo />
-          <span className="font-black text-stone-900 text-lg font-serif tracking-tight">
-            DIRECT<span className="text-amber-600">SAMSAR</span>
-          </span>
-        </div>
+      {/* 1. COMPOSANT UNIQUE "AppHeader" (fixed top-0 left-0 w-full h-16 z-50) */}
+      <AppHeader
+        showBackButton={currentStep !== 'language'}
+        onBack={handleAppBack}
+        language={language}
+        onToggleLanguage={() => setLanguage(language === 'ar' ? 'fr' : 'ar')}
+        onSelectMenuOption={handleMenuSelect}
+        currentStep={currentStep}
+      />
 
-        <div className="flex items-center gap-2 relative">
-          {/* Bascule de langue rapide */}
-          {(currentScreen === 'dashboard' || 
-            currentScreen === 'search_property' || 
-            currentScreen === 'find_samsar' ||
-            currentScreen === 'samsar_choice' ||
-            currentScreen === 'samsar_map' ||
-            currentScreen === 'buy_sell_choice' ||
-            currentScreen === 'post_listing') && (
-            <button
-              type="button"
-              onClick={() => setLanguage(language === 'ar' ? 'fr' : 'ar')}
-              className="px-3 py-1.5 rounded-full text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-800 transition active:scale-95 cursor-pointer flex items-center gap-1.5 border border-stone-200"
-            >
-              <span>{language === 'ar' ? '🇫🇷 Français' : '🇲🇦 العربية'}</span>
-            </button>
-          )}
-
-          {/* Menu à 3 traits (Burger Menu) en haut à droite */}
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-2xl text-stone-800 hover:text-stone-950 hover:bg-stone-100 border border-stone-200 transition active:scale-95 cursor-pointer flex items-center justify-center shadow-xs"
-            title={isAr ? 'القائمة الرئيسية' : 'Menu principal (3 traits)'}
-            aria-label="Menu"
-          >
-            {isMenuOpen ? (
-              <X className="w-5 h-5 text-stone-800 stroke-[2.5]" />
-            ) : (
-              <Menu className="w-5 h-5 text-stone-800 stroke-[2.5]" />
-            )}
-          </button>
-
-          {/* Dropdown / Tiroir du menu à 3 traits */}
-          <AnimatePresence>
-            {isMenuOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" 
-                  onClick={() => setIsMenuOpen(false)} 
-                />
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -6 }}
-                  transition={{ duration: 0.15 }}
-                  className={`absolute top-full mt-2.5 ${isAr ? 'left-0' : 'right-0'} w-64 bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans`}
-                  dir={isAr ? 'rtl' : 'ltr'}
-                >
-                  <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-stone-400">
-                      {isAr ? 'القائمة الرئيسية' : 'Menu Principal'}
-                    </span>
-                    <button 
-                      type="button"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* 1. Accueil */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentScreen('dashboard');
-                      setIsMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                      currentScreen === 'dashboard' 
-                        ? 'bg-amber-50 text-amber-900 font-black' 
-                        : 'text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <Home className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>{isAr ? 'الصفحة الرئيسية' : 'Accueil'}</span>
-                  </button>
-
-                  {/* 2. Acheter / Louer un bien */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchSubmitted(false);
-                      setCurrentScreen('search_property');
-                      setIsMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                      currentScreen === 'search_property' 
-                        ? 'bg-emerald-50 text-[#006233] font-black' 
-                        : 'text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <Search className="w-4 h-4 text-[#006233] shrink-0" />
-                    <span>{isAr ? 'شراء / كراء عقار' : 'Acheter / Louer un bien'}</span>
-                  </button>
-
-                  {/* 3. Vendre / Mettre en location */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentScreen('post_listing');
-                      setIsMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                      currentScreen === 'post_listing' 
-                        ? 'bg-orange-50 text-orange-900 font-black' 
-                        : 'text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <Tag className="w-4 h-4 text-orange-600 shrink-0" />
-                    <span>{isAr ? 'نشر عقاري (بيع / كراء)' : 'Déposer mon bien'}</span>
-                  </button>
-
-                  {/* 4. Trouver un Samsar */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentScreen('samsar_choice');
-                      setIsMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                      currentScreen === 'samsar_choice' || currentScreen === 'find_samsar' || currentScreen === 'samsar_map'
-                        ? 'bg-amber-50 text-amber-900 font-black' 
-                        : 'text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <User className="w-4 h-4 text-amber-700 shrink-0" />
-                    <span>{isAr ? 'سماسرتنا المعتمدون' : 'Trouver un Samsar'}</span>
-                  </button>
-
-                  {/* Séparateur */}
-                  <div className="pt-1 mt-1 border-t border-stone-100 space-y-0.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        startListening();
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition cursor-pointer"
-                    >
-                      <Mic className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>{isAr ? 'البحث الصوتي (فرنسي أو دارجة)' : 'Mode Vocal (Français / Darija)'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCurrentScreen('mode_choice');
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-stone-500 hover:bg-stone-100 transition cursor-pointer"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                      <span>{isAr ? 'تغيير وضع البداية' : 'Changer de mode'}</span>
-                    </button>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
-      </header>
-
-      {/* Corps principal */}
-      <main className={`flex-1 flex flex-col items-center ${currentScreen === 'mode_choice' || currentScreen === 'language_choice' ? 'justify-center' : 'justify-start'} p-3 sm:p-5 w-full ${currentScreen === 'samsar_map' ? 'max-w-4xl' : 'max-w-xl'} mx-auto z-10`}>
-        {/* =========================================================
-         * ÉCRAN 1 : CHOIX DU MODE
-         * ========================================================= */}
-        {currentScreen === 'mode_choice' && (
-          <div className="w-full flex flex-col items-center justify-center text-center space-y-8 animate-fade-in">
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-                Comment souhaitez-vous chercher ?
-              </h2>
-              <p className="text-sm text-stone-500 font-medium">
-                DirectSamsar s'adapte à votre préférence
-              </p>
-            </div>
-
-            <div className="w-full flex flex-col items-center gap-5">
-              {/* Bouton Vocal */}
-              <button
-                type="button"
-                onClick={() => startListening()}
-                className="w-[80%] max-w-md py-6 px-6 rounded-3xl bg-gradient-to-r from-[#006233] to-[#0a7e43] text-white shadow-xl shadow-emerald-950/20 hover:shadow-2xl hover:shadow-emerald-950/30 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-4 group cursor-pointer"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <Mic className="w-8 h-8 text-white drop-shadow" />
-                </div>
-                <div className="text-left">
-                  <span className="block text-2xl font-black tracking-tight">
-                    Vocal
-                  </span>
-                  <span className="block text-xs text-emerald-100 font-medium">
-                    Parlez en darija ou français
-                  </span>
-                </div>
-              </button>
-
-              {/* Bouton Classique */}
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('language_choice')}
-                className="w-[80%] max-w-md py-6 px-6 rounded-3xl bg-white text-stone-900 border-2 border-stone-200/80 shadow-xl shadow-stone-300/40 hover:shadow-2xl hover:border-orange-400 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-4 group cursor-pointer"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#F97316] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <Keyboard className="w-8 h-8 drop-shadow-sm" />
-                </div>
-                <div className="text-left">
-                  <span className="block text-2xl font-black tracking-tight text-stone-900">
-                    Classique
-                  </span>
-                  <span className="block text-xs text-stone-500 font-medium">
-                    Recherche écrite & critères
-                  </span>
-                </div>
-              </button>
-            </div>
+      {/* =========================================================
+       * MODE PLEIN ÉCRAN IMMERSIF : CARTE DES SAMSARS
+       * - Occupe 100% de la hauteur disponible sous le header
+       * - Zéro scroll vertical de page
+       * - Contrôles flottants intégrés sur la carte
+       * ========================================================= */}
+      {isMapScreen ? (
+        <div className="flex-1 w-full flex flex-col h-screen overflow-hidden">
+          <PageTitle 
+            title={language === 'ar' ? 'خريطة السماسرة' : 'Carte des Samsars'} 
+            subtitle={language === 'ar' ? 'حدد موقع السماسرة المعتمدين عبر الخريطة التفاعلية' : 'Localisez les professionnels certifiés autour de vous'}
+            className="shrink-0 mb-3"
+          />
+          <div className="flex-1 w-full relative overflow-hidden">
+            <SamsarGoogleMap 
+              language={language}
+              onSwitchToList={() => setCurrentScreen('find_samsar')}
+            />
           </div>
-        )}
-
+        </div>
+      ) : (
+        /* Corps principal - Centré pour onboarding ou scrollable */
+        <main className={`flex-1 flex flex-col items-center ${currentStep === 'language' || currentStep === 'mode' ? 'justify-center min-h-[85dvh]' : 'justify-start'} p-3 sm:p-5 w-full max-w-xl mx-auto z-10`}>
         {/* =========================================================
-         * ÉCRAN 2 : CHOIX DE LA LANGUE
+         * ÉCRAN 1 : CHOIX DE LA LANGUE (Après l'animation SplashScreen)
+         * Affiche uniquement deux gros boutons élégants : "Français 🇫🇷" et "العربية 🇲🇦"
          * ========================================================= */}
-        {currentScreen === 'language_choice' && (
-          <div className="w-full flex flex-col items-center justify-center text-center space-y-8 animate-fade-in">
-            <div className="w-full flex items-center justify-start pl-[10%]">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('mode_choice')}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-900 py-1.5 px-3 rounded-full hover:bg-stone-200/60 transition cursor-pointer"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Retour
-              </button>
+        {currentStep === 'language' && (
+          <div className="w-full flex-1 flex flex-col items-center justify-center text-center space-y-8 py-8 pt-20 animate-fade-in max-w-md mx-auto my-auto">
+            {/* Logo et identité DirectSamsar */}
+            <div className="space-y-4">
+              <div className="inline-flex p-4 rounded-3xl bg-amber-50 border border-amber-200/80 shadow-md">
+                <MoroccoFlagStarLogo />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight font-serif">
+                  DIRECT<span className="text-amber-600">SAMSAR</span>
+                </h1>
+                <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
+                  L'immobilier marocain réinventé • العقار المغربي الذكي
+                </p>
+              </div>
             </div>
 
+            {/* Titre de l'étape */}
             <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-                Choisissez votre langue
+              <h2 className="text-xl sm:text-2xl font-black text-stone-800 tracking-tight">
+                Choisissez votre langue / اختر لغتكم
               </h2>
-              <p className="text-sm text-stone-500 font-medium">
-                Sélectionnez la langue de votre interface
+              <p className="text-xs sm:text-sm text-stone-500 font-medium">
+                Sélectionnez votre langue de navigation
               </p>
             </div>
 
-            <div className="w-full flex flex-col items-center gap-5">
+            {/* Deux gros boutons élégants */}
+            <div className="w-full flex flex-col gap-4 px-2">
+              {/* Bouton Français */}
               <button
                 type="button"
                 onClick={() => {
                   setLanguage('fr');
-                  setCurrentScreen('dashboard');
+                  setCurrentStep('mode');
                 }}
-                className="w-[80%] max-w-md py-6 px-6 rounded-3xl bg-white text-stone-900 border-2 border-stone-200/80 shadow-xl shadow-stone-300/40 hover:shadow-2xl hover:border-blue-400 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-4 group cursor-pointer"
+                className="w-full py-5 px-6 rounded-2xl bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-200 hover:border-blue-500 shadow-lg shadow-stone-200/60 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-between group cursor-pointer"
               >
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
-                  🇫🇷
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🇫🇷</span>
+                  <div className="text-left">
+                    <span className="block text-lg font-black text-stone-900 group-hover:text-blue-600 transition">
+                      Français
+                    </span>
+                    <span className="block text-xs text-stone-500">
+                      Continuer en français
+                    </span>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <span className="block text-2xl font-black tracking-tight text-stone-900">
-                    Français
-                  </span>
-                  <span className="block text-xs text-stone-500 font-medium">
-                    Accéder à l'accueil
-                  </span>
-                </div>
+                <ArrowRight className="w-5 h-5 text-stone-400 group-hover:text-blue-600 group-hover:translate-x-1 transition" />
               </button>
 
+              {/* Bouton Arabe */}
               <button
                 type="button"
                 onClick={() => {
                   setLanguage('ar');
-                  setCurrentScreen('dashboard');
+                  setCurrentStep('mode');
                 }}
-                className="w-[80%] max-w-md py-6 px-6 rounded-3xl bg-gradient-to-r from-[#C1272D] to-[#d63031] text-white shadow-xl shadow-red-950/20 hover:shadow-2xl hover:shadow-red-950/30 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-4 group cursor-pointer"
+                className="w-full py-5 px-6 rounded-2xl bg-white hover:bg-red-50/30 text-stone-900 border-2 border-stone-200 hover:border-red-600 shadow-lg shadow-stone-200/60 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-between group cursor-pointer"
+                dir="rtl"
               >
-                <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
-                  🇲🇦
-                </div>
-                <div className="text-left" dir="rtl">
-                  <span className="block text-2xl font-black tracking-tight">
-                    العربية
-                  </span>
-                  <span className="block text-xs text-red-100 font-medium">
-                    الدخول إلى الصفحة الرئيسية
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================
-         * ÉCRAN 3 : ÉCOUTE VOCALE DÉDIÉE (ÉPURÉE & SANS OUTILS BRUTS)
-         * ========================================================= */}
-        {currentScreen === 'voice_listening' && (
-          <div className="w-full flex flex-col items-center justify-center text-center py-6 space-y-6 animate-fade-in max-w-xl mx-auto px-4">
-            {/* 3. AVERTISSEMENT IFRAME (Prévisualisation AI Studio) */}
-            {isInIframe && (
-              <div className="w-full p-4 rounded-2xl bg-red-50 border-2 border-red-500 text-red-800 text-xs sm:text-sm font-bold text-center shadow-lg space-y-2">
-                <p className="flex items-center justify-center gap-1.5 text-red-700">
-                  <span>⚠️ Le micro est bloqué par le navigateur dans ce mode de prévisualisation. Veuillez ouvrir l'application dans un nouvel onglet pour tester la voix.</span>
-                </p>
-                <div className="pt-1">
-                  <a
-                    href={typeof window !== 'undefined' ? window.location.href : '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs transition shadow active:scale-95 cursor-pointer"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Ouvrir dans un nouvel onglet</span>
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* ACTION 2 : SÉLECTEUR DOUBLE MICRO (DARIJA / FRANÇAIS) */}
-            <div className="flex items-center justify-center">
-              <div className="inline-flex p-1 rounded-2xl bg-stone-100 border border-stone-300 shadow-inner">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVoiceLanguage('darija');
-                    startListening('darija', true);
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                    voiceLanguage === 'darija'
-                      ? 'bg-gradient-to-r from-[#006233] to-[#0a7e43] text-white shadow-md'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                >
-                  <span>🇲🇦</span>
-                  <span>Darija (الدارجة)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVoiceLanguage('fr');
-                    startListening('fr', true);
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                    voiceLanguage === 'fr'
-                      ? 'bg-gradient-to-r from-blue-700 to-indigo-700 text-white shadow-md'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                >
-                  <span>🇫🇷</span>
-                  <span>Français</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Alerte d'erreur micro détectée */}
-            {micError && (
-              <div className="w-full p-3 rounded-xl bg-amber-50 border border-amber-400 text-amber-900 text-xs font-bold text-center shadow-xs">
-                <span>🛑 Erreur détectée par Web Speech API : </span>
-                <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-amber-300 text-red-600 font-black">{micError}</span>
-              </div>
-            )}
-
-            {/* GROS BOUTON MICRO CENTRAL */}
-            <div className="relative flex items-center justify-center">
-              <motion.div
-                animate={{
-                  scale: isListeningMic ? [1, 1.4, 1.8] : 1,
-                  opacity: isListeningMic ? [0.6, 0.3, 0] : 0
-                }}
-                transition={{
-                  duration: 1.8,
-                  repeat: Infinity,
-                  ease: "easeOut"
-                }}
-                className="absolute w-48 h-48 rounded-full bg-[#006233]/25 pointer-events-none"
-              />
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (isListeningMic) {
-                    stopListening();
-                  } else {
-                    startListening(voiceLanguage, true);
-                  }
-                }}
-                title="Cliquer pour parler ou relancer le micro"
-                className={`relative z-10 w-36 h-36 sm:w-44 sm:h-44 rounded-full text-white flex flex-col items-center justify-center shadow-2xl active:scale-95 hover:scale-105 transition-all cursor-pointer group ${
-                  isListeningMic
-                    ? 'bg-gradient-to-tr from-[#C1272D] to-[#F97316] shadow-red-950/40 ring-4 ring-red-500/30'
-                    : 'bg-gradient-to-tr from-[#006233] via-[#0a7e43] to-[#F97316] shadow-emerald-950/40 ring-4 ring-emerald-500/30'
-                }`}
-              >
-                <Mic className="w-14 h-14 sm:w-16 sm:h-16 text-white drop-shadow-md animate-pulse group-hover:scale-110 transition-transform" />
-                <span className="text-[11px] font-black uppercase tracking-wider text-white/95 mt-1 drop-shadow">
-                  {isListeningMic ? '🔴 Écoute active' : '🎙️ Cliquer pour parler'}
-                </span>
-              </button>
-            </div>
-
-            {/* Égaliseur sonore */}
-            <div className="flex items-center justify-center gap-1.5 h-12">
-              {[16, 32, 48, 28, 44, 20, 36, 48, 24, 16].map((h, i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    height: isListeningMic ? [12, h, 8, h * 0.9, 12] : [8, 12, 6, 10, 8]
-                  }}
-                  transition={{
-                    duration: 0.8 + (i % 3) * 0.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: i * 0.08
-                  }}
-                  className={`w-1.5 rounded-full ${isListeningMic ? 'bg-gradient-to-t from-[#006233] to-[#F97316]' : 'bg-stone-300'}`}
-                />
-              ))}
-            </div>
-
-            <div className="space-y-3 max-w-sm w-full">
-              <p className="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
-                {isListeningMic ? 'Parlez, je vous écoute...' : 'Micro prêt'}
-              </p>
-              
-              {/* Preuve de vie du micro Web Speech API */}
-              <div className="flex flex-col items-center gap-1.5">
-                <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs ${
-                  isListeningMic 
-                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' 
-                    : 'bg-amber-100 text-amber-900 border border-amber-300'
-                }`}>
-                  <span className={`w-2.5 h-2.5 rounded-full ${isListeningMic ? 'bg-emerald-600 animate-ping' : 'bg-amber-500'}`} />
-                  <span>
-                    {isListeningMic 
-                      ? `Micro ACTIF (${voiceLanguage === 'darija' ? 'Darija ar-MA' : 'Français fr-FR'}) • Parlez maintenant` 
-                      : (micStatusMessage || 'Micro en pause • Cliquez sur le micro')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Phrase vocale détectée */}
-              <div className="p-3.5 bg-white rounded-2xl border border-stone-200 shadow-sm text-center space-y-1">
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                  Phrase détectée :
-                </span>
-                <span className="text-base sm:text-lg font-black text-[#006233] block">
-                  {texteBrutCapte || texteEcoute ? (
-                    `"${texteBrutCapte || texteEcoute}"`
-                  ) : (
-                    <span className="text-stone-400 font-normal italic text-xs">
-                      {voiceLanguage === 'darija' 
-                        ? "En attente... (ex: 'باغي نكري شقة في الرباط')" 
-                        : "En attente... (ex: 'Je veux louer un appartement à Rabat')"}
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🇲🇦</span>
+                  <div className="text-right">
+                    <span className="block text-lg font-black text-stone-900 group-hover:text-red-700 transition font-sans">
+                      العربية
                     </span>
-                  )}
-                </span>
-                {(texteBrutCapte || texteEcoute) && (
-                  <button
-                    type="button"
-                    onClick={() => executeVoiceSearch(texteBrutCapte || texteEcoute)}
-                    className="mt-2.5 w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#006233] to-[#0a7e43] hover:from-emerald-700 hover:to-emerald-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition cursor-pointer"
-                  >
-                    <span>Lancer la recherche maintenant</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Panneau de Diagnostic repliable */}
-            <div className="w-full max-w-lg">
-              <VoiceDiagnosticPanel
-                diagnostic={diagnosticVocal}
-                isListening={isListeningMic}
-                voiceLanguage={voiceLanguage}
-                initialExpanded={false}
-              />
-            </div>
-
-            <div className="w-[80%] max-w-xs pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  stopListening();
-                  setCurrentScreen('dashboard');
-                }}
-                className="w-full py-3 px-6 rounded-2xl bg-white text-stone-700 border border-stone-300 font-bold text-xs sm:text-sm shadow-sm hover:bg-stone-50 active:scale-95 transition cursor-pointer"
-              >
-                Retour à l'accueil
+                    <span className="block text-xs text-stone-500">
+                      المتابعة باللغة العربية
+                    </span>
+                  </div>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-stone-400 group-hover:text-red-700 group-hover:-translate-x-1 transition" />
               </button>
             </div>
           </div>
         )}
 
         {/* =========================================================
-         * ÉCRAN 4 : DASHBOARD PRINCIPAL (PREMIER ÉCRAN DE L'APPLICATION)
-         * ACTION 3 : LE DOUBLE MICRO EST L'ÉLÉMENT CENTRAL ET PRINCIPAL
+         * ÉCRAN 2 : CHOIX DU MODE
+         * Affiche deux grandes cartes/boutons :
+         * 1. "Mode Vocal 🎤" (Parler en Darija ou Français) -> Écran 3A (vocal)
+         * 2. "Mode Classique 🏛️" (Recherche par menus) -> Écran 3B (classic)
          * ========================================================= */}
-        {currentScreen === 'dashboard' && (
-          <div className="w-full flex flex-col justify-start gap-6 py-2 animate-fade-in">
-            {/* HERO PRINCIPAL : LE DOUBLE MICRO CENTRAL DIRECTSAMSAR (DARIJA / FRANÇAIS) */}
-            <div className="w-full bg-white text-stone-900 rounded-3xl p-5 sm:p-7 shadow-xl border-2 border-emerald-600/30 relative space-y-5">
-              {/* En-tête de la recherche vocale */}
-              <div className="text-center space-y-1.5 relative z-10">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#006233] text-xs font-bold tracking-wide uppercase">
-                  <MoroccoFlagStarLogo />
-                  <span>Recherche Vocale Immobilière</span>
+        {(currentStep === 'mode' || currentStep === 'mode_choice') && (
+          <div className="w-full flex-1 flex flex-col items-center justify-center text-center space-y-7 py-6 animate-fade-in max-w-lg mx-auto my-auto">
+            {/* PageTitle Standardisé (header gère le bouton Retour) */}
+            <PageTitle
+              title={language === 'ar' ? 'كيف تريد أن تبحث؟' : 'Comment souhaitez-vous chercher ?'}
+              subtitle={language === 'ar' ? 'ديركت سمسار يتكيف مع اختيارك : تحدث بصوتك أو تصفح القوائم' : 'Choisissez la recherche vocale ou parcourez nos services classiques'}
+            />
+
+            <div className="w-full flex flex-col gap-5 px-1">
+              {/* Carte 1 : Mode Vocal */}
+              <button
+                type="button"
+                onClick={() => setCurrentStep('vocal')}
+                className="w-full p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-[#006233] via-[#0a7e43] to-[#F97316] text-white shadow-xl shadow-emerald-950/20 hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 flex items-center justify-between group cursor-pointer text-left"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner">
+                    <Mic className="w-9 h-9 text-white drop-shadow" />
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[11px] font-bold uppercase tracking-wider text-white mb-1">
+                      <span>{language === 'ar' ? 'موصى به' : 'Interactif'}</span>
+                    </div>
+                    <h3 className="text-2xl font-black tracking-tight text-white">
+                      {language === 'ar' ? 'الوضع الصوتي 🎤' : 'Mode Vocal 🎤'}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-emerald-100 font-medium">
+                      {language === 'ar' ? 'تحدث بالدارجة أو بالفرنسية' : 'Parlez en Darija ou en Français'}
+                    </p>
+                  </div>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-stone-900">
-                  {language === 'ar' ? 'ابحث بصوتك عن عقارك' : 'Dictez votre recherche'}
-                </h1>
-                <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-md mx-auto">
-                  {language === 'ar'
-                    ? 'تحدث بالدارجة أو بالفرنسية وسيقوم المساعد الذكي بتصفية العقارات فوراً.'
-                    : 'Parlez en Darija ou en Français, le moteur intelligent filtre les biens instantanément.'}
-                </p>
-              </div>
+
+                <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center shrink-0 group-hover:bg-white/25 transition">
+                  {language === 'ar' ? (
+                    <ArrowLeft className="w-5 h-5 text-white group-hover:-translate-x-1 transition" />
+                  ) : (
+                    <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition" />
+                  )}
+                </div>
+              </button>
+
+              {/* Carte 2 : Mode Classique */}
+              <button
+                type="button"
+                onClick={() => setCurrentStep('classic')}
+                className="w-full p-6 sm:p-7 rounded-3xl bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-200 hover:border-amber-500 shadow-xl shadow-stone-200/60 hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 flex items-center justify-between group cursor-pointer text-left"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <Home className="w-9 h-9 drop-shadow-xs" />
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1">
+                      <span>{language === 'ar' ? 'الوضع التقليدي' : 'Standard'}</span>
+                    </div>
+                    <h3 className="text-2xl font-black tracking-tight text-stone-900 group-hover:text-amber-800 transition">
+                      {language === 'ar' ? 'الوضع الكلاسيكي 🏛️' : 'Mode Classique 🏛️'}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-stone-500 font-medium">
+                      {language === 'ar' ? 'البحث عبر القوائم والمعايير' : 'Recherche par menus & filtres'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="w-10 h-10 rounded-full bg-stone-100 group-hover:bg-amber-100 flex items-center justify-center shrink-0 text-stone-600 group-hover:text-amber-800 transition">
+                  {language === 'ar' ? (
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition" />
+                  ) : (
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================
+         * ÉCRAN 3A : MODE VOCAL (SÉLECTEUR DARIJA/FRANÇAIS, GROS MICRO, RÉSULTAT)
+         * ========================================================= */}
+        {(currentStep === 'vocal' || currentStep === 'dashboard') && (
+          <div className="w-full flex flex-col justify-start gap-6 py-2 animate-fade-in">
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'البحث الصوتي الذكي' : 'Recherche Vocale Immobilière'}
+              subtitle={language === 'ar' ? 'تحدث بالدارجة أو بالفرنسية وسيقوم المساعد الذكي بتصفية العقارات فوراً' : 'Parlez en Darija ou en Français, le moteur intelligent filtre les biens instantanément'}
+            />
+
+            {/* HERO VOCAL CENTRAL DIRECTSAMSAR */}
+            <div className="w-full bg-white text-stone-900 rounded-3xl p-5 sm:p-7 shadow-xl border-2 border-emerald-600/30 relative space-y-5">
 
               {/* ACTION 2 : SÉLECTEUR DOUBLE MICRO (DARIJA / FRANÇAIS) */}
               <div className="flex items-center justify-center relative z-10">
@@ -2753,7 +2725,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                     type="button"
                     onClick={() => {
                       setVoiceLanguage('darija');
-                      if (isListeningMic) startListening('darija');
+                      if (isListeningMic) startListening('darija', false);
                     }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
                       voiceLanguage === 'darija'
@@ -2769,7 +2741,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                     type="button"
                     onClick={() => {
                       setVoiceLanguage('fr');
-                      if (isListeningMic) startListening('fr');
+                      if (isListeningMic) startListening('fr', false);
                     }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
                       voiceLanguage === 'fr'
@@ -2783,7 +2755,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                 </div>
               </div>
 
-              {/* ACTION 3 : LE GROS BOUTON MICRO CENTRAL ÉLÉGANT */}
+              {/* LE GROS BOUTON MICRO CENTRAL ÉLÉGANT */}
               <div className="flex flex-col items-center justify-center relative z-10 py-1">
                 <div className="relative flex items-center justify-center">
                   {isListeningMic && (
@@ -2807,7 +2779,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                       if (isListeningMic) {
                         stopListening();
                       } else {
-                        startListening(voiceLanguage);
+                        startListening(voiceLanguage, false);
                       }
                     }}
                     title={isListeningMic ? "Arrêter l'écoute" : "Cliquer pour parler"}
@@ -2923,121 +2895,271 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                 />
               </div>
             </div>
-            {/* Carte 1 : Trouver un Samsar -> Ouvre l'écran intermédiaire de choix Samsars */}
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentScreen('samsar_choice');
-              }}
-              className="w-full h-44 sm:h-52 bg-white hover:bg-stone-50/90 border-2 border-stone-200/90 hover:border-amber-500 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-stone-200/70 hover:shadow-2xl transition-all duration-200 active:scale-[0.985] group relative overflow-hidden cursor-pointer pointer-events-auto z-10"
-            >
-              <div className="flex items-start justify-between w-full">
-                <div className="w-14 h-14 rounded-2xl bg-amber-700 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                  <User className="w-7 h-7 text-white" />
+
+            {/* LISTE RAPIDE DES BIENS CORRESPONDANTS OU MESSAGE AUCUN RÉSULTAT */}
+            {(texteBrutCapte || texteEcoute) && (
+              voiceEvaluation?.resultats && voiceEvaluation.resultats.length > 0 ? (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between px-1">
+                    <h3 className="text-lg font-black text-stone-900">
+                      {language === 'ar' 
+                        ? `العقارات المطابقة (${voiceEvaluation.resultats.length})` 
+                        : `Biens correspondants (${voiceEvaluation.resultats.length})`}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentScreen('voice_results');
+                        setCurrentStep('voice_results');
+                      }}
+                      className="text-xs font-bold text-[#006233] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>{language === 'ar' ? 'عرض كامل' : 'Affichage plein écran'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {voiceEvaluation.resultats.slice(0, 3).map((item) => (
+                      <div 
+                        key={item.id}
+                        className="bg-white rounded-3xl p-4 border border-stone-200/90 shadow-md flex flex-col sm:flex-row gap-4 items-center overflow-hidden text-left"
+                        dir={language === 'ar' ? 'rtl' : 'ltr'}
+                      >
+                        <div className="w-full sm:w-32 h-28 rounded-2xl overflow-hidden shrink-0 relative bg-stone-100">
+                          <img 
+                            src={item.image} 
+                            alt={language === 'ar' ? item.titleAr : item.title} 
+                            className="w-full h-full object-cover" 
+                          />
+                          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase">
+                            {language === 'ar' ? item.typeLabelAr : item.typeLabel}
+                          </span>
+                        </div>
+                        <div className="flex-1 w-full space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-stone-500">
+                              📍 {language === 'ar' ? (item.cityAr || item.city) : item.city}
+                            </span>
+                            <span className="text-sm font-black text-[#006233]">
+                              {language === 'ar' ? (item.priceAr || item.price) : item.price}
+                            </span>
+                          </div>
+                          {/* Titre dynamique traduit selon la langue (Action 3) */}
+                          <h4 className="font-bold text-stone-900 text-sm">
+                            {getListingDynamicTitle(item, language)}
+                          </h4>
+                          <p className="text-xs text-stone-500 font-medium line-clamp-1">
+                            {language === 'ar' ? item.titleAr : item.title}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-stone-600 pt-0.5">
+                            <span>{item.bedrooms > 0 ? (language === 'ar' ? `${item.bedrooms} غرف` : `${item.bedrooms} chambres`) : ''}</span>
+                            <span>•</span>
+                            <span>{item.surface}</span>
+                          </div>
+                          {/* Boutons traduits "Contacter" et "Détails" (Action 3) */}
+                          <div className="pt-2 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setCalledModal(item)}
+                              className="flex-1 py-2 px-3 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>{language === 'ar' ? 'اتصال' : 'Contacter'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDetailModalListing(item)}
+                              className="py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 flex items-center gap-1 transition cursor-pointer"
+                            >
+                              <span>{language === 'ar' ? 'تفاصيل' : 'Détails'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* ACTION 2 : MESSAGE "AUCUN RÉSULTAT" BILINGUE ET ÉLÉGANT */
+                <div className="w-full py-8 px-5 rounded-3xl bg-white border border-stone-200 text-center shadow-sm space-y-4 animate-fade-in mt-2">
+                  <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200/60 shadow-xs">
+                    <SearchX className="w-6 h-6 text-amber-600 stroke-[2]" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h3 className="text-base sm:text-lg font-black text-stone-900 tracking-tight">
+                      {language === 'ar'
+                        ? 'لا توجد عقارات تطابق بحثك.'
+                        : 'Aucun bien ne correspond à votre recherche.'}
+                    </h3>
+                    <p className="text-xs text-stone-500 font-medium">
+                      {language === 'ar'
+                        ? 'حاول تعديل معايير البحث أو تغيير المدينة.'
+                        : 'Essayez de modifier vos critères ou de changer de ville.'}
+                    </p>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleResetVoiceSearch}
+                      className="py-2.5 px-5 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-md active:scale-95 transition cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>
+                        {language === 'ar' ? 'إعادة تعيين البحث' : 'Réinitialiser la recherche'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        )}
+
+        {/* =========================================================
+         * ÉCRAN 3B : MODE CLASSIQUE (MENU PRINCIPAL)
+         * Affiche les 3 options claires :
+         * 1. "Trouver un Samsar"
+         * 2. "Acheter"
+         * 3. "Vendre"
+         * ========================================================= */}
+        {currentStep === 'classic' && (
+          <div className="w-full flex-1 flex flex-col justify-start gap-6 py-2 animate-fade-in max-w-lg mx-auto">
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'القائمة الرئيسية' : 'Menu Principal'}
+              subtitle={language === 'ar' ? 'اختر الخدمة التي تريدها للمتابعة بكل سهولة' : 'Sélectionnez une option pour continuer'}
+            />
+
+            {/* LES 3 OPTIONS BIEN DISTINCTES */}
+            <div className="flex flex-col gap-4">
+              {/* Option 1 : Trouver un Samsar */}
+              <button
+                type="button"
+                onClick={() => setCurrentStep('samsar_choice')}
+                className="w-full bg-white hover:bg-stone-50 border-2 border-stone-200 hover:border-amber-500 rounded-3xl p-5 sm:p-6 flex items-center justify-between shadow-xl shadow-stone-200/50 hover:shadow-2xl transition-all duration-200 active:scale-[0.98] group cursor-pointer text-left"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-700 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                    <User className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">
+                      <span>{language === 'ar' ? 'شبكة معتمدة' : 'Réseau certifié'}</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight group-hover:text-amber-800 transition">
+                      {language === 'ar' ? '1. البحث عن سمسار' : '1. Trouver un Samsar'}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                      {language === 'ar' 
+                        ? 'سماسرتنا المعتمدون حسب الأحياء والمدن' 
+                        : 'Nos Samsars de confiance référents par quartier'}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="w-10 h-10 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center text-amber-800 transition">
+                <div className="w-10 h-10 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 transition">
                   {language === 'ar' ? (
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition" />
                   ) : (
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
                   )}
                 </div>
-              </div>
+              </button>
 
-              <div className="space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight group-hover:text-amber-800 transition">
-                  {language === 'ar' ? 'البحث عن سمسار' : 'Trouver un Samsar'}
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-600 font-medium">
-                  {language === 'ar' 
-                    ? 'سماسرتنا المعتمدون حسب الأحياء والمدن' 
-                    : 'Nos Samsars de confiance référents par quartier'}
-                </p>
-              </div>
-            </button>
-
-            {/* Carte 2 : Acheter / Vendre -> Ouvre l'écran intermédiaire de choix */}
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentScreen('buy_sell_choice');
-              }}
-              className="w-full h-44 sm:h-52 bg-white hover:bg-stone-50/90 border-2 border-stone-200/90 hover:border-emerald-600 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-stone-200/70 hover:shadow-2xl transition-all duration-200 active:scale-[0.985] group relative overflow-hidden cursor-pointer pointer-events-auto z-10"
-            >
-              <div className="flex items-start justify-between w-full">
-                <div className="w-14 h-14 rounded-2xl bg-[#006233] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                  <Home className="w-7 h-7 text-white" />
+              {/* Option 2 : Acheter */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchSubmitted(false);
+                  setCurrentStep('search_property');
+                }}
+                className="w-full bg-white hover:bg-stone-50 border-2 border-stone-200 hover:border-[#006233] rounded-3xl p-5 sm:p-6 flex items-center justify-between shadow-xl shadow-stone-200/50 hover:shadow-2xl transition-all duration-200 active:scale-[0.98] group cursor-pointer text-left"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-[#006233] text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                    <Search className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-0.5">
+                      <span>{language === 'ar' ? 'عروض مباشرة' : 'Recherche de biens'}</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight group-hover:text-[#006233] transition">
+                      {language === 'ar' ? '2. شراء عقار' : '2. Acheter un bien'}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                      {language === 'ar' 
+                        ? 'شقق، فيلات، رياضات وأراضي موثقة للشراء أو الكراء' 
+                        : 'Appartements, villas, riads et terrains vérifiés'}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="w-10 h-10 rounded-full bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center text-emerald-800 transition">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-800 transition">
                   {language === 'ar' ? (
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition" />
                   ) : (
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
                   )}
                 </div>
-              </div>
+              </button>
 
-              <div className="space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight group-hover:text-[#006233] transition">
-                  {language === 'ar' ? 'شراء / بيع' : 'Acheter / Vendre'}
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-600 font-medium">
-                  {language === 'ar' 
-                    ? 'عقارات موثقة ونشر الإعلانات المباشرة' 
-                    : 'Biens vérifiés & dépôt d\'annonce'}
-                </p>
-              </div>
-            </button>
+              {/* Option 3 : Vendre */}
+              <button
+                type="button"
+                onClick={() => setCurrentStep('post_listing')}
+                className="w-full bg-white hover:bg-stone-50 border-2 border-stone-200 hover:border-orange-500 rounded-3xl p-5 sm:p-6 flex items-center justify-between shadow-xl shadow-stone-200/50 hover:shadow-2xl transition-all duration-200 active:scale-[0.98] group cursor-pointer text-left"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                    <Tag className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 text-[10px] font-bold text-orange-800 uppercase tracking-wider mb-0.5">
+                      <span>{language === 'ar' ? 'نشر مباشر' : 'Déposer un bien'}</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight group-hover:text-amber-800 transition">
+                      {language === 'ar' ? '3. نشر عقاري (بيع / كراء)' : '3. Vendre / Déposer un bien'}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                      {language === 'ar' 
+                        ? 'نشر إعلانك لبيع أو كراء عقارك بالتعاون مع سماسرتنا' 
+                        : 'Publiez votre bien à vendre ou louer en direct'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="w-10 h-10 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 transition">
+                  {language === 'ar' ? (
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition" />
+                  ) : (
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
+                  )}
+                </div>
+              </button>
+            </div>
           </div>
         )}
 
         {/* =========================================================
          * ÉCRAN INTERMÉDIAIRE : "QUE VOULEZ-VOUS FAIRE ?"
-         * 1. Bouton "Retour" en haut pour revenir à l'accueil
+         * 1. Bouton "Retour" en haut pour revenir au menu classique
          * 2. Titre : "Que voulez-vous faire ?"
          * 3. Carte 1 : "Acheter / Louer un bien" (Icône de loupe) -> Page RECHERCHE existante
          * 4. Carte 2 : "Vendre / Mettre en location" (Icône de tag) -> Page Déposer une annonce
          * ========================================================= */}
         {currentScreen === 'buy_sell_choice' && (
           <div className="w-full flex flex-col justify-center gap-6 py-2 animate-fade-in">
-            {/* 1. Bouton "Retour" pour revenir à l'accueil */}
-            <div className="w-full flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('dashboard')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-800 hover:text-stone-950 font-bold text-xs sm:text-sm shadow-xs transition active:scale-95 cursor-pointer"
-              >
-                {language === 'ar' ? (
-                  <>
-                    <ArrowRight className="w-4 h-4" />
-                    <span>الرجوع إلى الرئيسية</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Retour</span>
-                  </>
-                )}
-              </button>
-
-              <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-                DirectSamsar
-              </span>
-            </div>
-
-            {/* Titre : "Que voulez-vous faire ?" */}
-            <div className="w-full text-center space-y-2 py-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                {language === 'ar' ? 'ماذا تريد أن تفعل؟' : 'Que voulez-vous faire ?'}
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-md mx-auto">
-                {language === 'ar'
-                  ? 'اختر بين البحث عن عقار للشراء أو الكراء، أو وضع إعلان لبيع أو كراء عقارك'
-                  : 'Choisissez si vous souhaitez trouver un bien ou déposer votre annonce'}
-              </p>
-            </div>
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'ماذا تريد أن تفعل؟' : 'Que voulez-vous faire ?'}
+              subtitle={language === 'ar' ? 'اختر بين البحث عن عقار للشراء أو الكراء، أو وضع إعلان لبيع أو كراء عقارك' : 'Choisissez si vous souhaitez trouver un bien ou déposer votre annonce'}
+            />
 
             {/* 2 GRANDES CARTES / BOUTONS BIEN DISTINCTS */}
             <div className="w-full flex flex-col gap-5">
@@ -3123,47 +3245,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
          * ========================================================= */}
         {currentScreen === 'post_listing' && (
           <div className="w-full flex flex-col space-y-6 py-2 animate-fade-in">
-            {/* 1. Bouton Retour en haut */}
-            <div className="w-full flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('buy_sell_choice')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-800 hover:text-stone-950 font-bold text-xs sm:text-sm shadow-xs transition active:scale-95 cursor-pointer"
-              >
-                {language === 'ar' ? (
-                  <>
-                    <ArrowRight className="w-4 h-4" />
-                    <span>رجوع</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Retour</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('dashboard')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition cursor-pointer"
-              >
-                <Home className="w-4 h-4 text-amber-700" />
-                <span>{language === 'ar' ? 'الرئيسية' : 'Accueil'}</span>
-              </button>
-            </div>
-
-            {/* 2. Titre : "Déposer mon bien" */}
-            <div className="w-full text-center space-y-2 py-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                {language === 'ar' ? 'نشر عقاري' : 'Déposer mon bien'}
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-md mx-auto">
-                {language === 'ar'
-                  ? 'خدمة وضع الإعلانات لبيع أو كراء العقارات عبر منصة ديركت سمسار'
-                  : 'Publiez votre bien à la vente ou à la location en direct avec nos Samsars'}
-              </p>
-            </div>
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'نشر عقاري' : 'Déposer mon bien'}
+              subtitle={language === 'ar' ? 'خدمة وضع الإعلانات لبيع أو كراء العقارات عبر منصة ديركت سمسar' : 'Publiez votre bien à la vente ou à la location en direct avec nos Samsars'}
+            />
 
             {/* 3. Message : "Formulaire en construction" */}
             <div className="w-full bg-white rounded-3xl p-8 sm:p-10 border border-stone-200/90 shadow-lg text-center space-y-6">
@@ -3195,13 +3281,6 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                   <span>{language === 'ar' ? 'الاتصال بسمسار لمساعدتي' : 'Contacter un Samsar pour m\'aider'}</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setCurrentScreen('dashboard')}
-                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs sm:text-sm active:scale-95 transition cursor-pointer"
-                >
-                  {language === 'ar' ? 'العودة للرئيسية' : 'Retour à l\'accueil'}
-                </button>
               </div>
             </div>
           </div>
@@ -3216,42 +3295,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
          * ========================================================= */}
         {currentScreen === 'samsar_choice' && (
           <div className="w-full flex flex-col justify-center gap-6 py-2 animate-fade-in">
-            {/* 1. Bouton "Retour" pour revenir à l'accueil */}
-            <div className="w-full flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('dashboard')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-800 hover:text-stone-950 font-bold text-xs sm:text-sm shadow-xs transition active:scale-95 cursor-pointer"
-              >
-                {language === 'ar' ? (
-                  <>
-                    <ArrowRight className="w-4 h-4" />
-                    <span>الرجوع إلى الرئيسية</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Retour</span>
-                  </>
-                )}
-              </button>
-
-              <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-                DirectSamsar
-              </span>
-            </div>
-
-            {/* Titre : "Trouver un Samsar" */}
-            <div className="w-full text-center space-y-2 py-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                {language === 'ar' ? 'البحث عن سمسار' : 'Trouver un Samsar'}
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-md mx-auto">
-                {language === 'ar'
-                  ? 'اختر طريقة البحث المفضلة لديك للعثور على وسيط عقاري معتمد'
-                  : 'Choisissez comment vous souhaitez trouver votre agent immobilier de confiance'}
-              </p>
-            </div>
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'البحث عن سمسار' : 'Trouver un Samsar'}
+              subtitle={language === 'ar' ? 'اختر طريقة البحث المفضلة لديك للعثور على وسيط عقاري معتمد' : 'Choisissez comment vous souhaitez trouver votre agent immobilier de confiance'}
+            />
 
             {/* 2 GRANDES CARTES / BOUTONS BIEN DISTINCTS */}
             <div className="w-full flex flex-col gap-5">
@@ -3328,75 +3376,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
           </div>
         )}
 
-        {/* =========================================================
-         * ÉCRAN : "CARTE DES SAMSARS" (Par Carte)
-         * 1. Bouton "Retour" en haut
-         * 2. Titre : "Carte des Samsars"
-         * 3. Grand cadre gris avec "Carte interactive en cours de chargement..."
-         * 4. Menu à 3 traits présent en haut à droite (dans le header)
-         * ========================================================= */}
-        {currentScreen === 'samsar_map' && (
-          <div className="w-full flex flex-col space-y-6 py-2 animate-fade-in">
-            {/* 1. Bouton Retour en haut */}
-            <div className="w-full flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('samsar_choice')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-800 hover:text-stone-950 font-bold text-xs sm:text-sm shadow-xs transition active:scale-95 cursor-pointer"
-              >
-                {language === 'ar' ? (
-                  <>
-                    <ArrowRight className="w-4 h-4" />
-                    <span>رجوع</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Retour</span>
-                  </>
-                )}
-              </button>
 
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('dashboard')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition cursor-pointer"
-              >
-                <Home className="w-4 h-4 text-amber-700" />
-                <span>{language === 'ar' ? 'الرئيسية' : 'Accueil'}</span>
-              </button>
-            </div>
-
-            {/* 2. Titre : "Carte des Samsars" */}
-            <div className="w-full text-center space-y-2 py-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                {language === 'ar' ? 'خريطة السماسرة' : 'Carte des Samsars'}
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-md mx-auto">
-                {language === 'ar'
-                  ? 'استكشف مواقع السماسرة المعتمدين جغرافياً عبر مدن وأحياء المملكة'
-                  : 'Visualisation géographique de nos agents partenaires'}
-              </p>
-            </div>
-
-            {/* 3. Carte Google Maps interactive centrée sur le Maroc / Casablanca avec marqueurs Samsars */}
-            <div className="w-full flex-1 flex flex-col min-h-0">
-              <SamsarGoogleMap language={language} />
-            </div>
-
-            {/* Bouton secondaire pour basculer vers la liste filtrée */}
-            <div className="w-full flex items-center justify-center pt-2">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('find_samsar')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 hover:text-stone-900 font-bold text-xs sm:text-sm shadow-xs transition active:scale-95 cursor-pointer"
-              >
-                <SlidersHorizontal className="w-4 h-4 text-emerald-700" />
-                <span>{language === 'ar' ? 'عرض السماسرة في قائمة مفلترة بالأحياء' : 'Afficher les Samsars en liste détaillée par quartier'}</span>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* =========================================================
          * ÉCRAN : "TROUVER UN SAMSAR" - NOS SAMSARS DE CONFIANCE
@@ -3406,43 +3386,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
          * ========================================================= */}
         {currentScreen === 'find_samsar' && (
           <div className="w-full flex flex-col space-y-6 py-2 animate-fade-in">
-            {/* 1. En haut : Bouton "Retour" pour revenir à l'écran de choix Samsar */}
-            <div className="w-full flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('samsar_choice')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-800 hover:text-stone-950 font-bold text-xs sm:text-sm shadow-xs transition active:scale-95 cursor-pointer"
-              >
-                {language === 'ar' ? (
-                  <>
-                    <ArrowRight className="w-4 h-4" />
-                    <span>رجوع</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Retour</span>
-                  </>
-                )}
-              </button>
-
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#006233]" />
-                <span>{language === 'ar' ? 'سماسرة معتمدون' : 'Profils vérifiés'}</span>
-              </span>
-            </div>
-
-            {/* 2. Titre : "Nos Samsars de confiance" */}
-            <div className="w-full text-center space-y-2 py-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                {language === 'ar' ? 'سماسرتنا المعتمدون' : 'Nos Samsars de confiance'}
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-md mx-auto">
-                {language === 'ar'
-                  ? 'سماسرة عقاريون معتمدون وموثوق بهم حسب الأحياء والمدن المغربية'
-                  : 'Des agents immobiliers locaux, vérifiés et recommandés par quartier'}
-              </p>
-            </div>
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'سماسرتنا المعتمدون' : 'Nos Samsars de confiance'}
+              subtitle={language === 'ar' ? 'سماسرة عقاريون معتمدون وموثوق بهم حسب الأحياء والمدن المغربية' : 'Des agents immobiliers locaux, vérifiés et recommandés par quartier'}
+            />
 
             {/* BARRE DE FILTRES COMBINÉS : VILLE & QUARTIER */}
             <div className="w-full space-y-4 bg-white p-4 sm:p-5 rounded-3xl border border-stone-200/90 shadow-md">
@@ -3696,42 +3644,12 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
          * ========================================================= */}
         {currentScreen === 'search_property' && (
           <div className="w-full flex flex-col justify-between space-y-6 py-2 animate-fade-in">
-            {/* 1. Bouton Retour en haut */}
-            <div className="w-full flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('dashboard')}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-stone-200 text-stone-700 hover:text-stone-950 hover:bg-stone-100 text-sm font-bold shadow-xs active:scale-95 transition cursor-pointer"
-              >
-                {language === 'ar' ? (
-                  <>
-                    <span>العودة للرئيسية</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Retour</span>
-                  </>
-                )}
-              </button>
-
-              <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-                DirectSamsar
-              </span>
-            </div>
-
-            {/* 2. Titre principal */}
-            <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                {language === 'ar' ? 'Rechercher un bien' : 'Rechercher un bien'}
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-500 font-medium">
-                {language === 'ar' 
-                  ? 'اختر المدينة والنوع والميزانية للعثور على أفضل العروض' 
-                  : 'Filtrez facilement pour trouver le bien idéal au Maroc'}
-              </p>
-            </div>
+            {/* 2. Bouton retour standardisé juste en dessous du header unifié */}
+            {/* PageTitle standardisé */}
+            <PageTitle
+              title={language === 'ar' ? 'البحث عن عقار' : 'Rechercher un bien'}
+              subtitle={language === 'ar' ? 'اختر المدينة والنوع والميزانية للعثور على أفضل العروض' : 'Filtrez facilement pour trouver le bien idéal au Maroc'}
+            />
 
             {/* 3. Les filtres sous forme de gros boutons et sélecteurs tactiles */}
             <div className="space-y-5 bg-white p-5 sm:p-6 rounded-3xl border border-stone-200 shadow-md">
@@ -4035,6 +3953,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
           </div>
         )}
       </main>
+      )}
 
       {/* Modale de contact direct du Samsar */}
       {contactedListing && (
@@ -4250,10 +4169,12 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
         </div>
       )}
 
-      {/* Footer épuré */}
-      <footer className="w-full py-4 text-center text-xs text-stone-400 font-medium">
-        {isAr ? 'دايركت سمسار المغرب • العقارات بكل وضوح' : 'DirectSamsar Maroc • L\'immobilier en toute clarté'}
-      </footer>
+      {/* Footer épuré (masqué en mode carte plein écran immersif) */}
+      {!isMapScreen && (
+        <footer className="w-full shrink-0 py-4 text-center text-xs text-stone-400 font-medium">
+          {isAr ? 'دايركت سمسار المغرب • العقارات بكل وضوح' : 'DirectSamsar Maroc • L\'immobilier en toute clarté'}
+        </footer>
+      )}
     </div>
   );
 };
