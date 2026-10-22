@@ -6,76 +6,24 @@ interface SplashScreenProps {
 }
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
-  // Scénario d'animation "Rotation 3D & Glissement Hero" :
+  // Scénario d'animation "Rotation 3D & Sortie en Fondu" :
   // - 0s à 1.6s   : Apparition et centrage du Logo Maison (/logo-maison-finale.jpg) sur fond /fond-anim.jpg
   // - 1.6s à 2.4s : Basculement 3D matériel sur l'axe Y (perspective: 1200px, preserve-3d)
   //                 Maison (rotateY 0deg -> 90deg) -> Étoile (/logo-etoile.png) (rotateY -90deg -> 0deg scale 1.05)
   //                 + Onde de choc circulaire dorée (morphRing) & Halo lumineux d'ambiance
-  // - 2.4s à 2.8s : Stabilisation de l'Étoile au centre (scale 1)
-  // - 2.8s à 3.9s : Glissement Hero de l'Étoile vers le Header en haut à gauche (#app-header-logo)
-  //                 Le fond /fond-anim.jpg s'estompe proprement en fondu (transition-opacity duration-700 opacity-0)
-  // - 3.9s+       : Fin & libération totale des interactions tactiles mobiles
+  // - 2.4s à 2.5s : Stabilisation de l'Étoile au centre (scale 1)
+  // - 2.5s à 3.2s : Fondu de sortie propre (Fade Out 700ms) de tout le SplashScreen (logo, fond, particules)
+  // - 3.2s+       : Fin, démontage et libération totale des interactions tactiles
   const [hasEntered, setHasEntered] = useState(false);
   const [flipStep, setFlipStep] = useState<'idle' | 'flippingOut' | 'flippingIn' | 'settled'>('idle');
   const [morphRingActive, setMorphRingActive] = useState(false);
-  const [isGlide, setIsGlide] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Position calculée dynamiquement vers le logo cible du Header
-  const [glideCoords, setGlideCoords] = useState<{ dx: number; dy: number; scale: number }>({
-    dx: 0,
-    dy: 0,
-    scale: 0.32,
-  });
-
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Calcul précis des coordonnées du logo cible dans le Header
-  const computeTargetCoords = () => {
-    const targetEl =
-      document.getElementById('app-header-logo') ||
-      document.getElementById('header-secondary-logo');
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-    const initialLogoSize = 112; // 112px
-
-    if (targetEl) {
-      const rect = targetEl.getBoundingClientRect();
-      const targetCenterX = rect.left + rect.width / 2;
-      const targetCenterY = rect.top + rect.height / 2;
-      return {
-        dx: targetCenterX - screenW / 2,
-        dy: targetCenterY - screenH / 2,
-        scale: rect.width / initialLogoSize,
-      };
-    } else {
-      // Fallback adaptatif
-      const containerLeft = Math.max(16, (screenW - 448) / 2 + 16);
-      const targetSize = 40;
-      const targetCenterX = containerLeft + targetSize / 2;
-      const targetCenterY = 16 + targetSize / 2;
-      return {
-        dx: targetCenterX - screenW / 2,
-        dy: targetCenterY - screenH / 2,
-        scale: targetSize / initialLogoSize,
-      };
-    }
-  };
-
-  // 1. Initialisation & suivi des coordonnées au redimensionnement
-  useEffect(() => {
-    setGlideCoords(computeTargetCoords());
-
-    const handleResize = () => {
-      setGlideCoords(computeTargetCoords());
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // 2. Canvas de particules dorées & émeraudes (subtiles, préservant la netteté du fond)
+  // 1. Canvas de particules dorées & émeraudes (subtiles, préservant la netteté du fond)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -170,10 +118,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     };
   }, []);
 
-  // 3. Barre de progression continue dorée (0s à 2.6s)
+  // 2. Barre de progression continue dorée (0s à 2.4s)
   useEffect(() => {
     let startTime: number | null = null;
-    const duration = 2600;
+    const duration = 2400;
 
     let animId: number;
     const updateProgress = (timestamp: number) => {
@@ -191,7 +139,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  // 4. Chronologie précise du basculement 3D et du Glissement Hero
+  // 3. Chronologie précise du basculement 3D et du fondu de sortie
   useEffect(() => {
     // 0s+ : Entrée douce du Logo Maison avec léger rebond
     const enterTimer = setTimeout(() => {
@@ -209,34 +157,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       setMorphRingActive(true);
     }, 1880);
 
-    // 2.4s : Stabilisation de l'Étoile à scale 1
+    // 2.4s : Stabilisation de l'Étoile au centre à scale 1
     const settleTimer = setTimeout(() => {
       setFlipStep('settled');
     }, 2400);
 
-    // 2.75s : Rafraîchissement dynamique des coordonnées du logo cible dans le header
-    const refreshCoordsTimer = setTimeout(() => {
-      setGlideCoords(computeTargetCoords());
-    }, 2750);
+    // 2.5s : Début du fondu de sortie global (Fade Out)
+    const fadeOutTimer = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 2500);
 
-    // 2.8s : Début du glissement Hero vers le Header & fondu de sortie du fond
-    const glideTimer = setTimeout(() => {
-      setIsGlide(true);
-    }, 2800);
-
-    // 3.9s : Fin de l'intro, démontage et libération des interactions tactiles
+    // 3.2s : Fin de l'intro, démontage et libération des interactions tactiles
     const doneTimer = setTimeout(() => {
       setIsDone(true);
       if (onFinish) onFinish();
-    }, 3900);
+    }, 3200);
 
     return () => {
       clearTimeout(enterTimer);
       clearTimeout(flipOutTimer);
       clearTimeout(flipInTimer);
       clearTimeout(settleTimer);
-      clearTimeout(refreshCoordsTimer);
-      clearTimeout(glideTimer);
+      clearTimeout(fadeOutTimer);
       clearTimeout(doneTimer);
     };
   }, [onFinish]);
@@ -248,20 +190,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   return (
     <div
       aria-label="DirectSamsar Intro Splash"
-      className={`fixed inset-0 z-50 overflow-hidden flex items-center justify-center select-none ${
-        isGlide ? 'pointer-events-none' : 'pointer-events-auto'
+      className={`fixed inset-0 top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] overflow-hidden flex items-center justify-center select-none transition-opacity duration-700 ease-out ${
+        isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}
     >
-      {/* 1. Arrière-plan animé plein écran : cadrage fidèle sans surzoom */}
+      {/* 1. Arrière-plan animé plein écran : image fidèle plein écran */}
       <img
         src={fondAnimImg}
         alt="Arrière-plan DirectSamsar"
-        className={`fixed inset-0 w-full h-full object-contain md:object-cover object-center z-0 pointer-events-none transition-opacity duration-700 ${
-          isGlide ? 'opacity-0' : 'opacity-100'
-        }`}
+        className="fixed inset-0 w-full h-full object-cover object-bottom z-0 pointer-events-none"
         style={{
           backgroundColor: '#7A0C10',
-          transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
         }}
         onError={(e) => {
           const target = e.currentTarget;
@@ -288,19 +227,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       {/* 2. Canvas Particules Subtiles (Dorées & Vert Émeraude) au premier plan */}
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 w-full h-full pointer-events-none z-[1] transition-opacity duration-700 ${
-          isGlide ? 'opacity-0' : 'opacity-100'
-        }`}
+        className="absolute inset-0 w-full h-full pointer-events-none z-[1]"
       />
 
       {/* Conteneur principal centré */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full px-4">
         
-        {/* Zone Logo : Rotation 3D & Glissement Hero vers le Header */}
+        {/* Zone Logo : Rotation 3D centrée */}
         <div className="relative flex items-center justify-center">
           
           {/* Onde de choc circulaire dorée (morphRing déployé au basculement 3D) */}
-          {morphRingActive && !isGlide && (
+          {morphRingActive && !isFadingOut && (
             <div
               className="absolute inset-0 rounded-3xl border-2 border-amber-300 pointer-events-none"
               style={{
@@ -314,7 +251,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           {/* Halo doré lumineux lors du basculement 3D */}
           <div
             className={`absolute -inset-6 rounded-full bg-amber-400/40 blur-2xl pointer-events-none transition-all duration-700 ${
-              isGlide
+              isFadingOut
                 ? 'opacity-0 scale-75'
                 : flipStep === 'flippingIn' || flipStep === 'settled'
                 ? 'opacity-100 scale-125'
@@ -322,7 +259,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             }`}
           />
 
-          {/* Conteneur 3D du Logo avec perspective matérielle 1200px */}
+          {/* Conteneur 3D du Logo avec perspective matérielle 1200px (centré en continu) */}
           <div
             id="splashLogoWrap"
             className="relative will-change-transform"
@@ -355,7 +292,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
                     ? 'perspective(1200px) rotateY(0deg) scale(1)'
                     : 'perspective(1200px) rotateY(0deg) scale(0.6)',
                 opacity:
-                  flipStep === 'flippingOut' || flipStep === 'flippingIn' || flipStep === 'settled' || isGlide
+                  flipStep === 'flippingOut' || flipStep === 'flippingIn' || flipStep === 'settled'
                     ? 0
                     : 1,
                 pointerEvents: 'none',
@@ -369,33 +306,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
               />
             </div>
 
-            {/* FACE 2 : Étoile (/logo-etoile.png - Basculement 3D entrant à 1.88s puis Glissement Hero à 2.8s) */}
+            {/* FACE 2 : Étoile (/logo-etoile.png - Basculement 3D entrant à 1.88s puis centré) */}
             <div
               className="absolute inset-0 rounded-3xl overflow-hidden bg-[#B50A10] border-2 border-white/20 flex items-center justify-center p-0.5 select-none will-change-transform shadow-2xl"
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
                 transformStyle: 'preserve-3d',
-                boxShadow: isGlide
-                  ? '0 2px 8px rgba(0,0,0,0.15)'
-                  : '0 0 45px 12px rgba(234, 191, 82, 0.65), 0 16px 36px -6px rgba(0, 0, 0, 0.5)',
-                transition: isGlide
-                  ? 'transform 1050ms cubic-bezier(0.22, 1, 0.36, 1), border-radius 950ms ease, box-shadow 950ms ease'
-                  : flipStep === 'settled'
-                  ? 'transform 300ms ease-out'
-                  : flipStep === 'flippingIn'
-                  ? 'transform 450ms cubic-bezier(0.2, 0.85, 0.35, 1.2), opacity 260ms ease-out'
-                  : 'none',
-                transform: isGlide
-                  ? `translate3d(${glideCoords.dx}px, ${glideCoords.dy}px, 0) scale(${glideCoords.scale}) rotateY(0deg)`
-                  : flipStep === 'settled'
-                  ? 'perspective(1200px) rotateY(0deg) scale(1)'
-                  : flipStep === 'flippingIn'
-                  ? 'perspective(1200px) rotateY(0deg) scale(1.05)'
-                  : 'perspective(1200px) rotateY(-90deg) scale(0.92)',
+                boxShadow:
+                  '0 0 45px 12px rgba(234, 191, 82, 0.65), 0 16px 36px -6px rgba(0, 0, 0, 0.5)',
+                transition:
+                  flipStep === 'settled'
+                    ? 'transform 300ms ease-out'
+                    : flipStep === 'flippingIn'
+                    ? 'transform 450ms cubic-bezier(0.2, 0.85, 0.35, 1.2), opacity 260ms ease-out'
+                    : 'none',
+                transform:
+                  flipStep === 'settled'
+                    ? 'perspective(1200px) rotateY(0deg) scale(1)'
+                    : flipStep === 'flippingIn'
+                    ? 'perspective(1200px) rotateY(0deg) scale(1.05)'
+                    : 'perspective(1200px) rotateY(-90deg) scale(0.92)',
                 opacity:
-                  flipStep === 'flippingIn' || flipStep === 'settled' || isGlide ? 1 : 0,
-                borderRadius: isGlide ? '16px' : '26px',
+                  flipStep === 'flippingIn' || flipStep === 'settled' ? 1 : 0,
+                borderRadius: '26px',
               }}
             >
               <img
@@ -411,11 +345,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
         {/* Textes et barre de progression (Lisibilité optimale sur fond naturel) */}
         <div
           className={`flex flex-col items-center mt-7 space-y-3 px-5 py-3 rounded-2xl bg-black/30 backdrop-blur-xs border border-white/15 shadow-lg transition-all duration-500 ${
-            isGlide
-              ? 'opacity-0 -translate-y-3 pointer-events-none'
-              : hasEntered
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4'
+            hasEntered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
           {/* Titre Principal DIRECTSAMSAR.MA */}
