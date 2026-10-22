@@ -25,7 +25,7 @@ export default function App() {
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
 
       {/* CONTENU PRINCIPAL (déjà monté et prêt en arrière-plan, se dévoile en fondu naturel) */}
-      <div className="min-h-screen bg-white">
+      <div className={`min-h-screen bg-white ${showSplash ? 'h-screen max-h-screen overflow-hidden pointer-events-none' : ''}`}>
         {/* ÉCRAN 1 : CHOIX DE LA LANGUE */}
         {currentStep === 'language' && (
           <LanguageScreen 
@@ -144,3 +144,4 @@ export default function App() {
     </div>
   );
 }
+

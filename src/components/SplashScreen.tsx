@@ -6,15 +6,16 @@ interface SplashScreenProps {
 }
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
-  // Scénario d'animation "Rotation 3D & Sortie en Fondu" :
-  // - 0s à 1.6s   : Apparition et centrage du Logo Maison (/logo-maison-finale.jpg) sur fond /fond-anim.jpg
-  // - 1.6s à 2.4s : Basculement 3D matériel sur l'axe Y (perspective: 1200px, preserve-3d)
-  //                 Maison (rotateY 0deg -> 90deg) -> Étoile (/logo-etoile.png) (rotateY -90deg -> 0deg scale 1.05)
-  //                 + Onde de choc circulaire dorée (morphRing) & Halo lumineux d'ambiance
-  // - 2.4s à 2.5s : Stabilisation de l'Étoile au centre (scale 1)
-  // - 2.5s à 3.2s : Fondu de sortie propre (Fade Out 700ms) de tout le SplashScreen (logo, fond, particules)
-  // - 3.2s+       : Fin, démontage et libération totale des interactions tactiles
+  // - 0s à 1.3s   : Dézoom cinématique géant du Logo Maison (scale 4 -> scale 1)
+  // - 0s à 2.8s   : Parallaxe douce et souffle vivant sur les dunes (/fond-anim.jpg)
+  // - 1.5s        : La grande vague d'énergie démarre de la gauche
+  // - 1.54s       : Impact instantané : le bord de la vague frappe le logo et déclenche la rotation 3D sans délai
+  // - 1.74s       : L'Étoile entre en rotation 3D propulsée par le cœur de la vague + onde morphRing dorée
+  // - 1.95s       : Stabilisation de l'Étoile au centre pendant que la vague termine à droite
+  // - 2.1s        : Déclenchement du fondu global (Fade Out 700ms)
+  // - 2.8s        : La vague s'efface à droite, l'accueil est déjà entièrement dévoilé, appel de onFinish()
   const [hasEntered, setHasEntered] = useState(false);
+  const [isWaveActive, setIsWaveActive] = useState(false);
   const [flipStep, setFlipStep] = useState<'idle' | 'flippingOut' | 'flippingIn' | 'settled'>('idle');
   const [morphRingActive, setMorphRingActive] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -22,6 +23,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [progress, setProgress] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyTouchAction = document.body.style.touchAction;
+    const originalBodyBg = document.body.style.backgroundColor;
+
+    // Forcer le fond du document en jaune pour tuer le flash blanc initial
+    document.body.style.backgroundColor = '#eab308';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow || 'unset';
+      document.documentElement.style.overflow = originalHtmlOverflow || 'unset';
+      document.body.style.touchAction = originalBodyTouchAction || 'unset';
+      document.body.style.backgroundColor = originalBodyBg || '';
+    };
+  }, []);
 
   // 1. Canvas de particules dorées & émeraudes (subtiles, préservant la netteté du fond)
   useEffect(() => {
@@ -118,10 +139,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     };
   }, []);
 
-  // 2. Barre de progression continue dorée (0s à 2.4s)
+  // 2. Barre de progression continue dorée (0s à 2.1s)
   useEffect(() => {
     let startTime: number | null = null;
-    const duration = 2400;
+    const duration = 2100;
 
     let animId: number;
     const updateProgress = (timestamp: number) => {
@@ -139,42 +160,48 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  // 3. Chronologie précise du basculement 3D et du fondu de sortie
+  // 3. Chronologie synchronisée : Dézoom initial -> Vague d'énergie -> Rotation 3D -> Fondu global
   useEffect(() => {
-    // 0s+ : Entrée douce du Logo Maison avec léger rebond
+    // 0s à 40ms : Déclenchement du dézoom cinématique (scale 4 -> scale 1 en 1200ms)
     const enterTimer = setTimeout(() => {
       setHasEntered(true);
     }, 40);
 
-    // 1.6s : Début de la rotation 3D de la Maison (rotateY 0deg -> 90deg)
+    // 1.5s : La grande vague d'énergie démarre de la gauche
+    const waveTimer = setTimeout(() => {
+      setIsWaveActive(true);
+    }, 1500);
+
+    // 1.54s : Impact instantané : dès que le bord de la vague percute le logo, déclenchement immédiat de la rotation 3D
     const flipOutTimer = setTimeout(() => {
       setFlipStep('flippingOut');
-    }, 1600);
+    }, 1540);
 
-    // 1.88s : Arrivée en rotation 3D de l'Étoile (rotateY -90deg -> 0deg scale 1.05) + Halo / morphRing
+    // 1.74s : L'Étoile entre en rotation 3D propulsée par le cœur de la vague + onde morphRing dorée
     const flipInTimer = setTimeout(() => {
       setFlipStep('flippingIn');
       setMorphRingActive(true);
-    }, 1880);
+    }, 1740);
 
-    // 2.4s : Stabilisation de l'Étoile au centre à scale 1
+    // 1.95s : Stabilisation de l'Étoile au centre pendant que la vague continue vers la droite
     const settleTimer = setTimeout(() => {
       setFlipStep('settled');
-    }, 2400);
+    }, 1950);
 
-    // 2.5s : Début du fondu de sortie global (Fade Out)
+    // 2.1s : Déclenche immédiatement le fondu de sortie global pendant que la vague termine à droite
     const fadeOutTimer = setTimeout(() => {
       setIsFadingOut(true);
-    }, 2500);
+    }, 2100);
 
-    // 3.2s : Fin de l'intro, démontage et libération des interactions tactiles
+    // 2.8s : Fin de l'intro, l'écran d'accueil est déjà entièrement dévoilé sous les yeux de l'utilisateur
     const doneTimer = setTimeout(() => {
       setIsDone(true);
       if (onFinish) onFinish();
-    }, 3200);
+    }, 2800);
 
     return () => {
       clearTimeout(enterTimer);
+      clearTimeout(waveTimer);
       clearTimeout(flipOutTimer);
       clearTimeout(flipInTimer);
       clearTimeout(settleTimer);
@@ -190,27 +217,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   return (
     <div
       aria-label="DirectSamsar Intro Splash"
-      className={`fixed inset-0 top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] overflow-hidden flex items-center justify-center select-none transition-opacity duration-700 ease-out ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center select-none bg-[#eab308] transition-opacity duration-700 ease-out touch-none ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}
     >
-      {/* 1. Arrière-plan animé plein écran : image fidèle plein écran */}
-      <img
-        src={fondAnimImg}
-        alt="Arrière-plan DirectSamsar"
-        className="fixed inset-0 w-full h-full object-cover object-bottom z-0 pointer-events-none"
-        style={{
-          backgroundColor: '#7A0C10',
-        }}
-        onError={(e) => {
-          const target = e.currentTarget;
-          if (target.src !== window.location.origin + '/fond-anim.jpg') {
-            target.src = '/fond-anim.jpg';
-          }
-        }}
-      />
+      {/* Wrapper géant (120vw x 120vh) immunisant l'image contre les barres d'adresse mobiles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] -z-10 pointer-events-none bg-[#eab308]">
+        <img
+          src={fondAnimImg}
+          alt="Arrière-plan DirectSamsar"
+          className="w-full h-full object-cover object-bottom opacity-100"
+          loading="eager"
+          decoding="sync"
+          style={{
+            transformOrigin: 'center bottom',
+            animation: 'duneBreezeAnim 3000ms cubic-bezier(0.25, 1, 0.5, 1) forwards',
+          }}
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src !== window.location.origin + '/fond-anim.jpg') {
+              target.src = '/fond-anim.jpg';
+            }
+          }}
+        />
+      </div>
 
-      {/* Styles keyframes pour l'onde de choc circulaire morphRing */}
+      {/* Styles keyframes pour l'onde de choc, la brise sur les dunes et la vague d'énergie */}
       <style>{`
         @keyframes morphRingAnim {
           0% {
@@ -222,9 +254,50 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             transform: scale(1.75);
           }
         }
+
+        @keyframes duneBreezeAnim {
+          0% {
+            transform: scale(1.0);
+          }
+          100% {
+            transform: scale(1.05);
+          }
+        }
+
+        @keyframes energyWaveSweep {
+          0% {
+            transform: translateX(-110%) skewX(-20deg);
+            opacity: 0;
+          }
+          15% {
+            opacity: 0.95;
+          }
+          85% {
+            opacity: 0.95;
+          }
+          100% {
+            transform: translateX(220%) skewX(-20deg);
+            opacity: 0;
+          }
+        }
       `}</style>
 
-      {/* 2. Canvas Particules Subtiles (Dorées & Vert Émeraude) au premier plan */}
+      {/* 2. Grande vague d'énergie lumineuse plein écran (traverse de gauche à droite en ~1200ms) */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none z-[5] overflow-hidden">
+        {isWaveActive && (
+          <div
+            className="absolute top-0 bottom-0 w-[60vw] h-full pointer-events-none blur-xl will-change-transform"
+            style={{
+              background:
+                'linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.25) 15%, rgba(253, 224, 71, 0.4) 38%, rgba(255, 255, 255, 0.55) 50%, rgba(253, 224, 71, 0.4) 62%, rgba(16, 185, 129, 0.2) 85%, transparent 100%)',
+              animation: 'energyWaveSweep 1200ms cubic-bezier(0.22, 0.9, 0.35, 1) forwards',
+              mixBlendMode: 'screen',
+            }}
+          />
+        )}
+      </div>
+
+      {/* 3. Canvas Particules Subtiles (Dorées & Vert Émeraude) au premier plan */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none z-[1]"
@@ -259,7 +332,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             }`}
           />
 
-          {/* Conteneur 3D du Logo avec perspective matérielle 1200px (centré en continu) */}
+          {/* Conteneur 3D du Logo avec perspective matérielle 1200px (dézoom cinématique initial scale 4 -> scale 1) */}
           <div
             id="splashLogoWrap"
             className="relative will-change-transform"
@@ -268,9 +341,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
               height: '112px',
               perspective: '1200px',
               transformStyle: 'preserve-3d',
+              transform: hasEntered ? 'scale(1)' : 'scale(4)',
+              opacity: 1,
+              transition: 'transform 1200ms cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
-            {/* FACE 1 : Maison (/logo-maison-finale.jpg - Basculement 3D sur axe Y à 1.6s) */}
+            {/* FACE 1 : Maison (/logo-maison-finale.jpg - Rotation 3D instantanée à 1.54s à l'impact de la vague) */}
             <div
               className="absolute inset-0 rounded-3xl overflow-hidden bg-[#B50A10] border-2 border-white/20 flex items-center justify-center p-0.5 select-none will-change-transform shadow-2xl"
               style={{
@@ -281,16 +357,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
                   '0 14px 40px -6px rgba(234, 191, 82, 0.45), 0 0 25px rgba(181, 10, 16, 0.55)',
                 transition:
                   flipStep === 'flippingOut' || flipStep === 'flippingIn' || flipStep === 'settled'
-                    ? 'transform 320ms cubic-bezier(0.4, 0, 0.6, 1), opacity 280ms ease-in'
-                    : hasEntered
-                    ? 'transform 750ms cubic-bezier(0.175, 0.885, 0.32, 1.25)'
+                    ? 'transform 200ms cubic-bezier(0.3, 0, 0.5, 1), opacity 180ms ease-in'
                     : 'none',
                 transform:
                   flipStep === 'flippingOut' || flipStep === 'flippingIn' || flipStep === 'settled'
                     ? 'perspective(1200px) rotateY(90deg) scale(0.92)'
-                    : hasEntered
-                    ? 'perspective(1200px) rotateY(0deg) scale(1)'
-                    : 'perspective(1200px) rotateY(0deg) scale(0.6)',
+                    : 'perspective(1200px) rotateY(0deg) scale(1)',
                 opacity:
                   flipStep === 'flippingOut' || flipStep === 'flippingIn' || flipStep === 'settled'
                     ? 0
@@ -302,11 +374,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
                 src="/logo-maison-finale.jpg"
                 alt="DirectSamsar Maison"
                 className="w-full h-full object-cover pointer-events-none"
+                loading="eager"
+                decoding="sync"
                 draggable={false}
               />
             </div>
 
-            {/* FACE 2 : Étoile (/logo-etoile.png - Basculement 3D entrant à 1.88s puis centré) */}
+            {/* FACE 2 : Étoile (/logo-etoile.png - Basculement 3D entrant à 1.74s propulsé par le cœur de la vague) */}
             <div
               className="absolute inset-0 rounded-3xl overflow-hidden bg-[#B50A10] border-2 border-white/20 flex items-center justify-center p-0.5 select-none will-change-transform shadow-2xl"
               style={{
@@ -317,9 +391,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
                   '0 0 45px 12px rgba(234, 191, 82, 0.65), 0 16px 36px -6px rgba(0, 0, 0, 0.5)',
                 transition:
                   flipStep === 'settled'
-                    ? 'transform 300ms ease-out'
+                    ? 'transform 200ms ease-out'
                     : flipStep === 'flippingIn'
-                    ? 'transform 450ms cubic-bezier(0.2, 0.85, 0.35, 1.2), opacity 260ms ease-out'
+                    ? 'transform 240ms cubic-bezier(0.2, 0.85, 0.35, 1.2), opacity 200ms ease-out'
                     : 'none',
                 transform:
                   flipStep === 'settled'
@@ -336,6 +410,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
                 src="/logo-etoile.png"
                 alt="DirectSamsar Étoile"
                 className="w-full h-full object-cover pointer-events-none"
+                loading="eager"
+                decoding="sync"
                 draggable={false}
               />
             </div>
@@ -361,15 +437,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             </p>
           </div>
 
-          {/* Fine barre de progression dorée */}
-          <div className="w-48 sm:w-56 h-[3px] bg-black/40 rounded-full overflow-hidden border border-amber-400/30 mt-2">
+          {/* Fine barre de progression dorée avec tête de lecture brillante */}
+          <div className="w-48 sm:w-56 h-[4px] bg-black/40 rounded-full overflow-hidden border border-amber-400/30 mt-2 relative">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 via-amber-300 to-emerald-400 transition-all duration-150 ease-out rounded-full"
+              className="h-full bg-gradient-to-r from-amber-500 via-amber-300 to-emerald-400 transition-all duration-150 ease-out rounded-full relative"
               style={{
                 width: `${progress}%`,
-                boxShadow: '0 0 10px #EABF52, 0 0 4px #10B981',
+                boxShadow: '0 0 12px #EABF52, 0 0 6px #10B981',
               }}
-            />
+            >
+              {/* Petite étincelle / tête de lecture brillante à l'avant du trait */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-3 bg-white rounded-full shadow-[0_0_8px_#fff,0_0_12px_#FDE047]" />
+            </div>
           </div>
 
           {/* Sceau d'authenticité discret */}
