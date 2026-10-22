@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Étoile marocaine à 5 branches en vert #006233 -->
+  <g fill="none" stroke="#006233" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Pentagramme marocain classique entrelacé -->
+    <polygon points="256,38 316,218 502,218 352,328 408,504 256,396 104,504 160,328 10,218 196,218" />
+  </g>
+  <!-- Fond du centre semi-ajouré et lettres DS intégrées en vert #006233 -->
+  <circle cx="256" cy="276" r="68" fill="#ffffff" fill-opacity="0.95" />
+  <circle cx="256" cy="276" r="68" fill="none" stroke="#006233" stroke-width="6" />
+  <g fill="#006233">
+    <!-- Lettre D -->
+    <path d="M220 252 H243 C256 252 265 259 265 272 C265 285 256 292 243 292 H232 V304 H220 V252 Z M232 281 H242 C248 281 253 277 253 272 C253 267 248 263 242 263 H232 V281 Z" />
+    <!-- Lettre S -->
+    <path d="M272 296 C274 301 280 305 288 305 C295 305 300 301 300 296 C300 290 295 287 286 284 C274 280 267 276 267 267 C267 258 275 252 287 252 C296 252 303 256 306 262 L297 266 C295 263 292 260 287 260 C282 260 278 263 278 267 C278 271 282 273 290 275 C302 279 310 284 310 295 C310 305 301 313 288 313 C276 313 267 306 264 298 L272 296 Z" />
+  </g>
+</svg>

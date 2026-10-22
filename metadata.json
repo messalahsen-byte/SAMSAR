@@ -1,0 +1,6 @@
+{
+  "name": "Daleel Samsar Maroc",
+  "description": "Plateforme et annuaire géolocalisé de Samsars au Maroc avec interface vocale Darija, passerelle WhatsApp et guide complet d'accompagnement entrepreneurial.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
