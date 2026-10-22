@@ -2150,7 +2150,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
           currentStep="vocal"
         />
 
-        <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-5 flex flex-col gap-6 py-4">
+        <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-5 pt-20 sm:pt-24 flex flex-col gap-6 pb-6">
           <PageTitle
             title={language === 'ar' ? 'نتائج البحث الصوتي' : 'Résultats de recherche'}
             subtitle={
@@ -2587,7 +2587,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
        * - Contrôles flottants intégrés sur la carte
        * ========================================================= */}
       {isMapScreen ? (
-        <div className="flex-1 w-full flex flex-col h-screen overflow-hidden">
+        <div className="flex-1 w-full flex flex-col h-screen overflow-hidden pt-16 sm:pt-20">
           <PageTitle 
             title={language === 'ar' ? 'خريطة السماسرة' : 'Carte des Samsars'} 
             subtitle={language === 'ar' ? 'حدد موقع السماسرة المعتمدين عبر الخريطة التفاعلية' : 'Localisez les professionnels certifiés autour de vous'}
@@ -2602,7 +2602,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
         </div>
       ) : (
         /* Corps principal - Centré pour onboarding ou scrollable */
-        <main className={`flex-1 flex flex-col items-center ${currentStep === 'home' || currentStep === 'mode' ? 'justify-center min-h-[85dvh]' : 'justify-start'} p-3 sm:p-5 w-full max-w-xl mx-auto z-10`}>
+        <main className={`flex-1 flex flex-col items-center ${currentStep === 'home' || currentStep === 'mode' ? 'justify-center min-h-[85dvh]' : 'justify-start pt-20 sm:pt-24'} p-3 sm:p-5 w-full max-w-xl mx-auto z-10`}>
         {currentStep === 'splash' && (
           <SplashScreen onFinish={() => setCurrentStep('home')} />
         )}
