@@ -18,8 +18,8 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
       <main className="flex-1 flex flex-col items-center justify-center p-6 pt-24 pb-12 w-full max-w-md mx-auto text-center">
         {/* Logo subtil */}
         <div className="relative mb-6">
-          <div className="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center border-2 border-orange-100 mx-auto">
-            <img src="/logo-etoile.png" alt="DirectSamsar" className="w-16 h-16 object-contain" />
+          <div className="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center border-2 border-orange-100 mx-auto overflow-hidden">
+            <img src="/logo-etoile.png" alt="DirectSamsar" className="w-full h-full object-cover" />
           </div>
         </div>
 
@@ -37,7 +37,7 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
           <button
             type="button"
             onClick={() => onSelect('fr')}
-            className="w-full py-5 px-6 rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-stone-900 font-bold text-xl cursor-pointer group shadow-sm"
+            className="w-full p-5 min-h-[92px] rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-stone-900 font-bold text-xl cursor-pointer group shadow-sm"
           >
             <div className="flex items-center gap-4">
               <span className="text-3xl">🇫🇷</span>
@@ -49,7 +49,7 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
           <button
             type="button"
             onClick={() => onSelect('ar')}
-            className="w-full py-5 px-6 rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-stone-900 font-bold text-xl cursor-pointer group shadow-sm"
+            className="w-full p-5 min-h-[92px] rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-stone-900 font-bold text-xl cursor-pointer group shadow-sm"
             dir="rtl"
           >
             <div className="flex items-center gap-4">

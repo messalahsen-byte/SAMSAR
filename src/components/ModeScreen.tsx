@@ -43,7 +43,7 @@ export const ModeScreen: React.FC<ModeScreenProps> = ({
           <button
             type="button"
             onClick={() => onSelect('vocal')}
-            className="w-full p-5 rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-left group cursor-pointer shadow-sm"
+            className="w-full p-5 min-h-[92px] rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-left group cursor-pointer shadow-sm"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:bg-orange-200 transition-colors shrink-0">
@@ -69,7 +69,7 @@ export const ModeScreen: React.FC<ModeScreenProps> = ({
           <button
             type="button"
             onClick={() => onSelect('classic')}
-            className="w-full p-5 rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-left group cursor-pointer shadow-sm"
+            className="w-full p-5 min-h-[92px] rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-left group cursor-pointer shadow-sm"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center group-hover:bg-stone-200 transition-colors shrink-0">

@@ -54,7 +54,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         <button 
           type="button"
           onClick={() => onNavigate('samsar-choice')}
-          className="w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-4 text-left group cursor-pointer"
+          className="w-full bg-white rounded-2xl p-5 shadow-sm border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center gap-4 text-left group cursor-pointer"
           dir={isAr ? 'rtl' : 'ltr'}
         >
           <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-orange-200 transition-colors">
@@ -63,14 +63,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-gray-900 text-lg">
+            <h3 className="font-bold text-gray-900 text-lg group-hover:text-orange-500 transition-colors duration-200">
               {isAr ? '1. البحث عن سمسار' : '1. Trouver un Samsar'}
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">
               {isAr ? 'سماسرة معتمدون حسب الأحياء' : 'Agents certifiés par quartier'}
             </p>
           </div>
-          <svg className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors ${isAr ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors duration-200 ${isAr ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -79,7 +79,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         <button 
           type="button"
           onClick={() => onNavigate('buy')}
-          className="w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-4 text-left group cursor-pointer"
+          className="w-full bg-white rounded-2xl p-5 shadow-sm border-2 border-stone-200 hover:border-green-500 hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center gap-4 text-left group cursor-pointer"
           dir={isAr ? 'rtl' : 'ltr'}
         >
           <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
@@ -88,14 +88,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-gray-900 text-lg">
+            <h3 className="font-bold text-gray-900 text-lg group-hover:text-green-500 transition-colors duration-200">
               {isAr ? '2. شراء عقار' : '2. Acheter un bien'}
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">
               {isAr ? 'شقق، فيلات، أراضي' : 'Appartements, villas, terrains'}
             </p>
           </div>
-          <svg className={`w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors ${isAr ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors duration-200 ${isAr ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -104,7 +104,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         <button 
           type="button"
           onClick={() => onNavigate('sell')}
-          className="w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-4 text-left group cursor-pointer"
+          className="w-full bg-white rounded-2xl p-5 shadow-sm border-2 border-stone-200 hover:border-red-500 hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center gap-4 text-left group cursor-pointer"
           dir={isAr ? 'rtl' : 'ltr'}
         >
           <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-red-200 transition-colors">
@@ -113,14 +113,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-gray-900 text-lg">
+            <h3 className="font-bold text-gray-900 text-lg group-hover:text-red-500 transition-colors duration-200">
               {isAr ? '3. بيع / نشر عقار' : '3. Vendre un bien'}
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">
               {isAr ? 'انشر إعلانك بكل سهولة' : 'Publiez votre annonce'}
             </p>
           </div>
-          <svg className={`w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors ${isAr ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors duration-200 ${isAr ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
