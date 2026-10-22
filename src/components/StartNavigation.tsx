@@ -34,10 +34,14 @@ import { SamsarGoogleMap } from './SamsarGoogleMap';
 import { VoiceDiagnosticPanel, VoiceDiagnosticData } from './VoiceDiagnosticPanel';
 import { AppHeader } from './AppHeader';
 import { PageTitle } from './PageTitle';
+import { SplashScreen } from './SplashScreen';
+import { PostListingForm } from './PostListingForm';
 
 export type StartScreen = 
+  | 'splash'
   | 'language' 
   | 'mode' 
+  | 'home'
   | 'vocal' 
   | 'classic'
   | 'mode_choice' 
@@ -432,7 +436,7 @@ const CITIES_DATA = [
 
 export type OperationType = 'achat' | 'location';
 
-interface PropertyListing {
+export interface PropertyListing {
   id: string;
   image: string;
   title: string;
@@ -454,6 +458,8 @@ interface PropertyListing {
   samsarName: string;
   samsarPhone: string;
   operation: OperationType;
+  description?: string;
+  isUserSubmitted?: boolean;
 }
 
 const PROPERTY_LISTINGS: PropertyListing[] = [
@@ -781,6 +787,52 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
     samsarName: 'Si Mohamed',
     samsarPhone: '+212 661 11 22 33',
     operation: 'achat'
+  },
+  {
+    id: 'rak-mai-2',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+    title: 'Maison beldi traditionnelle à Bab Doukkala, Marrakech',
+    titleAr: 'دار بلدية تقليدية بباب دكالة، مراكش',
+    price: '950 000 MAD',
+    priceAr: '950.000 درهم',
+    priceNum: 950000,
+    cityId: 'marrakech',
+    city: 'Marrakech',
+    cityAr: 'مراكش',
+    quarterId: 'medina',
+    quarter: 'Bab Doukkala',
+    quarterAr: 'باب دكالة',
+    type: 'maison',
+    typeLabel: 'Maison',
+    typeLabelAr: 'دار',
+    surface: '160 m²',
+    bedrooms: 3,
+    samsarName: 'Si Mohamed',
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'achat'
+  },
+  {
+    id: 'rak-mai-kri-1',
+    image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
+    title: 'Maison meublée à louer à Targa, Marrakech',
+    titleAr: 'دار مفروشة للكراء بتاركة، مراكش',
+    price: '7 500 MAD / mois',
+    priceAr: '7.500 درهم / شهر',
+    priceNum: 7500,
+    cityId: 'marrakech',
+    city: 'Marrakech',
+    cityAr: 'مراكش',
+    quarterId: 'targa',
+    quarter: 'Targa',
+    quarterAr: 'تاركة',
+    type: 'maison',
+    typeLabel: 'Maison',
+    typeLabelAr: 'دار',
+    surface: '210 m²',
+    bedrooms: 4,
+    samsarName: 'Si Mohamed',
+    samsarPhone: '+212 661 11 22 33',
+    operation: 'location'
   },
   {
     id: 'rak-ter-1',
@@ -1303,252 +1355,129 @@ const PROPERTY_LISTINGS: PropertyListing[] = [
 ];
 
 // ============================================================================
-// DICTIONNAIRES VOCAUX EXHAUSTIFS (FRANÇAIS & DARIJA / ARABE)
+// GESTION DU LOCALSTORAGE (userProperties)
+// Relie le formulaire "Vendre / Déposer un bien" à la recherche classique & vocale
 // ============================================================================
+export function getUserProperties(): PropertyListing[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const rawData = localStorage.getItem('userProperties');
+    if (!rawData) return [];
+    const list = JSON.parse(rawData);
+    if (!Array.isArray(list)) return [];
 
-// TYPES DE BIENS
-export const typeMapping: Record<string, PropertyType> = {
-  // Darija / Arabe
-  'dar': 'maison', 'darb': 'maison', 'douar': 'maison', 'ksar': 'riad', 'qsar': 'riad',
-  'ch9a': 'appartement',
-  'mahal': 'local', 'hanout': 'local', 'maktab': 'bureau',
-  'ard': 'terrain', 'haouch': 'terrain', 'mzra3a': 'terrain',
-  'palais': 'villa',
-  
-  // Français & Mots communs
-  'maison': 'maison', 'villa': 'villa', 'riad': 'riad', 'kasbah': 'riad',
-  'appartement': 'appartement', 'appart': 'appartement', 'studio': 'studio', 'duplex': 'duplex', 'penthouse': 'duplex',
-  'local': 'local', 'commerce': 'local', 'commercial': 'local', 'commerciale': 'local', 'commerciaux': 'local', 'boutique': 'local', 'magasin': 'local', 'bureau': 'bureau', 'office': 'bureau',
-  'terrain': 'terrain', 'lot': 'terrain', 'parcelle': 'terrain', 'ferme': 'terrain', 'propriété': 'terrain',
-
-  // Formes sans accents et pluriels
-  'propriete': 'terrain', 'proprietes': 'terrain',
-  'apparts': 'appartement', 'appartements': 'appartement',
-  'ch99a': 'appartement', 'chqua': 'appartement', 'chka': 'appartement',
-  'villas': 'villa', 'riads': 'riad', 'maisons': 'maison', 'terrains': 'terrain', 'lots': 'terrain', 'parcelles': 'terrain', 'fermes': 'terrain',
-  'locaux': 'local', 'commerces': 'local', 'boutiques': 'local', 'magasins': 'local',
-  'bureaux': 'bureau', 'studios': 'studio', 'duplexes': 'duplex',
-  'bo93a': 'terrain', 'ba93a': 'terrain', 'aradi': 'terrain',
-
-  // Écritures arabes
-  'شقة': 'appartement', 'شقق': 'appartement', 'برطمة': 'appartement', 'برطما': 'appartement',
-  'دار': 'maison', 'منزل': 'maison', 'ديور': 'maison',
-  'فيلا': 'villa', 'فيلات': 'villa', 'قصر': 'villa',
-  'رياض': 'riad', 'قصبة': 'riad',
-  'محل': 'local', 'حانوت': 'local', 'تجاري': 'local', 'متجر': 'local', 'دكان': 'local',
-  'مكتب': 'bureau', 'مكاتب': 'bureau',
-  'ارض': 'terrain', 'أرض': 'terrain', 'بقعة': 'terrain', 'بقع': 'terrain', 'مزرعة': 'terrain',
-  'استوديو': 'studio', 'ستوديو': 'studio', 'دوبلكس': 'duplex'
-};
-
-// OPÉRATIONS
-export const operationMapping: Record<string, 'location' | 'achat'> = {
-  // Darija / Arabe
-  'nkri': 'location', 'kri': 'location', 'kira': 'location',
-  'nchri': 'achat', 'shri': 'achat', 'buy': 'achat',
-  
-  // Français & Mots communs
-  'location': 'location', 'louer': 'location', 'à louer': 'location',
-  'achat': 'achat', 'acheter': 'achat', 'vente': 'achat', 'à vendre': 'achat',
-
-  // Synonymes et formes normalisées sans accents
-  'a louer': 'location', 'a vendre': 'achat', 'a acheter': 'achat',
-  'kra': 'location', 'kraa': 'location', 'chri': 'achat', 'chiraa': 'achat', 'vendre': 'achat',
-  'كراء': 'location', 'نكري': 'location', 'كري': 'location', 'للكراء': 'location',
-  'شراء': 'achat', 'نشري': 'achat', 'شري': 'achat', 'للبيع': 'achat', 'بيع': 'achat'
-};
-
-// VILLES
-export const cityMapping: Record<string, string> = {
-  'rabat': 'Rabat', 'rbat': 'Rabat', 'agdal': 'Rabat', 'souissi': 'Rabat', 'hassan': 'Rabat',
-  'casablanca': 'Casablanca', 'casa': 'Casablanca', 'maarif': 'Casablanca', 'bourgogne': 'Casablanca', 'anfa': 'Casablanca', 'gauthier': 'Casablanca',
-  'marrakech': 'Marrakech', 'kech': 'Marrakech', 'gueliz': 'Marrakech', 'medina': 'Marrakech', 'palmeraie': 'Marrakech', 'hivernage': 'Marrakech',
-  'tanger': 'Tanger', 'tanja': 'Tanger', 'malabata': 'Tanger',
-  'agadir': 'Agadir', 'taghazout': 'Agadir',
-  'fes': 'Fès', 'fez': 'Fès',
-  'meknes': 'Meknès',
-  'sale': 'Salé', 'sla': 'Salé',
-  'tetouan': 'Tétouan',
-  'kenitra': 'Kénitra',
-  'oujda': 'Oujda',
-  'mohammedia': 'Mohammedia',
-  'essaouira': 'Essaouira',
-  'el jadida': 'El Jadida',
-  'nador': 'Nador',
-  'الرباط': 'Rabat', 'الدار البيضاء': 'Casablanca', 'كازا': 'Casablanca', 'مراكش': 'Marrakech', 'طنجة': 'Tanger', 'أكادير': 'Agadir', 'اكادير': 'Agadir', 'فاس': 'Fès', 'مكناس': 'Meknès', 'سلا': 'Salé', 'تطوان': 'Tétouan', 'وجدة': 'Oujda', 'المحمدية': 'Mohammedia', 'الصويرة': 'Essaouira'
-};
-
-export interface ParsedVoiceFilters {
-  type?: PropertyType;
-  operation?: 'location' | 'achat';
-  city?: string;
-  detectedWords?: string[];
-}
-
-/**
- * PARSING VOCAL AVEC DICTIONNAIRES ENRICHIS (CORRECTION STRICTE)
- * 
- * CORRECTION LOGIQUE :
- * - Scanne TOUS les mots de la phrase captée un par un avec forEach sur text.split(' ') nettoyé, sans s'arrêter.
- * - Pour chaque mot, vérifie s'il existe dans typeMapping, operationMapping ou cityMapping.
- * - Si oui, met à jour le filtre correspondant.
- * - Assure que les filtres ne s'écrasent pas entre eux :
- *   Ex: si je dis "riad" puis "villa", le dernier type écrase le premier, mais "ville" et "type" coexistent !
- * - Ajoute console.log("Mots détectés:", detectedWords) et console.log("Filtres finaux:", finalFilters).
- */
-export function parseVoiceCommand(rawText: string): ParsedVoiceFilters {
-  if (!rawText || !rawText.trim()) {
-    const detectedWords: string[] = [];
-    const emptyFilters: ParsedVoiceFilters = {};
-    console.log("Mots détectés:", detectedWords);
-    console.log("Filtres finaux:", emptyFilters);
-    return emptyFilters;
-  }
-
-  // 1. Convertis le texte capté en minuscules et supprime les accents
-  const cleanText = rawText
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
-
-  const detectedWords: string[] = [];
-  let detectedType: PropertyType | undefined;
-  let detectedOperation: 'location' | 'achat' | undefined;
-  let detectedCity: string | undefined;
-
-  // Détection des expressions multi-mots d'opérations (ex: "a louer", "a vendre", "a acheter")
-  if (cleanText.includes('a louer') || cleanText.includes('à louer')) {
-    detectedOperation = 'location';
-    if (!detectedWords.includes('a louer')) detectedWords.push('a louer');
-  } else if (cleanText.includes('a vendre') || cleanText.includes('à vendre')) {
-    detectedOperation = 'achat';
-    if (!detectedWords.includes('a vendre')) detectedWords.push('a vendre');
-  } else if (cleanText.includes('a acheter')) {
-    detectedOperation = 'achat';
-    if (!detectedWords.includes('a acheter')) detectedWords.push('a acheter');
-  }
-
-  // Découpage propre par mot en remplaçant la ponctuation par des espaces (ex: text.split(' '))
-  const words = cleanText
-    .replace(/[,;:.!?/\\()\-]+/g, ' ')
-    .split(' ')
-    .map((w) => w.trim())
-    .filter(Boolean);
-
-  // 2. Boucle forEach sur TOUS les mots de la phrase captée, un par un, sans s'arrêter
-  words.forEach((word) => {
-    // Vérification Type de bien (le dernier écrase le premier, ex: 'riad' puis 'villa')
-    if (typeMapping[word]) {
-      detectedType = typeMapping[word];
-      if (!detectedWords.includes(word)) {
-        detectedWords.push(word);
-      }
-    }
-
-    // Vérification Opération
-    if (operationMapping[word]) {
-      detectedOperation = operationMapping[word];
-      if (!detectedWords.includes(word)) {
-        detectedWords.push(word);
-      }
-    }
-
-    // Vérification Ville (coexiste parfaitement avec type et opération)
-    if (cityMapping[word]) {
-      detectedCity = cityMapping[word];
-      if (!detectedWords.includes(word)) {
-        detectedWords.push(word);
-      }
-    }
-  });
-
-  const finalFilters: ParsedVoiceFilters = {};
-  if (detectedType) finalFilters.type = detectedType;
-  if (detectedOperation) finalFilters.operation = detectedOperation;
-  if (detectedCity) finalFilters.city = detectedCity;
-  finalFilters.detectedWords = detectedWords;
-
-  // TEST OBLIGATOIRE : logs dans la console
-  console.log("Mots détectés:", detectedWords);
-  console.log("Filtres finaux:", finalFilters);
-
-  // 4. Si AUCUN mot n'est trouvé dans les dictionnaires, retourne un objet vide {}
-  if (!detectedType && !detectedOperation && !detectedCity) {
-    return {};
-  }
-
-  return finalFilters;
-}
-
-export interface ResultatFiltreVocal {
-  filtreAction: 'achat' | 'location' | null;
-  filtreVille: string | null;
-  filtreType: PropertyType | null;
-  filtreChambres?: number | null;
-  resultats: PropertyListing[];
-}
-
-export function filtrerParTexteEcoute(
-  texte: string,
-  listings: PropertyListing[]
-): ResultatFiltreVocal {
-  const parsed = parseVoiceCommand(texte);
-
-  // 4. Si AUCUN mot n'est trouvé dans les deux dictionnaires, retourne un objet vide {} (ce qui déclenchera le message "Aucun résultat")
-  if (Object.keys(parsed).length === 0 || (!parsed.type && !parsed.operation && !parsed.city)) {
-    const emptyFilters = { city: null, type: null, operation: null };
-    console.log("Filtres actifs:", emptyFilters);
-    console.log("Nombre de biens après filtrage strict:", 0);
-    return {
-      filtreAction: null,
-      filtreVille: null,
-      filtreType: null,
-      filtreChambres: null,
-      resultats: []
+    const cityArMap: Record<string, string> = {
+      casablanca: 'الدار البيضاء',
+      rabat: 'الرباط',
+      marrakech: 'مراكش',
+      tanger: 'طنجة',
+      fes: 'فاس',
+      agadir: 'أكادير',
+      oujda: 'وجدة',
+      meknes: 'مكناس',
+      autre: 'أخرى'
     };
+
+    const typeArMap: Record<string, string> = {
+      maison: 'دار',
+      appartement: 'شقة',
+      villa: 'فيلا',
+      riad: 'رياض',
+      local: 'محل',
+      bureau: 'مكتب',
+      terrain: 'أرض',
+      garage: 'كراج'
+    };
+
+    const typeFrMap: Record<string, string> = {
+      maison: 'Maison',
+      appartement: 'Appartement',
+      villa: 'Villa',
+      riad: 'Riad',
+      local: 'Local commercial',
+      bureau: 'Bureau',
+      terrain: 'Terrain',
+      garage: 'Garage'
+    };
+
+    return list.map((item: any) => {
+      const typeNorm = (item.type || 'appartement').toLowerCase() as PropertyType;
+      const cityNorm = item.city || 'Casablanca';
+      const cityId = cityNorm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const quarterNorm = item.neighborhood || item.quarter || 'Centre';
+      const quarterId = quarterNorm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '') || 'all';
+
+      const priceNum = typeof item.price === 'number' ? item.price : parseInt(String(item.price || '0'), 10) || 0;
+      const surfaceNum = typeof item.surface === 'number' ? item.surface : parseInt(String(item.surface || '0'), 10) || 0;
+      const roomsNum = typeof item.rooms === 'number' ? item.rooms : parseInt(String(item.rooms || item.bedrooms || '1'), 10) || 1;
+      
+      const op: OperationType = (item.operation === 'location' || item.operation === 'À louer' || item.operation === 'louer') ? 'location' : 'achat';
+
+      const typeLabel = typeFrMap[typeNorm] || (typeNorm.charAt(0).toUpperCase() + typeNorm.slice(1));
+      const typeLabelAr = typeArMap[typeNorm] || typeNorm;
+      const cityAr = cityArMap[cityId] || cityNorm;
+
+      const titleFr = item.title || `${typeLabel} à ${op === 'achat' ? 'vendre' : 'louer'} à ${cityNorm}`;
+      const titleAr = `${typeLabelAr} ${op === 'achat' ? 'للبيع' : 'للكراء'} في ${cityAr}`;
+
+      return {
+        id: String(item.id || `user-prop-${Date.now()}`),
+        image: item.image || '/placeholder-house.jpg',
+        title: titleFr,
+        titleAr: titleAr,
+        price: `${priceNum.toLocaleString('fr-FR')} MAD`,
+        priceAr: `${priceNum.toLocaleString('fr-FR')} درهم`,
+        priceNum: priceNum,
+        cityId: cityId,
+        city: cityNorm,
+        cityAr: cityAr,
+        quarterId: quarterId,
+        quarter: quarterNorm,
+        quarterAr: quarterNorm,
+        type: typeNorm,
+        typeLabel: typeLabel,
+        typeLabelAr: typeLabelAr,
+        surface: `${surfaceNum} m²`,
+        bedrooms: roomsNum,
+        samsarName: item.fullName || item.sellerName || 'Propriétaire Direct',
+        samsarPhone: item.phone || item.sellerPhone || '+212 600 00 00 00',
+        operation: op,
+        description: item.description || '',
+        isUserSubmitted: true
+      };
+    });
+  } catch (e) {
+    console.warn('Error reading userProperties from localStorage:', e);
+    return [];
   }
-
-  const filters = {
-    city: parsed.city || null,
-    type: parsed.type || null,
-    operation: parsed.operation || null,
-  };
-
-  const allProperties = listings;
-
-  const filteredProperties = allProperties.filter((property) => {
-    // 1. Vérification de la Ville (si un filtre ville est actif)
-    if (filters.city && property.city.toLowerCase() !== filters.city.toLowerCase()) {
-      return false; // Rejeté si la ville ne correspond pas
-    }
-
-    // 2. Vérification du Type (si un filtre type est actif)
-    if (filters.type && property.type.toLowerCase() !== filters.type.toLowerCase()) {
-      return false; // Rejeté si le type ne correspond pas
-    }
-
-    // 3. Vérification de l'Opération (si un filtre opération est actif)
-    if (filters.operation && property.operation.toLowerCase() !== filters.operation.toLowerCase()) {
-      return false; // Rejeté si l'opération (achat/location) ne correspond pas
-    }
-
-    // Si le bien a passé tous les tests (ou si aucun filtre n'est actif), on le garde
-    return true;
-  });
-
-  // Ajoute ce log pour qu'on puisse vérifier dans la console du navigateur :
-  console.log("Filtres actifs:", filters);
-  console.log("Nombre de biens après filtrage strict:", filteredProperties.length);
-
-  return {
-    filtreAction: parsed.operation || null,
-    filtreVille: parsed.city || null,
-    filtreType: parsed.type || null,
-    filtreChambres: null,
-    resultats: filteredProperties
-  };
 }
+
+export function getAllPropertyListings(): PropertyListing[] {
+  const userProps = getUserProperties();
+  return [...userProps, ...PROPERTY_LISTINGS];
+}
+
+// ============================================================================
+// DICTIONNAIRES VOCAUX EXHAUSTIFS & LOGIQUE STRICTE (FRANÇAIS & DARIJA)
+// Synchronisés avec searchUtils pour une source de vérité unique et infaillible
+// ============================================================================
+export {
+  typeMapping,
+  operationMapping,
+  cityMapping,
+  CITIES_LIST,
+  parseVoiceCommand,
+  filtrerParTexteEcoute
+} from '../utils/searchUtils';
+export type { ParsedVoiceFilters, ResultatFiltreVocal } from '../utils/searchUtils';
+import {
+  typeMapping,
+  operationMapping,
+  cityMapping,
+  parseVoiceCommand,
+  filtrerParTexteEcoute
+} from '../utils/searchUtils';
+import type { ParsedVoiceFilters, ResultatFiltreVocal } from '../utils/searchUtils';
 
 // ----------------------------------------------------------------------------
 // TITRE DYNAMIQUE BILINGUE SELON LA LANGUE CHOISIE (ACTION 3)
@@ -1696,11 +1625,11 @@ export function genererDiagnosticVocal(
 
 
 
-// Moteur de recherche du Mode Classique (PRÉSERVÉ STRICTEMENT)
+// Moteur de recherche du Mode Classique (PRÉSERVÉ & INTÉGRÉ AU LOCALSTORAGE)
 export function filtrerBiensModeClassique(
   ville: string | null = null,
   quartier: string = 'all',
-  type: PropertyType | null = null,
+  type: string | PropertyType | null = null,
   budget: string = 'max'
 ): PropertyListing[] {
   const maxPrice = 
@@ -1710,20 +1639,33 @@ export function filtrerBiensModeClassique(
     budget === '3m' ? 3500000 :
     Infinity;
 
-  return PROPERTY_LISTINGS.filter((item) => {
+  const allListings = getAllPropertyListings();
+
+  return allListings.filter((item) => {
     if (item.operation === 'location') return false;
 
     if (ville && ville !== 'all') {
-      const matchCity = item.city.toLowerCase() === ville.toLowerCase() || item.cityId.toLowerCase() === ville.toLowerCase();
+      const v = ville.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const itemCity = item.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const itemCityId = (item.cityId || '').toLowerCase().trim();
+      const matchCity = itemCity === v || itemCityId === v || itemCity.includes(v) || v.includes(itemCity);
       if (!matchCity) return false;
     }
 
-    if (quartier && quartier !== 'all' && item.quarterId !== quartier) {
-      return false;
+    if (quartier && quartier !== 'all') {
+      const q = quartier.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const itemQId = (item.quarterId || '').toLowerCase().trim();
+      const itemQ = (item.quarter || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const matchQuarter = itemQId === q || itemQ === q || itemQ.includes(q) || q.includes(itemQ);
+      if (!matchQuarter) return false;
     }
 
-    if (type && item.type !== type) {
-      return false;
+    if (type && type !== 'all' && (type as string) !== '') {
+      const tNorm = (type as string).toLowerCase().replace(/ commercial$/, '').trim();
+      const itemType = (item.type || '').toLowerCase().trim();
+      if (itemType !== tNorm && !itemType.includes(tNorm) && !tNorm.includes(itemType)) {
+        return false;
+      }
     }
 
     if (item.priceNum > maxPrice) {
@@ -1742,17 +1684,66 @@ const BUDGET_OPTIONS = [
   { id: 'max', label: 'Illimité', labelAr: 'غير محدد' }
 ];
 
-interface StartNavigationProps {
+export const quartiersParVille: Record<string, string[]> = {
+  'Casablanca': ['Maârif', 'Ain Diab', 'Californie', 'Anfa', 'Gauthier', 'Bourgogne', 'Racine', 'Palmier', 'Oulfa', 'Sidi Maarouf', 'Ain Sebaa', 'Hay Hassani', 'Derb Sultan', 'Belvedere', 'Lissasfa'],
+  'Rabat': ['Agdal', 'Hassan', 'Souissi', 'Hay Riad', 'Ocean', 'Diour Jamaa', 'Yacoub El Mansour', 'Aviation', 'Madinat Al Irfane'],
+  'Marrakech': ['Guéliz', 'Hivernage', 'Medina', 'Mellah', 'Targa', 'Agdal', 'M\'hamid', 'Daoudiate'],
+  'Tanger': ['Malabata', 'Centre Ville', 'Marshan', 'Boukhalef', 'Mesnana', 'Beni Makada'],
+  'Fès': ['Ville Nouvelle', 'Medina', 'Agdal', 'Atlas', 'Saiss'],
+  'Agadir': ['Talborjt', 'Founty', 'Hay Mohammadi', 'Anza', 'Dakhla'],
+  'Oujda': ['Centre Ville', 'Al Qods', 'Lazaret', 'Mir Ali', 'Golf'],
+  'Meknès': ['Hamria', 'Bassatine', 'Mansour', 'Zitoune', 'Marjane'],
+  'Kénitra': ['Centre Ville', 'Bir Rami', 'Mehdia', 'Mimosa', 'Ouled Oujih'],
+  'Tétouan': ['Centre Ville', 'Martil', 'Cabo Negro', 'Wilaya', 'M\'diq'],
+  'Safi': ['Centre Ville', 'Biada', 'Plateau', 'Kourssi'],
+  'El Jadida': ['Centre Ville', 'Sidi Bouzid', 'Al Qods', 'Nassim', 'Plage'],
+  'Béni Mellal': ['Centre Ville', 'Ouled Hamdane', 'Al Massira', 'Riad Salam'],
+  'Nador': ['Centre Ville', 'Al Matar', 'Taouima', 'Beni Ensar'],
+  'Taza': ['Centre Ville', 'Boutouil', 'Al Qods', 'Doha'],
+  'Settat': ['Centre Ville', 'Al Mouatamid', 'Al Farah', 'Miftah Al Khir'],
+  'Berrechid': ['Centre Ville', 'Al Mouatamid', 'Riad', 'Bouskoura Sud'],
+  'Khouribga': ['Centre Ville', 'Al Massira', 'Al Fariss', 'Zaytoun'],
+  'Laâyoune': ['Centre Ville', 'Al Wahda', 'Al Qods', 'Madinat Al Wifaq'],
+  'Dakhla': ['Centre Ville', 'Oum Tounsi', 'Al Massira', 'Kassambar']
+};
+
+export interface StartNavigationProps {
   onRestartSplash?: () => void;
+  language?: Language;
+  mode?: string;
+  initialStep?: StartScreen;
+  onBackToMode?: () => void;
+  onBack?: () => void;
+  onGoHome?: () => void;
 }
 
-export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplash }) => {
+export const StartNavigation: React.FC<StartNavigationProps> = ({ 
+  onRestartSplash,
+  language: propLanguage,
+  mode: propMode,
+  initialStep = 'home',
+  onBackToMode,
+  onBack,
+  onGoHome
+}) => {
   // NOUVELLE STRUCTURE (Parcours guidé par étapes) :
-  // 1. Variable d'état currentStep ('language', 'mode', 'vocal', 'classic', etc.)
-  const [currentStep, setCurrentStep] = useState<StartScreen>('language');
+  // 1. Variable d'état currentStep ('home', 'find_samsar', 'search_property', 'post_listing', etc.)
+  const [currentStep, setCurrentStep] = useState<StartScreen>(initialStep);
   const currentScreen = currentStep;
   const setCurrentScreen = setCurrentStep;
-  const [language, setLanguage] = useState<Language>('fr');
+  const [language, setLanguage] = useState<Language>(propLanguage || 'fr');
+
+  useEffect(() => {
+    if (propLanguage) {
+      setLanguage(propLanguage);
+    }
+  }, [propLanguage]);
+
+  useEffect(() => {
+    if (initialStep) {
+      setCurrentStep(initialStep);
+    }
+  }, [initialStep]);
 
   // ACTION 2 : Double Micro (Darija ar-MA / Français fr-FR)
   const [voiceLanguage, setVoiceLanguage] = useState<'darija' | 'fr'>('darija');
@@ -1763,11 +1754,13 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     type: PropertyType | null;
     operation: 'achat' | 'location' | null;
     price: string | null;
+    neighborhood?: string | null;
   }>({
     city: null,
     type: null,
     operation: null,
     price: null,
+    neighborhood: null,
   });
 
   const [texteEcoute, setTexteEcoute] = useState<string>("");
@@ -1796,19 +1789,57 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     texteEcouteRef.current = texteEcoute;
   }, [texteEcoute]);
 
-  // État d'évaluation strict dynamique (aucun hardcoding)
+  // État d'évaluation strict dynamique (avec LocalStorage userProperties synchronisé)
+  const [allProperties, setAllProperties] = useState<PropertyListing[]>(() => getAllPropertyListings());
+
   const [voiceEvaluation, setVoiceEvaluation] = useState<ResultatFiltreVocal>(() =>
-    filtrerParTexteEcoute("", PROPERTY_LISTINGS)
+    filtrerParTexteEcoute("", getAllPropertyListings())
   );
 
-  const allProperties = PROPERTY_LISTINGS;
+  // États des filtres pour la page "Rechercher un bien" (Acheter / Vendre)
+  const [selectedCityId, setSelectedCityId] = useState<string>('');
+  const [selectedQuarterId, setSelectedQuarterId] = useState<string>('all');
+  const [selectedPropertyType, setSelectedPropertyType] = useState<string>('');
+  const [contactedListing, setContactedListing] = useState<PropertyListing | null>(null);
+  const [selectedBudget, setSelectedBudget] = useState<string>('1m');
+  const [searchSubmitted, setSearchSubmitted] = useState<boolean>(false);
+  const [filteredListings, setFilteredListings] = useState<PropertyListing[]>([]);
+  const resultsRef = React.useRef<HTMLDivElement>(null);
+
+  // Réinitialisation automatique du quartier si la ville change ou si le quartier n'appartient pas à la ville
+  useEffect(() => {
+    const currentCity = filters.city || selectedCityId;
+    if (filters.neighborhood && (!currentCity || !quartiersParVille[currentCity]?.includes(filters.neighborhood))) {
+      setFilters(prev => ({ ...prev, neighborhood: '' }));
+      setSelectedQuarterId('all');
+    }
+  }, [filters.city, selectedCityId]);
+
+  // Synchronisation dynamique continue du LocalStorage (userProperties)
+  useEffect(() => {
+    const handleSync = () => {
+      const updated = getAllPropertyListings();
+      setAllProperties(updated);
+      if (searchSubmitted) {
+        setFilteredListings(filtrerBiensModeClassique(selectedCityId, selectedQuarterId, selectedPropertyType, selectedBudget));
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleSync);
+      window.addEventListener('userPropertiesUpdated', handleSync);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleSync);
+        window.removeEventListener('userPropertiesUpdated', handleSync);
+      }
+    };
+  }, [searchSubmitted, selectedCityId, selectedQuarterId, selectedPropertyType, selectedBudget]);
 
   // Filtrage strict infaillible (ET logique)
   const filteredProperties = React.useMemo(() => {
-    if (!texteBrutCapte && !texteEcoute && !filters.city && !filters.type && !filters.operation) {
-      return [];
-    }
-
     const filtered = allProperties.filter((property) => {
       // 1. Vérification de la Ville (si un filtre ville est actif)
       if (filters.city && property.city.toLowerCase() !== filters.city.toLowerCase()) {
@@ -1832,14 +1863,13 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     // Ajoute ce log pour qu'on puisse vérifier dans la console du navigateur :
     console.log("Filtres actifs:", filters);
     console.log("Nombre de biens après filtrage strict:", filtered.length);
-
     return filtered;
-  }, [filters, allProperties, texteBrutCapte, texteEcoute]);
+  }, [filters, allProperties]);
 
   // Diagnostic vocal temps réel (Étape C)
   const diagnosticVocal = React.useMemo(() => {
-    return genererDiagnosticVocal(texteBrutCapte || texteEcoute, PROPERTY_LISTINGS, voiceEvaluation);
-  }, [texteBrutCapte, texteEcoute, voiceEvaluation]);
+    return genererDiagnosticVocal(texteBrutCapte || texteEcoute, allProperties, voiceEvaluation);
+  }, [texteBrutCapte, texteEcoute, allProperties, voiceEvaluation]);
 
   const [countdown, setCountdown] = useState<number>(3);
   const [calledModal, setCalledModal] = useState<PropertyListing | null>(null);
@@ -1849,19 +1879,17 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
   const [activeAlert, setActiveAlert] = useState<{ title: string; subtitle: string } | null>(null);
   const [selectedSamsarModal, setSelectedSamsarModal] = useState<TrustedSamsar | null>(null);
   const [simulatedCallActive, setSimulatedCallActive] = useState<boolean>(false);
-  const [samsarCityFilter, setSamsarCityFilter] = useState<string>('all');
-  const [samsarQuarterFilter, setSamsarQuarterFilter] = useState<string>('all');
+  const [samsarCityFilter, setSamsarCityFilter] = useState<string>('');
+  const [samsarQuarterFilter, setSamsarQuarterFilter] = useState<string>('');
+  const [samsarTypeFilter, setSamsarTypeFilter] = useState<string>('');
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-  // États des filtres pour la page "Rechercher un bien" (Acheter / Vendre)
-  const [selectedCityId, setSelectedCityId] = useState<string>('casablanca');
-  const [selectedQuarterId, setSelectedQuarterId] = useState<string>('all');
-  const [selectedPropertyType, setSelectedPropertyType] = useState<PropertyType>('appartement');
-  const [contactedListing, setContactedListing] = useState<PropertyListing | null>(null);
-  const [selectedBudget, setSelectedBudget] = useState<string>('1m');
-  const [searchSubmitted, setSearchSubmitted] = useState<boolean>(false);
-  const [filteredListings, setFilteredListings] = useState<PropertyListing[]>([]);
-  const resultsRef = React.useRef<HTMLDivElement>(null);
+  // Réinitialisation automatique du quartier Samsar si la ville change ou si le quartier n'appartient pas à la ville
+  useEffect(() => {
+    if (samsarQuarterFilter && (!samsarCityFilter || !quartiersParVille[samsarCityFilter]?.includes(samsarQuarterFilter))) {
+      setSamsarQuarterFilter('');
+    }
+  }, [samsarCityFilter]);
 
   // 2. FORCER LE RESET DES FILTRES DANS LA FONCTION DE TRADUCTION
   const handleTranslatedText = (nouveauTexte: string) => {
@@ -1873,7 +1901,9 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     setFilters({ city: null, type: null, operation: null, price: null });
 
     // 3. APPLIQUER LES NOUVEAUX CRITÈRES APRÈS LE RESET (STRICT, ZÉRO APPROXIMATION)
-    const evaluation = filtrerParTexteEcoute(texteNettoye, PROPERTY_LISTINGS);
+    const currentListings = getAllPropertyListings();
+    setAllProperties(currentListings);
+    const evaluation = filtrerParTexteEcoute(texteNettoye, currentListings);
 
     setFilters({
       city: evaluation.filtreVille,
@@ -2044,7 +2074,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
   const handleExecuteSearch = (
     cityOverride?: string,
     quarterOverride?: string,
-    typeOverride?: PropertyType,
+    typeOverride?: string | PropertyType,
     budgetOverride?: string
   ) => {
     const city = cityOverride || selectedCityId;
@@ -2192,9 +2222,16 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                       <span>{language === 'ar' ? (house.cityAr || house.city) : house.city}</span>
                     </div>
 
-                    {/* Badge Type de bien */}
-                    <div className={`absolute top-3 ${language === 'ar' ? 'left-3' : 'right-3'} px-3 py-1 rounded-full bg-[#006233] text-white font-black text-xs uppercase tracking-wider shadow-md`}>
-                      {language === 'ar' ? house.typeLabelAr : house.typeLabel}
+                    {/* Badge Type de bien & Annonce directe */}
+                    <div className={`absolute top-3 ${language === 'ar' ? 'left-3' : 'right-3'} flex items-center gap-1.5`}>
+                      {house.isUserSubmitted && (
+                        <span className="px-2.5 py-1 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">
+                          {language === 'ar' ? 'إعلان مباشر' : 'Annonce directe'}
+                        </span>
+                      )}
+                      <div className="px-3 py-1 rounded-full bg-[#006233] text-white font-black text-xs uppercase tracking-wider shadow-md">
+                        {language === 'ar' ? house.typeLabelAr : house.typeLabel}
+                      </div>
                     </div>
 
                     {/* Prix affiché en gros sur l'image */}
@@ -2228,10 +2265,12 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                       </p>
                     </div>
 
-                    {/* Samsar référent */}
+                    {/* Samsar référent ou Propriétaire */}
                     <div className="flex items-center justify-between text-xs py-1.5 border-y border-stone-100">
                       <span className="text-stone-500 font-medium">
-                        {language === 'ar' ? 'السمسار المعتمد :' : 'Samsar référent :'}
+                        {house.isUserSubmitted
+                          ? (language === 'ar' ? 'المالك المباشر :' : 'Propriétaire :')
+                          : (language === 'ar' ? 'السمسار المعتمد :' : 'Samsar référent :')}
                       </span>
                       <span className="font-extrabold text-stone-800">
                         {house.samsarName}
@@ -2246,7 +2285,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                         className="py-3 px-3 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-black text-sm flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition cursor-pointer"
                       >
                         <Phone className="w-4 h-4" />
-                        <span>{language === 'ar' ? 'اتصال' : 'Contacter'}</span>
+                        <span>
+                          {house.isUserSubmitted
+                            ? (language === 'ar' ? 'اتصال بالمالك' : 'Contacter')
+                            : (language === 'ar' ? 'اتصال' : 'Contacter')}
+                        </span>
                       </button>
 
                       <button
@@ -2369,7 +2412,9 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
 
                   <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/70 space-y-1">
                     <div className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">
-                      {language === 'ar' ? 'السمسار المعتمد' : 'Samsar Référent'}
+                      {detailModalListing.isUserSubmitted
+                        ? (language === 'ar' ? 'مالك العقار المباشر' : 'Propriétaire Direct')
+                        : (language === 'ar' ? 'السمسار المعتمد' : 'Samsar Référent')}
                     </div>
                     <div className="text-base font-extrabold text-stone-900">
                       {detailModalListing.samsarName}
@@ -2385,7 +2430,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                       className="w-full py-3.5 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition"
                     >
                       <Phone className="w-4 h-4" />
-                      <span>{language === 'ar' ? 'اتصال بالسمسار' : 'Appeler le Samsar'}</span>
+                      <span>
+                        {detailModalListing.isUserSubmitted
+                          ? (language === 'ar' ? 'اتصال بالمالك' : 'Appeler le Propriétaire')
+                          : (language === 'ar' ? 'اتصال بالسمسار' : 'Appeler le Samsar')}
+                      </span>
                     </a>
                     <button
                       type="button"
@@ -2418,7 +2467,9 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
 
                 <div className="space-y-1">
                   <div className="inline-block px-2.5 py-1 rounded-full bg-emerald-50 text-[#006233] text-[11px] font-bold uppercase tracking-wide">
-                    {language === 'ar' ? 'السمسار المعتمد' : 'Samsar Référent'}
+                    {calledModal.isUserSubmitted
+                      ? (language === 'ar' ? 'مالك العقار المباشر' : 'Propriétaire Direct')
+                      : (language === 'ar' ? 'السمسار المعتمد' : 'Samsar Référent')}
                   </div>
                   <h3 className="text-xl font-extrabold text-stone-900">
                     {calledModal.samsarName}
@@ -2473,30 +2524,43 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
    * ============================================================= */
   const isAr = language === 'ar' && currentStep !== 'language';
   const isMapScreen = currentScreen === 'samsar_map';
-  const currentCity = CITIES_DATA.find((c) => c.id === selectedCityId) || CITIES_DATA[0];
+  const currentCity = CITIES_DATA.find(
+    (c) => c.id.toLowerCase() === (selectedCityId || '').toLowerCase() || c.name.toLowerCase() === (selectedCityId || '').toLowerCase()
+  ) || {
+    id: selectedCityId ? selectedCityId.toLowerCase() : 'all',
+    name: selectedCityId || 'Toutes les villes',
+    nameAr: selectedCityId || 'جميع المدن',
+    quarters: [{ id: 'all', name: 'Tous les quartiers', nameAr: 'كل الأحياء' }]
+  };
 
   const handleAppBack = () => {
     if (isListeningMic) stopListening();
-    if (currentStep === 'samsar_map') {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (currentStep === 'samsar_map' || currentStep === 'find_samsar') {
       setCurrentStep('samsar_choice');
+    } else if (currentStep === 'samsar_choice') {
+      setCurrentStep('home');
     } else if ((currentStep as string) === 'voice_results') {
       setCurrentStep('vocal');
-    } else if (currentStep === 'find_samsar') {
-      setCurrentStep('samsar_choice');
-    } else if (currentStep === 'samsar_choice' || currentStep === 'buy_sell_choice' || currentStep === 'search_property' || currentStep === 'post_listing') {
-      setCurrentStep('classic');
-    } else if (currentStep === 'classic' || currentStep === 'vocal' || currentStep === 'dashboard') {
-      setCurrentStep('mode');
-    } else if (currentStep === 'mode' || currentStep === 'mode_choice') {
-      setCurrentStep('language');
+    } else if (currentStep === 'home') {
+      if (onBackToMode) {
+        onBackToMode();
+      }
     } else {
-      setCurrentStep('language');
+      setCurrentStep('home');
     }
   };
 
   const handleMenuSelect = (option: string) => {
     if (isListeningMic) stopListening();
-    setCurrentStep(option as StartScreen);
+    if (option === 'classic' || option === 'home') {
+      setCurrentStep('home');
+    } else {
+      setCurrentStep(option as StartScreen);
+    }
   };
 
   return (
@@ -2506,12 +2570,14 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
     >
       {/* 1. COMPOSANT UNIQUE "AppHeader" (fixed top-0 left-0 w-full h-16 z-50) */}
       <AppHeader
-        showBackButton={currentStep !== 'language'}
+        showBackButton={currentStep !== 'home' || !!onBackToMode}
         onBack={handleAppBack}
         language={language}
         onToggleLanguage={() => setLanguage(language === 'ar' ? 'fr' : 'ar')}
         onSelectMenuOption={handleMenuSelect}
         currentStep={currentStep}
+        showHomeButton={currentStep !== 'home' || !!onGoHome}
+        onGoHome={onGoHome || (() => setCurrentStep('home'))}
       />
 
       {/* =========================================================
@@ -2536,86 +2602,102 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
         </div>
       ) : (
         /* Corps principal - Centré pour onboarding ou scrollable */
-        <main className={`flex-1 flex flex-col items-center ${currentStep === 'language' || currentStep === 'mode' ? 'justify-center min-h-[85dvh]' : 'justify-start'} p-3 sm:p-5 w-full max-w-xl mx-auto z-10`}>
-        {/* =========================================================
-         * ÉCRAN 1 : CHOIX DE LA LANGUE (Après l'animation SplashScreen)
-         * Affiche uniquement deux gros boutons élégants : "Français 🇫🇷" et "العربية 🇲🇦"
-         * ========================================================= */}
-        {currentStep === 'language' && (
-          <div className="w-full flex-1 flex flex-col items-center justify-center text-center space-y-8 py-8 pt-20 animate-fade-in max-w-md mx-auto my-auto">
-            {/* Logo et identité DirectSamsar */}
-            <div className="space-y-4">
-              <div className="inline-flex p-4 rounded-3xl bg-amber-50 border border-amber-200/80 shadow-md">
-                <MoroccoFlagStarLogo />
-              </div>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight font-serif">
-                  DIRECT<span className="text-amber-600">SAMSAR</span>
-                </h1>
-                <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-                  L'immobilier marocain réinventé • العقار المغربي الذكي
-                </p>
-              </div>
-            </div>
+        <main className={`flex-1 flex flex-col items-center ${currentStep === 'home' || currentStep === 'mode' ? 'justify-center min-h-[85dvh]' : 'justify-start'} p-3 sm:p-5 w-full max-w-xl mx-auto z-10`}>
+        {currentStep === 'splash' && (
+          <SplashScreen onFinish={() => setCurrentStep('home')} />
+        )}
 
-            {/* Titre de l'étape */}
-            <div className="space-y-2">
-              <h2 className="text-xl sm:text-2xl font-black text-stone-800 tracking-tight">
-                Choisissez votre langue / اختر لغتكم
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-500 font-medium">
-                Sélectionnez votre langue de navigation
+        {/* =========================================================
+         * ÉCRAN D'ACCUEIL : LOGO HERO & MENU PRINCIPAL
+         * ========================================================= */}
+        {(currentStep === 'home') && (
+          <div className="min-h-screen w-full bg-gradient-to-b from-orange-50 to-white flex flex-col items-center justify-start px-6 pt-20 pb-8 animate-fade-in">
+            
+            {/* Titre de section simple et discret */}
+            <div className="w-full max-w-md pt-4 pb-6 text-center">
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                {language === 'ar' ? 'الخدمات العقارية' : 'Services Immobiliers'}
+              </h1>
+              <p className="text-sm text-gray-500 font-medium mt-1">
+                {language === 'ar' ? 'اختر الخدمة المطلوبة للمتابعة' : 'Trouver un Samsar, acheter ou vendre un bien'}
               </p>
             </div>
 
-            {/* Deux gros boutons élégants */}
-            <div className="w-full flex flex-col gap-4 px-2">
-              {/* Bouton Français */}
+            {/* MENU PRINCIPAL */}
+            <div className="w-full max-w-md space-y-4">
+              
               <button
                 type="button"
                 onClick={() => {
-                  setLanguage('fr');
-                  setCurrentStep('mode');
+                  setCurrentScreen('samsar_choice');
+                  setCurrentStep('samsar_choice');
                 }}
-                className="w-full py-5 px-6 rounded-2xl bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-200 hover:border-blue-500 shadow-lg shadow-stone-200/60 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-between group cursor-pointer"
+                className="w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-4 text-left group cursor-pointer"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🇫🇷</span>
-                  <div className="text-left">
-                    <span className="block text-lg font-black text-stone-900 group-hover:text-blue-600 transition">
-                      Français
-                    </span>
-                    <span className="block text-xs text-stone-500">
-                      Continuer en français
-                    </span>
-                  </div>
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-orange-200 transition-colors">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
                 </div>
-                <ArrowRight className="w-5 h-5 text-stone-400 group-hover:text-blue-600 group-hover:translate-x-1 transition" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg">Trouver un Samsar</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">Agents certifiés par quartier</p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
 
-              {/* Bouton Arabe */}
               <button
                 type="button"
                 onClick={() => {
-                  setLanguage('ar');
-                  setCurrentStep('mode');
+                  setSearchSubmitted(false);
+                  setCurrentScreen('search_property');
+                  setCurrentStep('search_property');
                 }}
-                className="w-full py-5 px-6 rounded-2xl bg-white hover:bg-red-50/30 text-stone-900 border-2 border-stone-200 hover:border-red-600 shadow-lg shadow-stone-200/60 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-between group cursor-pointer"
-                dir="rtl"
+                className="w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-4 text-left group cursor-pointer"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🇲🇦</span>
-                  <div className="text-right">
-                    <span className="block text-lg font-black text-stone-900 group-hover:text-red-700 transition font-sans">
-                      العربية
-                    </span>
-                    <span className="block text-xs text-stone-500">
-                      المتابعة باللغة العربية
-                    </span>
-                  </div>
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
                 </div>
-                <ArrowLeft className="w-5 h-5 text-stone-400 group-hover:text-red-700 group-hover:-translate-x-1 transition" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg">Acheter un bien</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">Appartements, villas, terrains</p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentScreen('post_listing');
+                  setCurrentStep('post_listing');
+                }}
+                className="w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md active:scale-[0.98] transition-all flex items-center gap-4 text-left group cursor-pointer"
+              >
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-red-200 transition-colors">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg">Vendre un bien</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">Publiez votre annonce</p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mt-auto pt-8 text-center">
+              <p className="text-xs text-gray-400 font-medium">
+                DirectSamsar Maroc • L'immobilier réinventé
+              </p>
             </div>
           </div>
         )}
@@ -3238,52 +3320,26 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
         )}
 
         {/* =========================================================
-         * ÉCRAN : "DÉPOSER UNE ANNONCE" (Vendre / Mettre en location)
-         * 1. Bouton "Retour" en haut
-         * 2. Titre : "Déposer mon bien"
-         * 3. Message : "Formulaire en construction"
+         * ÉCRAN : "DÉPOSER UNE ANNONCE" (Vendre / Déposer un bien)
+         * Formulaire complet en 3 sections avec validation et succès
          * ========================================================= */}
         {currentScreen === 'post_listing' && (
-          <div className="w-full flex flex-col space-y-6 py-2 animate-fade-in">
-            {/* PageTitle standardisé */}
-            <PageTitle
-              title={language === 'ar' ? 'نشر عقاري' : 'Déposer mon bien'}
-              subtitle={language === 'ar' ? 'خدمة وضع الإعلانات لبيع أو كراء العقارات عبر منصة ديركت سمسar' : 'Publiez votre bien à la vente ou à la location en direct avec nos Samsars'}
-            />
-
-            {/* 3. Message : "Formulaire en construction" */}
-            <div className="w-full bg-white rounded-3xl p-8 sm:p-10 border border-stone-200/90 shadow-lg text-center space-y-6">
-              <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-500/10 text-amber-600 flex items-center justify-center border border-amber-500/20 shadow-xs">
-                <Construction className="w-10 h-10 animate-bounce" />
-              </div>
-
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-extrabold text-xs uppercase tracking-wider">
-                  <span>🚧 {language === 'ar' ? 'قيد التطوير' : 'Bientôt disponible'}</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
-                  {language === 'ar' ? 'الاستمارة قيد الإنجاز' : 'Formulaire en construction'}
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-500 font-medium max-w-sm mx-auto leading-relaxed">
-                  {language === 'ar'
-                    ? 'نعمل حالياً على إعداد الاستمارة الذكية لتسهيل رفع الصور وإضافة تفاصيل عقارك وربطه بالسماسرة المعتمدين.'
-                    : 'Notre équipe finalise le formulaire intelligent pour vous permettre d\'ajouter vos photos, fixer votre prix et déléguer la visite à nos Samsars de confiance.'}
-                </p>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCurrentScreen('find_samsar')}
-                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md active:scale-95 transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <User className="w-4 h-4" />
-                  <span>{language === 'ar' ? 'الاتصال بسمسار لمساعدتي' : 'Contacter un Samsar pour m\'aider'}</span>
-                </button>
-
-              </div>
-            </div>
-          </div>
+          <PostListingForm
+            language={language}
+            onBack={() => {
+              const updated = getAllPropertyListings();
+              setAllProperties(updated);
+              setCurrentScreen('classic');
+              setCurrentStep('classic');
+            }}
+            onSuccessReturn={() => {
+              const updated = getAllPropertyListings();
+              setAllProperties(updated);
+              setFilteredListings(filtrerBiensModeClassique(selectedCityId, selectedQuarterId, selectedPropertyType, selectedBudget));
+              setCurrentScreen('classic');
+              setCurrentStep('classic');
+            }}
+          />
         )}
 
         {/* =========================================================
@@ -3298,7 +3354,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
             {/* PageTitle standardisé */}
             <PageTitle
               title={language === 'ar' ? 'البحث عن سمسار' : 'Trouver un Samsar'}
-              subtitle={language === 'ar' ? 'اختر طريقة البحث المفضلة لديك للعثور على وسيط عقاري معتمد' : 'Choisissez comment vous souhaitez trouver votre agent immobilier de confiance'}
+              subtitle={language === 'ar' ? 'اختر طريقة البحث المفضلة لديك' : 'Choisissez votre mode de recherche'}
             />
 
             {/* 2 GRANDES CARTES / BOUTONS BIEN DISTINCTS */}
@@ -3392,137 +3448,303 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
               subtitle={language === 'ar' ? 'سماسرة عقاريون معتمدون وموثوق بهم حسب الأحياء والمدن المغربية' : 'Des agents immobiliers locaux, vérifiés et recommandés par quartier'}
             />
 
-            {/* BARRE DE FILTRES COMBINÉS : VILLE & QUARTIER */}
+            {/* 3 MENUS DÉROULANTS BILINGUES : VILLE, QUARTIER, TYPE DE BIEN */}
             <div className="w-full space-y-4 bg-white p-4 sm:p-5 rounded-3xl border border-stone-200/90 shadow-md">
-              {/* FILTRE 1 : VILLE */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-stone-600 px-1">
-                  <span className="flex items-center gap-1.5 text-stone-900">
-                    <MapPin className="w-3.5 h-3.5 text-[#006233]" />
-                    <span>{language === 'ar' ? '1. اختر المدينة (Ville) :' : '1. Filtrer par Ville :'}</span>
+              {/* MENU 1 : VILLE */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-stone-700 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-[#006233]" />
+                    <span>{language === 'ar' ? 'المدينة' : 'Ville'}</span>
                   </span>
                   <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    {TRUSTED_SAMSARS.filter(s => samsarCityFilter === 'all' || s.cityId === samsarCityFilter).length} {language === 'ar' ? 'سمسار' : (TRUSTED_SAMSARS.filter(s => samsarCityFilter === 'all' || s.cityId === samsarCityFilter).length > 1 ? 'samsars' : 'samsar')}
+                    {TRUSTED_SAMSARS.filter((samsar) => {
+                      if (samsarCityFilter && samsarCityFilter !== 'all' && samsarCityFilter !== '') {
+                        const c = samsarCityFilter.toLowerCase().trim();
+                        const matchCity = 
+                          samsar.cityName.toLowerCase() === c ||
+                          samsar.cityId.toLowerCase() === c ||
+                          samsar.city.toLowerCase().includes(c) ||
+                          c.includes(samsar.cityName.toLowerCase()) ||
+                          c.includes(samsar.cityId.toLowerCase());
+                        if (!matchCity) return false;
+                      }
+                      if (samsarQuarterFilter && samsarQuarterFilter !== 'all' && samsarQuarterFilter !== '' && samsarQuarterFilter !== 'Autre') {
+                        const q = samsarQuarterFilter.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                        const samsarQName = (samsar.quarterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                        const samsarQId = (samsar.quarterId || '').toLowerCase().trim();
+                        const samsarCityFull = (samsar.city || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                        const matchQuarter = 
+                          samsarQName.includes(q) || 
+                          q.includes(samsarQName) || 
+                          samsarQId.includes(q) || 
+                          q.includes(samsarQId) ||
+                          samsarCityFull.includes(q);
+                        if (!matchQuarter) return false;
+                      }
+                      if (samsarTypeFilter && samsarTypeFilter !== 'all' && samsarTypeFilter !== '') {
+                        const t = samsarTypeFilter.toLowerCase().trim();
+                        const spec = (samsar.specialty || '').toLowerCase();
+                        const specAr = samsar.specialtyAr || '';
+                        const matchSpecialty = 
+                          (t.includes('appartement') && (spec.includes('appartement') || specAr.includes('شقق') || spec.includes('résidentiel'))) ||
+                          (t.includes('villa') && (spec.includes('villa') || specAr.includes('فيلا') || specAr.includes('فيلات'))) ||
+                          (t.includes('riad') && (spec.includes('riad') || specAr.includes('رياض'))) ||
+                          (t.includes('maison') && (spec.includes('maison') || specAr.includes('منزل') || specAr.includes('منازل') || spec.includes('résidentiel'))) ||
+                          (t.includes('studio') && (spec.includes('studio') || specAr.includes('استوديو'))) ||
+                          (t.includes('bureau') && (spec.includes('bureau') || specAr.includes('مكتب') || specAr.includes('مكاتب') || spec.includes('professionnel') || specAr.includes('مهنية'))) ||
+                          (t.includes('local') && (spec.includes('local') || spec.includes('commercial') || specAr.includes('محل') || specAr.includes('تجاري'))) ||
+                          (t.includes('terrain') && (spec.includes('terrain') || specAr.includes('أرض') || specAr.includes('أراضي'))) ||
+                          (t.includes('garage') && (spec.includes('garage') || spec.includes('parking') || specAr.includes('مرآب') || specAr.includes('كراج'))) ||
+                          (t.includes('duplex') && (spec.includes('duplex') || spec.includes('appartement') || specAr.includes('دوبلكس'))) ||
+                          spec.includes(t) ||
+                          specAr.includes(samsarTypeFilter);
+                        if (!matchSpecialty) return false;
+                      }
+                      return true;
+                    }).length} {language === 'ar' ? 'سمسار' : 'samsar(s)'}
                   </span>
-                </div>
-
-                {/* Boutons simples avec : "Toutes les villes", "Casablanca", "Rabat", "Marrakech", "Tanger" */}
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                  {SAMSAR_CITY_OPTIONS.map((cityOpt) => {
-                    const isActive = samsarCityFilter === cityOpt.id;
-                    return (
-                      <button
-                        key={cityOpt.id}
-                        type="button"
-                        onClick={() => {
-                          setSamsarCityFilter(cityOpt.id);
-                          setSamsarQuarterFilter('all');
-                        }}
-                        className={`py-2 px-3 sm:px-3.5 rounded-2xl text-xs sm:text-sm font-bold border transition-all duration-150 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
-                          isActive
-                            ? 'bg-[#006233] text-white border-[#006233] shadow-md shadow-emerald-950/20'
-                            : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200/90 hover:border-emerald-500/40'
-                        }`}
-                      >
-                        {cityOpt.id !== 'all' && (
-                          <MapPin className={`w-3 h-3 ${isActive ? 'text-amber-300' : 'text-stone-400'}`} />
-                        )}
-                        <span>{language === 'ar' ? cityOpt.labelAr : cityOpt.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                </label>
+                <select 
+                  value={samsarCityFilter} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSamsarCityFilter(val);
+                    setFilters((prev) => ({ ...prev, city: val || null }));
+                  }}
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                    backgroundSize: '20px',
+                    paddingRight: language === 'ar' ? '16px' : '48px',
+                    paddingLeft: language === 'ar' ? '48px' : '16px'
+                  }}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="">
+                    {language === 'ar' ? '-- جميع المدن --' : '-- Toutes les villes --'}
+                  </option>
+                  <option value="Casablanca">{language === 'ar' ? 'الدار البيضاء' : 'Casablanca'}</option>
+                  <option value="Rabat">{language === 'ar' ? 'الرباط' : 'Rabat'}</option>
+                  <option value="Marrakech">{language === 'ar' ? 'مراكش' : 'Marrakech'}</option>
+                  <option value="Tanger">{language === 'ar' ? 'طنجة' : 'Tanger'}</option>
+                  <option value="Fès">{language === 'ar' ? 'فاس' : 'Fès'}</option>
+                  <option value="Agadir">{language === 'ar' ? 'أكادير' : 'Agadir'}</option>
+                  <option value="Oujda">{language === 'ar' ? 'وجدة' : 'Oujda'}</option>
+                  <option value="Meknès">{language === 'ar' ? 'مكناس' : 'Meknès'}</option>
+                  <option value="Kénitra">{language === 'ar' ? 'القنيطرة' : 'Kénitra'}</option>
+                  <option value="Tétouan">{language === 'ar' ? 'تطوان' : 'Tétouan'}</option>
+                  <option value="Safi">{language === 'ar' ? 'آسفي' : 'Safi'}</option>
+                  <option value="El Jadida">{language === 'ar' ? 'الجديدة' : 'El Jadida'}</option>
+                  <option value="Béni Mellal">{language === 'ar' ? 'بني ملال' : 'Béni Mellal'}</option>
+                  <option value="Nador">{language === 'ar' ? 'الناظور' : 'Nador'}</option>
+                  <option value="Taza">{language === 'ar' ? 'تازة' : 'Taza'}</option>
+                  <option value="Settat">{language === 'ar' ? 'سطات' : 'Settat'}</option>
+                  <option value="Berrechid">{language === 'ar' ? 'برشيد' : 'Berrechid'}</option>
+                  <option value="Khouribga">{language === 'ar' ? 'خريبكة' : 'Khouribga'}</option>
+                  <option value="Laâyoune">{language === 'ar' ? 'العيون' : 'Laâyoune'}</option>
+                  <option value="Dakhla">{language === 'ar' ? 'الداخلة' : 'Dakhla'}</option>
+                </select>
               </div>
 
-              {/* SÉPARATEUR DISCRET */}
-              <div className="w-full border-t border-stone-100" />
+              {/* MENU 2 : QUARTIER */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-stone-700 flex items-center gap-1.5">
+                  <Building className="w-4 h-4 text-amber-600" />
+                  <span>{language === 'ar' ? 'الحي' : 'Quartier'}</span>
+                </label>
+                <select 
+                  value={samsarQuarterFilter} 
+                  onChange={(e) => setSamsarQuarterFilter(e.target.value)}
+                  disabled={!samsarCityFilter}
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                    backgroundSize: '20px',
+                    paddingRight: language === 'ar' ? '16px' : '48px',
+                    paddingLeft: language === 'ar' ? '48px' : '16px'
+                  }}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="">
+                    {!samsarCityFilter 
+                      ? (language === 'ar' ? '-- اختر المدينة أولاً --' : '-- Sélectionnez d\'abord une ville --')
+                      : (language === 'ar' ? '-- جميع الأحياء --' : '-- Tous les quartiers --')
+                    }
+                  </option>
+                  {(quartiersParVille[samsarCityFilter] || []).map((quartier) => (
+                    <option key={quartier} value={quartier}>
+                      {quartier}
+                    </option>
+                  ))}
+                  {samsarCityFilter && (
+                    <option value="Autre">{language === 'ar' ? 'حي آخر' : 'Autre quartier'}</option>
+                  )}
+                </select>
+              </div>
 
-              {/* FILTRE 2 : QUARTIER (En combinaison avec le filtre Ville) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-stone-600 px-1">
-                  <span className="flex items-center gap-1.5 text-stone-900">
-                    <Building className="w-3.5 h-3.5 text-amber-600" />
-                    <span>{language === 'ar' ? '2. اختر الحي (Quartier) :' : '2. Filtrer par Quartier :'}</span>
-                  </span>
-
-                  {/* Menu déroulant Quartier (pratique sur mobile) */}
-                  <div className="relative inline-block">
-                    <select
-                      value={samsarQuarterFilter}
-                      onChange={(e) => setSamsarQuarterFilter(e.target.value)}
-                      className="py-1 px-2.5 pr-7 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-xs font-bold text-stone-800 appearance-none focus:outline-hidden focus:border-emerald-600 cursor-pointer"
-                    >
-                      {(SAMSAR_QUARTERS_BY_CITY[samsarCityFilter] || SAMSAR_QUARTERS_BY_CITY.all).map((q) => (
-                        <option key={q.id} value={q.id}>
-                          {language === 'ar' ? q.labelAr : q.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="w-3 h-3 text-stone-500 absolute right-2 top-2 pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Boutons tactiles pour les quartiers principaux */}
-                <div className="flex flex-wrap gap-1.5">
-                  {(SAMSAR_QUARTERS_BY_CITY[samsarCityFilter] || SAMSAR_QUARTERS_BY_CITY.all).map((q) => {
-                    const isQuarterActive = samsarQuarterFilter === q.id;
-                    return (
-                      <button
-                        key={q.id}
-                        type="button"
-                        onClick={() => setSamsarQuarterFilter(q.id)}
-                        className={`py-1.5 px-3 rounded-xl text-xs font-bold border transition-all duration-150 active:scale-95 cursor-pointer flex items-center gap-1 ${
-                          isQuarterActive
-                            ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
-                            : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-stone-200 hover:border-amber-400'
-                        }`}
-                      >
-                        {q.id !== 'all' && (
-                          <span className={`w-1.5 h-1.5 rounded-full ${isQuarterActive ? 'bg-white' : 'bg-amber-500'}`} />
-                        )}
-                        <span>{language === 'ar' ? q.labelAr : q.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+              {/* MENU 3 : TYPE DE BIEN */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-stone-700 flex items-center gap-1.5">
+                  <Home className="w-4 h-4 text-[#006233]" />
+                  <span>{language === 'ar' ? 'نوع العقار' : 'Type de bien'}</span>
+                </label>
+                <select 
+                  value={samsarTypeFilter} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSamsarTypeFilter(val);
+                    setFilters((prev) => ({ 
+                       ...prev, 
+                      type: val ? (val.toLowerCase().replace(/ commercial$/, '') as PropertyType) : null 
+                    }));
+                  }}
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                    backgroundSize: '20px',
+                    paddingRight: language === 'ar' ? '16px' : '48px',
+                    paddingLeft: language === 'ar' ? '48px' : '16px'
+                  }}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="">
+                    {language === 'ar' ? '-- اختر نوع العقار --' : '-- Tout type de bien --'}
+                  </option>
+                  <option value="Maison">{language === 'ar' ? 'دار' : 'Maison'}</option>
+                  <option value="Appartement">{language === 'ar' ? 'شقة' : 'Appartement'}</option>
+                  <option value="Villa">{language === 'ar' ? 'فيلا' : 'Villa'}</option>
+                  <option value="Riad">{language === 'ar' ? 'رياض' : 'Riad'}</option>
+                  <option value="Local commercial">{language === 'ar' ? 'محل تجاري' : 'Local commercial'}</option>
+                  <option value="Bureau">{language === 'ar' ? 'مكتب' : 'Bureau'}</option>
+                  <option value="Terrain">{language === 'ar' ? 'أرض' : 'Terrain'}</option>
+                  <option value="Garage">{language === 'ar' ? 'مرآب' : 'Garage'}</option>
+                  <option value="Studio">{language === 'ar' ? 'ستوديو' : 'Studio'}</option>
+                  <option value="Duplex">{language === 'ar' ? 'دوبلكس' : 'Duplex'}</option>
+                </select>
               </div>
             </div>
 
             {/* RAPPEL DES CRITÈRES ACTIFS */}
-            <div className="flex items-center justify-between text-xs font-bold px-1 text-stone-500">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between text-xs font-bold px-1 text-stone-500 flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span>{language === 'ar' ? 'النتائج المطابقة :' : 'Résultats correspondants :'}</span>
-                {samsarCityFilter !== 'all' && (
+                {samsarCityFilter && samsarCityFilter !== 'all' && samsarCityFilter !== '' && (
                   <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px]">
-                    📍 {SAMSAR_CITY_OPTIONS.find(c => c.id === samsarCityFilter)?.label}
+                    📍 {samsarCityFilter}
                   </span>
                 )}
-                {samsarQuarterFilter !== 'all' && (
+                {samsarQuarterFilter && samsarQuarterFilter !== 'all' && samsarQuarterFilter !== '' && (
                   <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[11px]">
-                    🏠 {(SAMSAR_QUARTERS_BY_CITY[samsarCityFilter] || SAMSAR_QUARTERS_BY_CITY.all).find(q => q.id === samsarQuarterFilter)?.label}
+                    🏠 {samsarQuarterFilter}
+                  </span>
+                )}
+                {samsarTypeFilter && samsarTypeFilter !== 'all' && samsarTypeFilter !== '' && (
+                  <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-900 text-[11px]">
+                    🏷️ {samsarTypeFilter}
                   </span>
                 )}
               </div>
               <span className="text-stone-400">
-                {TRUSTED_SAMSARS.filter(s => {
-                  if (samsarCityFilter !== 'all' && s.cityId !== samsarCityFilter) return false;
-                  if (samsarQuarterFilter !== 'all' && s.quarterId !== samsarQuarterFilter) return false;
+                {TRUSTED_SAMSARS.filter((samsar) => {
+                  if (samsarCityFilter && samsarCityFilter !== 'all' && samsarCityFilter !== '') {
+                    const c = samsarCityFilter.toLowerCase().trim();
+                    const matchCity = 
+                      samsar.cityName.toLowerCase() === c ||
+                      samsar.cityId.toLowerCase() === c ||
+                      samsar.city.toLowerCase().includes(c) ||
+                      c.includes(samsar.cityName.toLowerCase()) ||
+                      c.includes(samsar.cityId.toLowerCase());
+                    if (!matchCity) return false;
+                  }
+                  if (samsarQuarterFilter && samsarQuarterFilter !== 'all' && samsarQuarterFilter !== '' && samsarQuarterFilter !== 'Autre') {
+                    const q = samsarQuarterFilter.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                    const samsarQName = (samsar.quarterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                    const samsarQId = (samsar.quarterId || '').toLowerCase().trim();
+                    const samsarCityFull = (samsar.city || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                    const matchQuarter = 
+                      samsarQName.includes(q) || 
+                      q.includes(samsarQName) || 
+                      samsarQId.includes(q) || 
+                      q.includes(samsarQId) ||
+                      samsarCityFull.includes(q);
+                    if (!matchQuarter) return false;
+                  }
+                  if (samsarTypeFilter && samsarTypeFilter !== 'all' && samsarTypeFilter !== '') {
+                    const t = samsarTypeFilter.toLowerCase().trim();
+                    const spec = (samsar.specialty || '').toLowerCase();
+                    const specAr = samsar.specialtyAr || '';
+                    const matchSpecialty = 
+                      (t.includes('appartement') && (spec.includes('appartement') || specAr.includes('شقق') || spec.includes('résidentiel'))) ||
+                      (t.includes('villa') && (spec.includes('villa') || specAr.includes('فيلا') || specAr.includes('فيلات'))) ||
+                      (t.includes('riad') && (spec.includes('riad') || specAr.includes('رياض'))) ||
+                      (t.includes('maison') && (spec.includes('maison') || specAr.includes('منزل') || specAr.includes('منازل') || spec.includes('résidentiel'))) ||
+                      (t.includes('studio') && (spec.includes('studio') || specAr.includes('استوديو'))) ||
+                      (t.includes('bureau') && (spec.includes('bureau') || specAr.includes('مكتب') || specAr.includes('مكاتب') || spec.includes('professionnel') || specAr.includes('مهنية'))) ||
+                      (t.includes('local') && (spec.includes('local') || spec.includes('commercial') || specAr.includes('محل') || specAr.includes('تجاري'))) ||
+                      (t.includes('terrain') && (spec.includes('terrain') || specAr.includes('أرض') || specAr.includes('أراضي'))) ||
+                      (t.includes('garage') && (spec.includes('garage') || spec.includes('parking') || specAr.includes('مرآب') || specAr.includes('كراج'))) ||
+                      (t.includes('duplex') && (spec.includes('duplex') || spec.includes('appartement') || specAr.includes('دوبلكس'))) ||
+                      spec.includes(t) ||
+                      specAr.includes(samsarTypeFilter);
+                    if (!matchSpecialty) return false;
+                  }
                   return true;
                 }).length} trouvé(s)
               </span>
             </div>
 
-            {/* 3. Liste de cartes des Samsars de confiance filtrée dynamiquement (Ville ET Quartier) */}
+            {/* 3. Liste de cartes des Samsars de confiance filtrée dynamiquement (Ville, Quartier, Type) */}
             <div className="w-full flex flex-col gap-4">
               {TRUSTED_SAMSARS
                 .filter((samsar) => {
-                  // Si l'utilisateur choisit une Ville, garde uniquement les Samsars de cette ville
-                  if (samsarCityFilter !== 'all' && samsar.cityId.toLowerCase() !== samsarCityFilter.toLowerCase()) {
-                    return false;
+                  if (samsarCityFilter && samsarCityFilter !== 'all' && samsarCityFilter !== '') {
+                    const c = samsarCityFilter.toLowerCase().trim();
+                    const matchCity = 
+                      samsar.cityName.toLowerCase() === c ||
+                      samsar.cityId.toLowerCase() === c ||
+                      samsar.city.toLowerCase().includes(c) ||
+                      c.includes(samsar.cityName.toLowerCase()) ||
+                      c.includes(samsar.cityId.toLowerCase());
+                    if (!matchCity) return false;
                   }
-                  // Si l'utilisateur choisit un Quartier, garde uniquement les Samsars de ce quartier
-                  if (samsarQuarterFilter !== 'all' && samsar.quarterId.toLowerCase() !== samsarQuarterFilter.toLowerCase()) {
-                    return false;
+                  if (samsarQuarterFilter && samsarQuarterFilter !== 'all' && samsarQuarterFilter !== '' && samsarQuarterFilter !== 'Autre') {
+                    const q = samsarQuarterFilter.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                    const samsarQName = (samsar.quarterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                    const samsarQId = (samsar.quarterId || '').toLowerCase().trim();
+                    const samsarCityFull = (samsar.city || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                    const matchQuarter = 
+                      samsarQName.includes(q) || 
+                      q.includes(samsarQName) || 
+                      samsarQId.includes(q) || 
+                      q.includes(samsarQId) ||
+                      samsarCityFull.includes(q);
+                    if (!matchQuarter) return false;
+                  }
+                  if (samsarTypeFilter && samsarTypeFilter !== 'all' && samsarTypeFilter !== '') {
+                    const t = samsarTypeFilter.toLowerCase().trim();
+                    const spec = (samsar.specialty || '').toLowerCase();
+                    const specAr = samsar.specialtyAr || '';
+                    const matchSpecialty = 
+                      (t.includes('appartement') && (spec.includes('appartement') || specAr.includes('شقق') || spec.includes('résidentiel'))) ||
+                      (t.includes('villa') && (spec.includes('villa') || specAr.includes('فيلا') || specAr.includes('فيلات'))) ||
+                      (t.includes('riad') && (spec.includes('riad') || specAr.includes('رياض'))) ||
+                      (t.includes('maison') && (spec.includes('maison') || specAr.includes('منزل') || specAr.includes('منازل') || spec.includes('résidentiel'))) ||
+                      (t.includes('studio') && (spec.includes('studio') || specAr.includes('استوديو'))) ||
+                      (t.includes('bureau') && (spec.includes('bureau') || specAr.includes('مكتب') || specAr.includes('مكاتب') || spec.includes('professionnel') || specAr.includes('مهنية'))) ||
+                      (t.includes('local') && (spec.includes('local') || spec.includes('commercial') || specAr.includes('محل') || specAr.includes('تجاري'))) ||
+                      (t.includes('terrain') && (spec.includes('terrain') || specAr.includes('أرض') || specAr.includes('أراضي'))) ||
+                      (t.includes('garage') && (spec.includes('garage') || spec.includes('parking') || specAr.includes('مرآب') || specAr.includes('كراج'))) ||
+                      (t.includes('duplex') && (spec.includes('duplex') || spec.includes('appartement') || specAr.includes('دوبلكس'))) ||
+                      spec.includes(t) ||
+                      specAr.includes(samsarTypeFilter);
+                    if (!matchSpecialty) return false;
                   }
                   return true;
                 })
@@ -3597,10 +3819,50 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                   </div>
                 ))}
 
-              {/* Si aucun Samsar n'est trouvé pour la combinaison Ville + Quartier */}
-              {TRUSTED_SAMSARS.filter(s => {
-                if (samsarCityFilter !== 'all' && s.cityId !== samsarCityFilter) return false;
-                if (samsarQuarterFilter !== 'all' && s.quarterId !== samsarQuarterFilter) return false;
+              {/* Si aucun Samsar n'est trouvé pour la combinaison des filtres */}
+              {TRUSTED_SAMSARS.filter((samsar) => {
+                if (samsarCityFilter && samsarCityFilter !== 'all' && samsarCityFilter !== '') {
+                  const c = samsarCityFilter.toLowerCase().trim();
+                  const matchCity = 
+                    samsar.cityName.toLowerCase() === c ||
+                    samsar.cityId.toLowerCase() === c ||
+                    samsar.city.toLowerCase().includes(c) ||
+                    c.includes(samsar.cityName.toLowerCase()) ||
+                    c.includes(samsar.cityId.toLowerCase());
+                  if (!matchCity) return false;
+                }
+                if (samsarQuarterFilter && samsarQuarterFilter !== 'all' && samsarQuarterFilter !== '' && samsarQuarterFilter !== 'Autre') {
+                  const q = samsarQuarterFilter.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                  const samsarQName = (samsar.quarterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                  const samsarQId = (samsar.quarterId || '').toLowerCase().trim();
+                  const samsarCityFull = (samsar.city || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                  const matchQuarter = 
+                    samsarQName.includes(q) || 
+                    q.includes(samsarQName) || 
+                    samsarQId.includes(q) || 
+                    q.includes(samsarQId) ||
+                    samsarCityFull.includes(q);
+                  if (!matchQuarter) return false;
+                }
+                if (samsarTypeFilter && samsarTypeFilter !== 'all' && samsarTypeFilter !== '') {
+                  const t = samsarTypeFilter.toLowerCase().trim();
+                  const spec = (samsar.specialty || '').toLowerCase();
+                  const specAr = samsar.specialtyAr || '';
+                  const matchSpecialty = 
+                    (t.includes('appartement') && (spec.includes('appartement') || specAr.includes('شقق') || spec.includes('résidentiel'))) ||
+                    (t.includes('villa') && (spec.includes('villa') || specAr.includes('فيلا') || specAr.includes('فيلات'))) ||
+                    (t.includes('riad') && (spec.includes('riad') || specAr.includes('رياض'))) ||
+                    (t.includes('maison') && (spec.includes('maison') || specAr.includes('منزل') || specAr.includes('منازل') || spec.includes('résidentiel'))) ||
+                    (t.includes('studio') && (spec.includes('studio') || specAr.includes('استوديو'))) ||
+                    (t.includes('bureau') && (spec.includes('bureau') || specAr.includes('مكتب') || specAr.includes('مكاتب') || spec.includes('professionnel') || specAr.includes('مهنية'))) ||
+                    (t.includes('local') && (spec.includes('local') || spec.includes('commercial') || specAr.includes('محل') || specAr.includes('تجاري'))) ||
+                    (t.includes('terrain') && (spec.includes('terrain') || specAr.includes('أرض') || specAr.includes('أراضي'))) ||
+                    (t.includes('garage') && (spec.includes('garage') || spec.includes('parking') || specAr.includes('مرآب') || specAr.includes('كراج'))) ||
+                    (t.includes('duplex') && (spec.includes('duplex') || spec.includes('appartement') || specAr.includes('دوبلكس'))) ||
+                    spec.includes(t) ||
+                    specAr.includes(samsarTypeFilter);
+                  if (!matchSpecialty) return false;
+                }
                 return true;
               }).length === 0 && (
                 <div className="w-full py-10 px-6 rounded-3xl bg-white border border-stone-200 text-center space-y-3">
@@ -3608,25 +3870,19 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                     <SearchX className="w-6 h-6" />
                   </div>
                   <h4 className="text-base font-bold text-stone-800">
-                    {language === 'ar' ? 'لا يوجد سمسار يطابق هذا الحي حالياً' : 'Aucun samsar trouvé pour ce quartier'}
+                    {language === 'ar' ? 'لا يوجد سمسار يطابق هذه المعايير حالياً' : 'Aucun samsar trouvé pour ces critères'}
                   </h4>
                   <div className="flex items-center justify-center gap-2 pt-1">
                     <button
                       type="button"
-                      onClick={() => setSamsarQuarterFilter('all')}
-                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold active:scale-95 transition cursor-pointer"
-                    >
-                      {language === 'ar' ? 'جميع أحياء المدينة' : 'Tous les quartiers de cette ville'}
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => {
-                        setSamsarCityFilter('all');
-                        setSamsarQuarterFilter('all');
+                        setSamsarCityFilter('');
+                        setSamsarQuarterFilter('');
+                        setSamsarTypeFilter('');
                       }}
                       className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold active:scale-95 transition cursor-pointer"
                     >
-                      {language === 'ar' ? 'عرض جميع المدن' : 'Réinitialiser tous les filtres'}
+                      {language === 'ar' ? 'إعادة ضبط جميع الفلاتر' : 'Réinitialiser tous les filtres'}
                     </button>
                   </div>
                 </div>
@@ -3654,123 +3910,137 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
             {/* 3. Les filtres sous forme de gros boutons et sélecteurs tactiles */}
             <div className="space-y-5 bg-white p-5 sm:p-6 rounded-3xl border border-stone-200 shadow-md">
               
-              {/* FILTRE 1 : VILLE */}
-              <div className="space-y-2.5">
-                <label className="block text-xs sm:text-sm font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-[#C1272D]" />
-                  <span>{language === 'ar' ? 'المدينة (Ville)' : 'Ville'}</span>
+              {/* VILLE */}
+              <div className="mb-4">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {language === 'ar' ? 'المدينة (Ville)' : 'Ville'}
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {CITIES_DATA.map((city) => {
-                    const isSelected = selectedCityId === city.id;
-                    return (
-                      <button
-                        key={city.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedCityId(city.id);
-                          setSelectedQuarterId('all');
-                        }}
-                        className={`py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center ${
-                          isSelected
-                            ? 'bg-stone-900 text-white border-stone-900 shadow-md scale-[1.02]'
-                            : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300'
-                        }`}
-                      >
-                        {language === 'ar' ? city.nameAr : city.name}
-                      </button>
-                    );
-                  })}
-                </div>
+                <select 
+                  value={filters.city || selectedCityId || ''} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedCityId(val);
+                    setSelectedQuarterId('all');
+                    setFilters({...filters, city: val || null, neighborhood: ''});
+                  }}
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                    backgroundSize: '20px',
+                    paddingRight: language === 'ar' ? '16px' : '48px',
+                    paddingLeft: language === 'ar' ? '48px' : '16px'
+                  }}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="">{language === 'ar' ? 'جميع المدن' : 'Toutes les villes'}</option>
+                  <option value="Casablanca">{language === 'ar' ? 'الدار البيضاء' : 'Casablanca'}</option>
+                  <option value="Rabat">{language === 'ar' ? 'الرباط' : 'Rabat'}</option>
+                  <option value="Marrakech">{language === 'ar' ? 'مراكش' : 'Marrakech'}</option>
+                  <option value="Tanger">{language === 'ar' ? 'طنجة' : 'Tanger'}</option>
+                  <option value="Fès">{language === 'ar' ? 'فاس' : 'Fès'}</option>
+                  <option value="Agadir">{language === 'ar' ? 'أكادير' : 'Agadir'}</option>
+                  <option value="Oujda">{language === 'ar' ? 'وجدة' : 'Oujda'}</option>
+                  <option value="Meknès">{language === 'ar' ? 'مكناس' : 'Meknès'}</option>
+                  <option value="Kénitra">{language === 'ar' ? 'القنيطرة' : 'Kénitra'}</option>
+                  <option value="Tétouan">{language === 'ar' ? 'تطوان' : 'Tétouan'}</option>
+                  <option value="Safi">{language === 'ar' ? 'آسفي' : 'Safi'}</option>
+                  <option value="El Jadida">{language === 'ar' ? 'الجديدة' : 'El Jadida'}</option>
+                  <option value="Béni Mellal">{language === 'ar' ? 'بني ملال' : 'Béni Mellal'}</option>
+                  <option value="Nador">{language === 'ar' ? 'الناظور' : 'Nador'}</option>
+                  <option value="Taza">{language === 'ar' ? 'تازة' : 'Taza'}</option>
+                  <option value="Settat">{language === 'ar' ? 'سطات' : 'Settat'}</option>
+                  <option value="Berrechid">{language === 'ar' ? 'برشيد' : 'Berrechid'}</option>
+                  <option value="Khouribga">{language === 'ar' ? 'خريبكة' : 'Khouribga'}</option>
+                  <option value="Laâyoune">{language === 'ar' ? 'العيون' : 'Laâyoune'}</option>
+                  <option value="Dakhla">{language === 'ar' ? 'الداخلة' : 'Dakhla'}</option>
+                </select>
               </div>
 
-              {/* FILTRE 2 : QUARTIER */}
-              <div className="space-y-2.5">
-                <label className="block text-xs sm:text-sm font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Building className="w-4 h-4 text-amber-600" />
-                  <span>{language === 'ar' ? 'الحي (Quartier)' : 'Quartier'}</span>
+              {/* QUARTIER */}
+              <div className="mb-4">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  {language === 'ar' ? 'الحي (Quartier)' : 'Quartier'}
                 </label>
-                <div className="relative">
-                  <select
-                    value={selectedQuarterId}
-                    onChange={(e) => setSelectedQuarterId(e.target.value)}
-                    className="w-full py-3.5 px-4 pr-10 rounded-2xl bg-stone-50 border-2 border-stone-200 text-stone-800 text-sm sm:text-base font-bold appearance-none hover:border-stone-300 focus:outline-hidden focus:border-amber-500 transition cursor-pointer"
-                  >
-                    {currentCity.quarters.map((q) => (
-                      <option key={q.id} value={q.id}>
-                        {language === 'ar' ? q.nameAr : q.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-stone-400 ${language === 'ar' ? 'left-4' : 'right-4'}`}>
-                    <ChevronDown className="w-5 h-5" />
-                  </div>
-                </div>
+                <select 
+                  value={filters.neighborhood || ''} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFilters({...filters, neighborhood: val});
+                    setSelectedQuarterId(val || 'all');
+                  }}
+                  disabled={!filters.city} // Désactivé si aucune ville n'est choisie
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                    backgroundSize: '20px',
+                    paddingRight: language === 'ar' ? '16px' : '48px',
+                    paddingLeft: language === 'ar' ? '48px' : '16px'
+                  }}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="">
+                    {!filters.city 
+                      ? (language === 'ar' ? '-- اختر المدينة أولاً --' : '-- Sélectionnez d\'abord une ville --') 
+                      : (language === 'ar' ? '-- جميع الأحياء --' : '-- Tous les quartiers --')}
+                  </option>
+                  {filters.city && (quartiersParVille[filters.city] || []).map((q) => (
+                    <option key={q} value={q}>{q}</option>
+                  ))}
+                  {filters.city && (
+                    <option value="Autre">{language === 'ar' ? 'حي آخر' : 'Autre quartier'}</option>
+                  )}
+                </select>
               </div>
 
-              {/* FILTRE 3 : TYPE DE BIEN (4 GROS BOUTONS TACTILES) */}
-              <div className="space-y-2.5">
-                <label className="block text-xs sm:text-sm font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Home className="w-4 h-4 text-[#006233]" />
-                  <span>{language === 'ar' ? 'نوع العقار (Type de bien)' : 'Type de bien'}</span>
+              {/* TYPE DE BIEN */}
+              <div className="mb-4">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  {language === 'ar' ? 'نوع العقار (Type de bien)' : 'Type de bien'}
                 </label>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {/* Appartement */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPropertyType('appartement')}
-                    className={`py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-extrabold border-2 transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      selectedPropertyType === 'appartement'
-                        ? 'bg-[#006233] text-white border-[#006233] shadow-md scale-[1.02]'
-                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300'
-                    }`}
-                  >
-                    <Building className="w-4 h-4" />
-                    <span>{language === 'ar' ? 'شقة' : 'Appartement'}</span>
-                  </button>
-
-                  {/* Maison */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPropertyType('maison')}
-                    className={`py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-extrabold border-2 transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      selectedPropertyType === 'maison'
-                        ? 'bg-[#006233] text-white border-[#006233] shadow-md scale-[1.02]'
-                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300'
-                    }`}
-                  >
-                    <Home className="w-4 h-4" />
-                    <span>{language === 'ar' ? 'منزل' : 'Maison'}</span>
-                  </button>
-
-                  {/* Villa */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPropertyType('villa')}
-                    className={`py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-extrabold border-2 transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      selectedPropertyType === 'villa'
-                        ? 'bg-[#006233] text-white border-[#006233] shadow-md scale-[1.02]'
-                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300'
-                    }`}
-                  >
-                    <Building className="w-4 h-4" />
-                    <span>{language === 'ar' ? 'فيلا' : 'Villa'}</span>
-                  </button>
-
-                  {/* Terrain */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPropertyType('terrain')}
-                    className={`py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-extrabold border-2 transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      selectedPropertyType === 'terrain'
-                        ? 'bg-[#006233] text-white border-[#006233] shadow-md scale-[1.02]'
-                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300'
-                    }`}
-                  >
-                    <LandPlot className="w-4 h-4" />
-                    <span>{language === 'ar' ? 'أرض' : 'Terrain'}</span>
-                  </button>
-                </div>
+                <select 
+                  value={selectedPropertyType || (filters.type as string) || ''} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedPropertyType(val);
+                    setFilters({...filters, type: val ? (val.toLowerCase().replace(/ commercial$/, '') as PropertyType) : null});
+                  }}
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                    backgroundSize: '20px',
+                    paddingRight: language === 'ar' ? '16px' : '48px',
+                    paddingLeft: language === 'ar' ? '48px' : '16px'
+                  }}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="">{language === 'ar' ? '-- اختر نوع العقار --' : '-- Tout type de bien --'}</option>
+                  <option value="Maison">{language === 'ar' ? 'دار' : 'Maison'}</option>
+                  <option value="Appartement">{language === 'ar' ? 'شقة' : 'Appartement'}</option>
+                  <option value="Villa">{language === 'ar' ? 'فيلا' : 'Villa'}</option>
+                  <option value="Riad">{language === 'ar' ? 'رياض' : 'Riad'}</option>
+                  <option value="Local commercial">{language === 'ar' ? 'محل تجاري' : 'Local commercial'}</option>
+                  <option value="Bureau">{language === 'ar' ? 'مكتب' : 'Bureau'}</option>
+                  <option value="Terrain">{language === 'ar' ? 'أرض' : 'Terrain'}</option>
+                  <option value="Garage">{language === 'ar' ? 'مرآب' : 'Garage'}</option>
+                  <option value="Studio">{language === 'ar' ? 'ستوديو' : 'Studio'}</option>
+                  <option value="Duplex">{language === 'ar' ? 'دوبلكس' : 'Duplex'}</option>
+                </select>
               </div>
 
               {/* FILTRE 4 : BUDGET MAX (PRIX) */}
@@ -3858,8 +4128,15 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                               </span>
                             </div>
 
-                            <div className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#006233] text-white text-xs font-extrabold shadow-sm">
-                              {language === 'ar' ? listing.typeLabelAr : listing.typeLabel}
+                            <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5">
+                              {listing.isUserSubmitted && (
+                                <span className="px-2.5 py-1 rounded-full bg-amber-500 text-white text-xs font-black shadow-sm">
+                                  {language === 'ar' ? 'إعلان مباشر' : 'Annonce directe'}
+                                </span>
+                              )}
+                              <div className="px-3 py-1 rounded-full bg-[#006233] text-white text-xs font-extrabold shadow-sm">
+                                {language === 'ar' ? listing.typeLabelAr : listing.typeLabel}
+                              </div>
                             </div>
                           </div>
 
@@ -3880,7 +4157,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                                 </>
                               )}
                               <span>•</span>
-                              <span className="text-[#006233] font-bold">{listing.samsarName}</span>
+                              <span className="text-[#006233] font-bold">
+                                {listing.isUserSubmitted 
+                                  ? `${language === 'ar' ? 'المالك :' : 'Propriétaire :'} ${listing.samsarName}`
+                                  : listing.samsarName}
+                              </span>
                             </div>
 
                             {/* Séparateur & Prix + Bouton Contacter */}
@@ -3895,14 +4176,18 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
                                 </span>
                               </div>
 
-                              {/* 4. Petit bouton "Contacter le Samsar" */}
+                              {/* 4. Bouton Contacter */}
                               <button
                                 type="button"
                                 onClick={() => setContactedListing(listing)}
                                 className="px-4 py-3 rounded-2xl bg-[#006233] hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md active:scale-95 transition cursor-pointer shrink-0"
                               >
                                 <Phone className="w-4 h-4" />
-                                <span>{language === 'ar' ? 'الاتصال بالسمسار' : 'Contacter le Samsar'}</span>
+                                <span>
+                                  {listing.isUserSubmitted 
+                                    ? (language === 'ar' ? 'الاتصال بالمالك' : 'Contacter le propriétaire')
+                                    : (language === 'ar' ? 'الاتصال بالسمسار' : 'Contacter le Samsar')}
+                                </span>
                               </button>
                             </div>
                           </div>
@@ -3978,7 +4263,9 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({ onRestartSplas
 
             <div className="space-y-1.5">
               <div className="inline-block px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#006233] text-xs font-bold uppercase tracking-wide">
-                {language === 'ar' ? 'سمسار معتمد' : 'Samsar Référent'}
+                {contactedListing.isUserSubmitted
+                  ? (language === 'ar' ? 'مالك العقار المباشر' : 'Propriétaire Direct')
+                  : (language === 'ar' ? 'سمسار معتمد' : 'Samsar Référent')}
               </div>
               <h3 className="text-xl font-black text-stone-900">
                 {contactedListing.samsarName}

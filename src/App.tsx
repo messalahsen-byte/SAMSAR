@@ -1,98 +1,147 @@
 import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { Header } from './components/Header';
-import { CleanBuyerFlow } from './components/CleanBuyerFlow';
-import { BuyerDirectory } from './components/BuyerDirectory';
-import { SamsarVoiceSpace } from './components/SamsarVoiceSpace';
-import { WhatsAppSimulator } from './components/WhatsAppSimulator';
-import { StartupAccompanimentGuide } from './components/StartupAccompanimentGuide';
-import { FeasibilityAudit } from './components/FeasibilityAudit';
-import { FullDiscussionViewer } from './components/FullDiscussionViewer';
-import { BroadcastModal } from './components/BroadcastModal';
-import { 
-  Building2, 
-  Mic, 
-  MessageSquareCode, 
-  Rocket, 
-  Heart, 
-  ShieldCheck, 
-  Coffee,
-  CheckCircle2,
-  Sparkles,
-  Compass,
-  BookOpen
-} from 'lucide-react';
-
-import { DirectSamsarApp } from './components/DirectSamsarApp';
 import { SplashScreen } from './components/SplashScreen';
+import { LanguageScreen } from './components/LanguageScreen';
+import { ModeScreen } from './components/ModeScreen';
+import { MainMenu } from './components/MainMenu';
+import { SamsarChoiceScreen } from './components/SamsarChoiceScreen';
 import { StartNavigation } from './components/StartNavigation';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState<'search' | 'directory' | 'samsar_mode' | 'whatsapp_sim' | 'incubation_guide' | 'audit' | 'discussion'>('search');
-  const [directScreen, setDirectScreen] = useState<'home' | 'samsar_choice' | 'samsar_city' | 'samsar_district' | 'samsar_list' | 'samsar_map' | 'transact_choice' | 'transact_buy' | 'transact_sell' | 'transact'>('home');
-  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
-  const [broadcastCity, setBroadcastCity] = useState('marrakech');
-  const [broadcastDistrict, setBroadcastDistrict] = useState('chwiter');
+  const [currentStep, setCurrentStep] = useState<'language' | 'mode' | 'home'>('language');
+  const [subPage, setSubPage] = useState<string | null>(null);
+  const [selectedLang, setSelectedLang] = useState<'fr' | 'ar'>('fr');
+  const [selectedMode, setSelectedMode] = useState<'vocal' | 'classic'>('classic');
 
-  const handleOpenBroadcastWithTarget = (city?: string, district?: string) => {
-    if (city) setBroadcastCity(city);
-    if (district) setBroadcastDistrict(district);
-    setIsBroadcastOpen(true);
+  const handleResetToStart = () => {
+    setCurrentStep('language');
+    setSubPage(null);
+    setSelectedLang('fr');
   };
-
-  // Les écrans d'accueil et de choix (Samsar ou Acheter/Vendre) sont plein écran sans sticky header
-  const isFullScreenMobile = activeTab === 'search' && (
-    directScreen === 'home' || 
-    directScreen === 'samsar_choice' || 
-    directScreen === 'transact_choice' || 
-    directScreen === 'transact'
-  );
-
-  const handleTabChange = (tab: any) => {
-    setActiveTab(tab);
-    if (tab === 'search') {
-      setDirectScreen('home');
-    }
-  };
-
-  const handleBack = () => {
-    if (activeTab !== 'search') {
-      setActiveTab('search');
-      setDirectScreen('home');
-    } else if (directScreen === 'samsar_list') {
-      setDirectScreen('samsar_district');
-    } else if (directScreen === 'samsar_district') {
-      setDirectScreen('samsar_city');
-    } else if (directScreen === 'samsar_city' || directScreen === 'samsar_map') {
-      setDirectScreen('samsar_choice');
-    } else if (directScreen === 'transact_buy' || directScreen === 'transact_sell') {
-      setDirectScreen('transact_choice');
-    } else {
-      setDirectScreen('home');
-    }
-  };
-
-  // --------------------------------------------------------------------------
-  // GESTION DU SPLASH SCREEN AU CHARGEMENT DE L'APPLICATION
-  // --------------------------------------------------------------------------
 
   return (
-    <div className="bg-[#FAFAFA] text-stone-900 flex flex-col min-h-[100dvh] font-sans selection:bg-amber-600 selection:text-white">
-      {/* Application principale DirectSamsar (Dashboard, Recherche, Samsars, Mode Vocal) */}
-      <div className="flex-1 w-full flex flex-col">
-        <StartNavigation onRestartSplash={() => setShowSplash(true)} />
-      </div>
+    <>
+      {/* SPLASHSCREEN */}
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
 
-      {/* 🚀 SPLASH SCREEN PLEIN ÉCRAN AU DÉMARRAGE (Animation Lottie JSON) */}
-      <AnimatePresence>
-        {showSplash && (
-          <SplashScreen 
-            key="app-splash-screen" 
-            onFinish={() => setShowSplash(false)} 
-          />
-        )}
-      </AnimatePresence>
-    </div>
+      {!showSplash && (
+        <div className="min-h-screen bg-white">
+          {/* ÉCRAN 1 : CHOIX DE LA LANGUE */}
+          {currentStep === 'language' && (
+            <LanguageScreen 
+              onSelect={(lang) => {
+                setSelectedLang(lang);
+                setCurrentStep('mode');
+              }}
+            />
+          )}
+
+          {/* ÉCRAN 2 : CHOIX DU MODE (VOCAL / CLASSIQUE) */}
+          {currentStep === 'mode' && (
+            <ModeScreen 
+              language={selectedLang}
+              onSelect={(mode) => {
+                setSelectedMode(mode);
+                setCurrentStep('home');
+                if (mode === 'vocal') {
+                  setSubPage('voice-search');
+                } else {
+                  setSubPage(null);
+                }
+              }}
+              onBack={() => setCurrentStep('language')}
+            />
+          )}
+
+          {/* ÉCRAN 3 : MENU PRINCIPAL (ACCUEIL 3 CARTES) */}
+          {currentStep === 'home' && !subPage && (
+            <MainMenu 
+              language={selectedLang} 
+              mode={selectedMode}
+              onNavigate={(page) => setSubPage(page)}
+              onBackToMode={() => setCurrentStep('mode')}
+              onGoHome={handleResetToStart}
+            />
+          )}
+
+          {/* ÉCRAN INTERMÉDIAIRE : CHOIX SAMSAR (CARTE MAP VS LISTE / FORMULAIRE) */}
+          {currentStep === 'home' && subPage === 'samsar-choice' && (
+            <SamsarChoiceScreen 
+              language={selectedLang}
+              onBack={() => setSubPage(null)}
+              onGoHome={handleResetToStart}
+              onSelectMap={() => setSubPage('samsar-map')}
+              onSelectList={() => setSubPage('samsar-list')}
+            />
+          )}
+
+          {/* SOUS-PAGE : CARTE INTERACTIVE DES SAMSARS */}
+          {currentStep === 'home' && subPage === 'samsar-map' && (
+            <StartNavigation
+              initialStep="samsar_map"
+              language={selectedLang}
+              mode={selectedMode}
+              onBack={() => setSubPage('samsar-choice')}
+              onBackToMode={() => setSubPage('samsar-choice')}
+              onGoHome={handleResetToStart}
+            />
+          )}
+
+          {/* SOUS-PAGE : LISTE ET RECHERCHE DES SAMSARS */}
+          {currentStep === 'home' && subPage === 'samsar-list' && (
+            <StartNavigation
+              initialStep="find_samsar"
+              language={selectedLang}
+              mode={selectedMode}
+              onBack={() => setSubPage('samsar-choice')}
+              onBackToMode={() => setSubPage('samsar-choice')}
+              onGoHome={handleResetToStart}
+            />
+          )}
+
+          {/* SOUS-PAGE : RECHERCHER UN BIEN (ACHETER / LOUER) */}
+          {currentStep === 'home' && subPage === 'buy' && (
+            <StartNavigation
+              initialStep="search_property"
+              language={selectedLang}
+              mode={selectedMode}
+              onBack={() => setSubPage(null)}
+              onBackToMode={() => setSubPage(null)}
+              onGoHome={handleResetToStart}
+            />
+          )}
+
+          {/* SOUS-PAGE : DÉPOSER UNE ANNONCE (VENDRE / LOUER) */}
+          {currentStep === 'home' && subPage === 'sell' && (
+            <StartNavigation
+              initialStep="post_listing"
+              language={selectedLang}
+              mode={selectedMode}
+              onBack={() => setSubPage(null)}
+              onBackToMode={() => setSubPage(null)}
+              onGoHome={handleResetToStart}
+            />
+          )}
+
+          {/* SOUS-PAGE : RECHERCHE VOCALE */}
+          {currentStep === 'home' && subPage === 'voice-search' && (
+            <StartNavigation
+              initialStep="vocal"
+              language={selectedLang}
+              mode={selectedMode}
+              onBack={() => {
+                if (selectedMode === 'vocal') {
+                  setCurrentStep('mode');
+                } else {
+                  setSubPage(null);
+                }
+              }}
+              onBackToMode={() => setCurrentStep('mode')}
+              onGoHome={handleResetToStart}
+            />
+          )}
+        </div>
+      )}
+    </>
   );
 }
