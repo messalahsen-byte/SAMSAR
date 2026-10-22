@@ -24,25 +24,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Bloque le défilement de la page sur mobile/web et applique le fond de sécurité sable
   useEffect(() => {
     const originalBodyOverflow = document.body.style.overflow;
     const originalHtmlOverflow = document.documentElement.style.overflow;
     const originalBodyTouchAction = document.body.style.touchAction;
-    const originalBg = document.body.style.backgroundColor;
+    const originalBodyBg = document.body.style.backgroundColor;
 
-    // Bloque le défilement sur body et html + fond sable/doré d'urgence
+    // Forcer le fond du document en jaune pour tuer le flash blanc initial
+    document.body.style.backgroundColor = '#eab308';
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
     document.body.style.touchAction = 'none';
-    document.body.style.backgroundColor = '#eab308';
 
-    // Libère le défilement et restaure le fond à la destruction du composant
     return () => {
       document.body.style.overflow = originalBodyOverflow || 'unset';
       document.documentElement.style.overflow = originalHtmlOverflow || 'unset';
       document.body.style.touchAction = originalBodyTouchAction || 'unset';
-      document.body.style.backgroundColor = originalBg;
+      document.body.style.backgroundColor = originalBodyBg || '';
     };
   }, []);
 
@@ -219,29 +217,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   return (
     <div
       aria-label="DirectSamsar Intro Splash"
-      className={`fixed inset-0 z-[9999] overflow-hidden flex items-center justify-center select-none bg-[#eab308] transition-opacity duration-700 ease-out touch-none ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center select-none bg-[#eab308] transition-opacity duration-700 ease-out touch-none overflow-hidden ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}
     >
-      {/* 1. Arrière-plan animé plein écran : étirement physique 4 coins sans calcul de hauteur */}
-      <img
-        src={fondAnimImg}
-        alt="Arrière-plan DirectSamsar"
-        className="absolute inset-0 w-full h-full object-cover object-bottom -z-10 pointer-events-none will-change-transform opacity-100"
-        loading="eager"
-        decoding="sync"
-        style={{
-          objectPosition: 'center bottom',
-          transformOrigin: 'center bottom',
-          animation: 'duneBreezeAnim 3000ms cubic-bezier(0.25, 1, 0.5, 1) forwards',
-        }}
-        onError={(e) => {
-          const target = e.currentTarget;
-          if (target.src !== window.location.origin + '/fond-anim.jpg') {
-            target.src = '/fond-anim.jpg';
-          }
-        }}
-      />
+      {/* Wrapper géant (120vw x 120vh) immunisant l'image contre les barres d'adresse mobiles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] -z-10 pointer-events-none bg-[#eab308]">
+        <img
+          src={fondAnimImg}
+          alt="Arrière-plan DirectSamsar"
+          className="w-full h-full object-cover object-bottom opacity-100"
+          loading="eager"
+          decoding="sync"
+          style={{
+            transformOrigin: 'center bottom',
+            animation: 'duneBreezeAnim 3000ms cubic-bezier(0.25, 1, 0.5, 1) forwards',
+          }}
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src !== window.location.origin + '/fond-anim.jpg') {
+              target.src = '/fond-anim.jpg';
+            }
+          }}
+        />
+      </div>
 
       {/* Styles keyframes pour l'onde de choc, la brise sur les dunes et la vague d'énergie */}
       <style>{`
