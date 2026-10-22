@@ -217,7 +217,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   return (
     <div
       aria-label="DirectSamsar Intro Splash"
-      className={`fixed inset-0 z-[9999] flex items-center justify-center select-none bg-[#eab308] transition-opacity duration-700 ease-out touch-none overflow-hidden ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center select-none bg-[#eab308] transition-opacity duration-700 ease-out touch-none ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}
     >
@@ -437,15 +437,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             </p>
           </div>
 
-          {/* Fine barre de progression dorée */}
-          <div className="w-48 sm:w-56 h-[3px] bg-black/40 rounded-full overflow-hidden border border-amber-400/30 mt-2">
+          {/* Fine barre de progression dorée avec tête de lecture brillante */}
+          <div className="w-48 sm:w-56 h-[4px] bg-black/40 rounded-full overflow-hidden border border-amber-400/30 mt-2 relative">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 via-amber-300 to-emerald-400 transition-all duration-150 ease-out rounded-full"
+              className="h-full bg-gradient-to-r from-amber-500 via-amber-300 to-emerald-400 transition-all duration-150 ease-out rounded-full relative"
               style={{
                 width: `${progress}%`,
-                boxShadow: '0 0 10px #EABF52, 0 0 4px #10B981',
+                boxShadow: '0 0 12px #EABF52, 0 0 6px #10B981',
               }}
-            />
+            >
+              {/* Petite étincelle / tête de lecture brillante à l'avant du trait */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-3 bg-white rounded-full shadow-[0_0_8px_#fff,0_0_12px_#FDE047]" />
+            </div>
           </div>
 
           {/* Sceau d'authenticité discret */}
