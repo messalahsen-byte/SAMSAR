@@ -3524,7 +3524,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
                   <option value="">
-                    {language === 'ar' ? '-- جميع المدن --' : '-- Toutes les villes --'}
+                    {language === 'ar' ? 'جميع المدن' : 'Toutes les villes'}
                   </option>
                   <option value="Casablanca">{language === 'ar' ? 'الدار البيضاء' : 'Casablanca'}</option>
                   <option value="Rabat">{language === 'ar' ? 'الرباط' : 'Rabat'}</option>
@@ -3572,8 +3572,8 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                 >
                   <option value="">
                     {!samsarCityFilter 
-                      ? (language === 'ar' ? '-- اختر المدينة أولاً --' : '-- Sélectionnez d\'abord une ville --')
-                      : (language === 'ar' ? '-- جميع الأحياء --' : '-- Tous les quartiers --')
+                      ? (language === 'ar' ? 'اختر المدينة أولاً' : 'Sélectionnez d\'abord une ville')
+                      : (language === 'ar' ? 'جميع الأحياء' : 'Tous les quartiers')
                     }
                   </option>
                   {(quartiersParVille[samsarCityFilter] || []).map((quartier) => (
@@ -3615,7 +3615,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
                   <option value="">
-                    {language === 'ar' ? '-- اختر نوع العقار --' : '-- Tout type de bien --'}
+                    {language === 'ar' ? 'اختر نوع العقار' : 'Tout type de bien'}
                   </option>
                   <option value="Maison">{language === 'ar' ? 'دار' : 'Maison'}</option>
                   <option value="Appartement">{language === 'ar' ? 'شقة' : 'Appartement'}</option>
@@ -3991,8 +3991,8 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                 >
                   <option value="">
                     {!filters.city 
-                      ? (language === 'ar' ? '-- اختر المدينة أولاً --' : '-- Sélectionnez d\'abord une ville --') 
-                      : (language === 'ar' ? '-- جميع الأحياء --' : '-- Tous les quartiers --')}
+                      ? (language === 'ar' ? 'اختر المدينة أولاً' : 'Sélectionnez d\'abord une ville') 
+                      : (language === 'ar' ? 'جميع الأحياء' : 'Tous les quartiers')}
                   </option>
                   {filters.city && (quartiersParVille[filters.city] || []).map((q) => (
                     <option key={q} value={q}>{q}</option>
@@ -4029,7 +4029,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                   }}
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
-                  <option value="">{language === 'ar' ? '-- اختر نوع العقار --' : '-- Tout type de bien --'}</option>
+                  <option value="">{language === 'ar' ? 'اختر نوع العقار' : 'Tout type de bien'}</option>
                   <option value="Maison">{language === 'ar' ? 'دار' : 'Maison'}</option>
                   <option value="Appartement">{language === 'ar' ? 'شقة' : 'Appartement'}</option>
                   <option value="Villa">{language === 'ar' ? 'فيلا' : 'Villa'}</option>

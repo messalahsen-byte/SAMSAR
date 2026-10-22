@@ -256,11 +256,19 @@ export const PostListingForm: React.FC<PostListingFormProps> = ({
               <select 
                 value={propertyType}
                 onChange={(e) => setPropertyType(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-orange-500 bg-white text-gray-900 outline-none text-sm cursor-pointer"
+                className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-4 text-base text-gray-900 font-medium focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer hover:border-orange-300"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: language === 'ar' ? 'left 16px center' : 'right 16px center',
+                  backgroundSize: '20px',
+                  paddingRight: language === 'ar' ? '16px' : '48px',
+                  paddingLeft: language === 'ar' ? '48px' : '16px'
+                }}
                 dir={language === 'ar' ? 'rtl' : 'ltr'}
               >
                 <option value="">
-                  {language === 'ar' ? '-- اختر نوع العقار --' : '-- Tout type de bien --'}
+                  {language === 'ar' ? 'اختر نوع العقار' : 'Tout type de bien'}
                 </option>
                 <option value="Maison">{language === 'ar' ? 'دار' : 'Maison'}</option>
                 <option value="Appartement">{language === 'ar' ? 'شقة' : 'Appartement'}</option>
@@ -302,7 +310,7 @@ export const PostListingForm: React.FC<PostListingFormProps> = ({
                 dir={language === 'ar' ? 'rtl' : 'ltr'}
               >
                 <option value="">
-                  {language === 'ar' ? '-- اختر المدينة --' : '-- Sélectionnez une ville --'}
+                  {language === 'ar' ? 'اختر المدينة' : 'Sélectionnez une ville'}
                 </option>
                 {CITIES.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -340,8 +348,8 @@ export const PostListingForm: React.FC<PostListingFormProps> = ({
               >
                 <option value="">
                   {!city
-                    ? (language === 'ar' ? '-- اختر المدينة أولاً --' : '-- Sélectionnez d\'abord une ville --')
-                    : (language === 'ar' ? '-- جميع الأحياء --' : '-- Tous les quartiers --')
+                    ? (language === 'ar' ? 'اختر المدينة أولاً' : 'Sélectionnez d\'abord une ville')
+                    : (language === 'ar' ? 'جميع الأحياء' : 'Tous les quartiers')
                   }
                 </option>
                 {city && (quartiersParVille[city] || []).map((q) => (
