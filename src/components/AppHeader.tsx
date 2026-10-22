@@ -53,7 +53,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     : (currentStep === 'home');
 
   return (
-    <header className="w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm fixed top-0 left-0 z-30">
+    <header className="w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm fixed top-0 left-0 z-50">
       {/* GAUCHE : Logo DIRECTSAMSAR avec sigle étoile (et bouton retour si actif) */}
       <div className="flex items-center gap-2 sm:gap-3">
         {showBackButton && (
