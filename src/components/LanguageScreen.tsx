@@ -39,8 +39,15 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
             onClick={() => onSelect('fr')}
             className="w-full p-5 min-h-[92px] rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-stone-900 font-bold text-xl cursor-pointer group shadow-sm"
           >
-            <div className="flex items-center gap-4">
-              <span className="text-3xl">🇫🇷</span>
+            <div className="flex items-center gap-3.5">
+              <img 
+                src="https://flagcdn.com/w40/fr.png" 
+                srcSet="https://flagcdn.com/w80/fr.png 2x" 
+                width="24" 
+                height="18" 
+                alt="France" 
+                className="inline-block rounded-xs object-cover shadow-xs" 
+              />
               <span className="group-hover:text-orange-600 transition-colors">Français</span>
             </div>
             <span className="text-xs font-semibold text-gray-400 group-hover:text-orange-500 transition-colors">Continuer →</span>
@@ -52,8 +59,15 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
             className="w-full p-5 min-h-[92px] rounded-2xl bg-white border-2 border-stone-200 hover:border-orange-500 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-between text-stone-900 font-bold text-xl cursor-pointer group shadow-sm"
             dir="rtl"
           >
-            <div className="flex items-center gap-4">
-              <span className="text-3xl">🇲🇦</span>
+            <div className="flex items-center gap-3.5">
+              <img 
+                src="https://flagcdn.com/w40/ma.png" 
+                srcSet="https://flagcdn.com/w80/ma.png 2x" 
+                width="24" 
+                height="18" 
+                alt="Maroc" 
+                className="inline-block rounded-xs object-cover shadow-xs" 
+              />
               <span className="group-hover:text-orange-600 transition-colors">العربية</span>
             </div>
             <span className="text-xs font-semibold text-gray-400 group-hover:text-orange-500 transition-colors">متابعة ←</span>

@@ -34,11 +34,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isAr = language === 'ar';
 
-  const handleMenuClick = (option: string) => {
+    const handleMenuClick = (option: string) => {
     setIsMenuOpen(false);
     if (onSelectMenuOption) {
       onSelectMenuOption(option);
     }
+    window.dispatchEvent(new CustomEvent('dsamsar:navigate', { detail: option }));
   };
 
   const handleHomeReset = () => {
@@ -130,7 +131,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-full mt-2.5 right-0 w-64 bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans text-left"
+                className={`absolute top-full mt-2.5 ${isAr ? 'left-0 right-auto text-right' : 'right-0 left-auto text-left'} ltr:right-0 ltr:left-auto rtl:left-0 rtl:right-auto w-64 bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans`}
                 dir={isAr ? 'rtl' : 'ltr'}
               >
                 <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
@@ -242,7 +243,17 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                         <span>{isAr ? 'اللغة' : 'Langue'}</span>
                       </span>
                       <span className="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
-                        {isAr ? 'Passer en Français 🇫🇷' : 'التحويل للعربية 🇲🇦'}
+                        {isAr ? (
+                          <>
+                            <span>Passer en Français</span>
+                            <img src="https://flagcdn.com/w40/fr.png" srcSet="https://flagcdn.com/w80/fr.png 2x" width="16" height="12" alt="France" className="inline-block rounded-xs object-cover ml-1.5" />
+                          </>
+                        ) : (
+                          <>
+                            <span>التحويل للعربية</span>
+                            <img src="https://flagcdn.com/w40/ma.png" srcSet="https://flagcdn.com/w80/ma.png 2x" width="16" height="12" alt="Maroc" className="inline-block rounded-xs object-cover mr-1.5" />
+                          </>
+                        )}
                       </span>
                     </button>
                   </div>

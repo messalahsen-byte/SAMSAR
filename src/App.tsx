@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SplashScreen } from './components/SplashScreen';
 import { LanguageScreen } from './components/LanguageScreen';
 import { ModeScreen } from './components/ModeScreen';
@@ -12,6 +12,37 @@ export default function App() {
   const [subPage, setSubPage] = useState<string | null>(null);
   const [selectedLang, setSelectedLang] = useState<'fr' | 'ar'>('fr');
   const [selectedMode, setSelectedMode] = useState<'vocal' | 'classic'>('classic');
+
+  useEffect(() => {
+    const handleGlobalNav = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      const option = customEvent.detail;
+      if (option === 'vocal') {
+        setSelectedMode('vocal');
+        setCurrentStep('home');
+        setSubPage('voice-search');
+      } else if (option === 'classic' || option === 'home') {
+        setSelectedMode('classic');
+        setCurrentStep('home');
+        setSubPage(null);
+      } else if (option === 'find_samsar' || option === 'samsar_choice' || option === 'samsar-choice') {
+        setCurrentStep('home');
+        setSubPage('samsar-choice');
+      } else if (option === 'samsar_map') {
+        setCurrentStep('home');
+        setSubPage('samsar-map');
+      } else if (option === 'search_property' || option === 'buy') {
+        setCurrentStep('home');
+        setSubPage('buy');
+      } else if (option === 'post_listing' || option === 'sell') {
+        setCurrentStep('home');
+        setSubPage('sell');
+      }
+    };
+
+    window.addEventListener('dsamsar:navigate', handleGlobalNav);
+    return () => window.removeEventListener('dsamsar:navigate', handleGlobalNav);
+  }, []);
 
   const handleResetToStart = () => {
     setCurrentStep('language');

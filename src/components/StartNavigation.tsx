@@ -2815,7 +2815,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                         : 'text-stone-600 hover:text-stone-900'
                     }`}
                   >
-                    <span>🇲🇦</span>
+                    <img src="https://flagcdn.com/w40/ma.png" srcSet="https://flagcdn.com/w80/ma.png 2x" width="20" height="15" alt="Maroc" className="inline-block rounded-xs object-cover shadow-xs" />
                     <span>Darija (الدارجة)</span>
                   </button>
 
@@ -2831,7 +2831,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                         : 'text-stone-600 hover:text-stone-900'
                     }`}
                   >
-                    <span>🇫🇷</span>
+                    <img src="https://flagcdn.com/w40/fr.png" srcSet="https://flagcdn.com/w80/fr.png 2x" width="20" height="15" alt="France" className="inline-block rounded-xs object-cover shadow-xs" />
                     <span>Français</span>
                   </button>
                 </div>

@@ -29,9 +29,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         language={language}
         currentStep="home"
         onGoHome={onGoHome}
-        onSelectMenuOption={(opt) => {
+                onSelectMenuOption={(opt) => {
           if (opt === 'vocal') onNavigate('voice-search');
+          if (opt === 'classic' || opt === 'home') onNavigate('');
           if (opt === 'samsar_choice' || opt === 'find_samsar' || opt === 'samsar-choice') onNavigate('samsar-choice');
+          if (opt === 'samsar_map') onNavigate('samsar-map');
           if (opt === 'search_property' || opt === 'buy') onNavigate('buy');
           if (opt === 'post_listing' || opt === 'sell') onNavigate('sell');
         }}
