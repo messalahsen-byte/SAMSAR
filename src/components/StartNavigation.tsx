@@ -2602,17 +2602,12 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
        * ========================================================= */}
       {isMapScreen ? (
         <div className="flex-1 w-full flex flex-col h-screen overflow-hidden pt-16 sm:pt-20">
-          <PageTitle 
+          <SamsarGoogleMap 
+            language={language}
             title={language === 'ar' ? 'خريطة السماسرة' : 'Carte des Samsars'} 
             subtitle={language === 'ar' ? 'حدد موقع السماسرة المعتمدين عبر الخريطة التفاعلية' : 'Localisez les professionnels certifiés autour de vous'}
-            className="shrink-0 mb-3"
+            onSwitchToList={() => setCurrentScreen('find_samsar')}
           />
-          <div className="flex-1 w-full relative overflow-hidden">
-            <SamsarGoogleMap 
-              language={language}
-              onSwitchToList={() => setCurrentScreen('find_samsar')}
-            />
-          </div>
         </div>
       ) : (
         /* Corps principal - Centré pour onboarding ou scrollable */

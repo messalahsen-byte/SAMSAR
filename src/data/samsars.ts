@@ -133,6 +133,106 @@ export const CITIES_DATA: CityData[] = [
       { id: 'medina-fes', name: 'Médina Fès El-Bali', nameAr: 'فاس البالي', popularTypes: 'Riads historiques, Dars authentiques', lat: 34.0628, lng: -4.9754, zoom: 15 },
       { id: 'ville-nouvelle-fes', name: 'Ville Nouvelle & Champs de Course', nameAr: 'المدينة الجديدة', popularTypes: 'Appartements, Bureaux, Commerces', lat: 34.0335, lng: -5.0025, zoom: 15 }
     ]
+  },
+  {
+    id: 'meknes',
+    name: 'Meknès',
+    nameAr: 'مكناس',
+    lat: 33.8938,
+    lng: -5.5516,
+    defaultZoom: 12,
+    districts: [
+      { id: 'hamria', name: 'Hamria & Centre-Ville', nameAr: 'حمرية و وسط المدينة', popularTypes: 'Appartements, Bureaux, Commerces', lat: 33.8950, lng: -5.5450, zoom: 15 },
+      { id: 'marjane-meknes', name: 'Marjane & Mansour', nameAr: 'مرجان و المنصور', popularTypes: 'Résidentiel récent, Villas', lat: 33.8720, lng: -5.5350, zoom: 15 }
+    ]
+  },
+  {
+    id: 'oujda',
+    name: 'Oujda',
+    nameAr: 'وجدة',
+    lat: 34.6867,
+    lng: -1.9114,
+    defaultZoom: 12,
+    districts: [
+      { id: 'centre-oujda', name: 'Centre-Ville & Al Qods', nameAr: 'وسط المدينة و حي القدس', popularTypes: 'Appartements, Maisons', lat: 34.6850, lng: -1.9150, zoom: 15 }
+    ]
+  },
+  {
+    id: 'kenitra',
+    name: 'Kénitra',
+    nameAr: 'القنيطرة',
+    lat: 34.2610,
+    lng: -6.5802,
+    defaultZoom: 12,
+    districts: [
+      { id: 'centre-kenitra', name: 'Centre & Maâmora', nameAr: 'الوسط و المعمورة', popularTypes: 'Appartements neufs, Proche gare TGV', lat: 34.2600, lng: -6.5820, zoom: 15 }
+    ]
+  },
+  {
+    id: 'tetouan',
+    name: 'Tétouan',
+    nameAr: 'تطوان',
+    lat: 35.5889,
+    lng: -5.3626,
+    defaultZoom: 12,
+    districts: [
+      { id: 'wilaya-tetouan', name: 'Wilaya & Martil', nameAr: 'الولاية و مرتيل', popularTypes: 'Résidences d\'été, Appartements', lat: 35.5850, lng: -5.3550, zoom: 15 }
+    ]
+  },
+  {
+    id: 'essaouira',
+    name: 'Essaouira',
+    nameAr: 'الصويرة',
+    lat: 31.5085,
+    lng: -9.7595,
+    defaultZoom: 13,
+    districts: [
+      { id: 'medina-essaouira', name: 'Médina & Front de Mer', nameAr: 'المدينة و الكورنيش', popularTypes: 'Riads de charme, Vue mer', lat: 31.5120, lng: -9.7680, zoom: 15 }
+    ]
+  },
+  {
+    id: 'el-jadida',
+    name: 'El Jadida',
+    nameAr: 'الجديدة',
+    lat: 33.2316,
+    lng: -8.5007,
+    defaultZoom: 12,
+    districts: [
+      { id: 'plage-eljadida', name: 'Plage & Cité Portugaise', nameAr: 'الشاطئ و الحي البرتغالي', popularTypes: 'Appartements vue mer, Résidences', lat: 33.2450, lng: -8.5020, zoom: 15 }
+    ]
+  },
+  {
+    id: 'nador',
+    name: 'Nador',
+    nameAr: 'الناظور',
+    lat: 35.1681,
+    lng: -2.9335,
+    defaultZoom: 12,
+    districts: [
+      { id: 'marchica-nador', name: 'Marchica & Centre', nameAr: 'مارتشيكا و المركز', popularTypes: 'Projets touristiques, Appartements', lat: 35.1700, lng: -2.9300, zoom: 15 }
+    ]
+  },
+  {
+    id: 'laayoune',
+    name: 'Laâyoune',
+    nameAr: 'العيون',
+    lat: 27.1536,
+    lng: -13.2033,
+    defaultZoom: 12,
+    districts: [
+      { id: 'centre-laayoune', name: 'Al Qods & Centre', nameAr: 'حي القدس و المركز', popularTypes: 'Maisons, Terrains', lat: 27.1550, lng: -13.2000, zoom: 15 }
+    ]
+  },
+  {
+    id: 'dakhla',
+    name: 'Dakhla',
+    nameAr: 'الداخلة',
+    lat: 23.7136,
+    lng: -15.9387,
+    defaultZoom: 12,
+    districts: [
+      { id: 'baie-dakhla', name: 'Baie & Centre-Ville', nameAr: 'الخليج و وسط المدينة', popularTypes: 'Villas, Hôtellerie, Terrains', lat: 23.7150, lng: -15.9350, zoom: 15 }
+    ]
   }
 ];
 

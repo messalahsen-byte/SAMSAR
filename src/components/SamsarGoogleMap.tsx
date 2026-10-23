@@ -6,6 +6,8 @@ import {
   AdvancedMarkerAnchorPoint,
   InfoWindow 
 } from '@vis.gl/react-google-maps';
+import { CITIES_DATA, SAMSARS_DATA } from '../data/samsars';
+import { PageTitle } from './PageTitle';
 import { 
   Phone, 
   MessageCircle, 
@@ -127,26 +129,80 @@ export const MOCK_SAMSARS_PINS: MapSamsarPin[] = [
   }
 ];
 
-const CITY_VIEWS: Record<string, { center: { lat: number; lng: number }; zoom: number; label: string; labelAr: string }> = {
-  morocco: { center: { lat: 32.0, lng: -6.0 }, zoom: 6, label: 'Tout le Maroc', labelAr: 'المغرب كامل' },
-  casablanca: { center: { lat: 33.5731, lng: -7.5898 }, zoom: 12, label: 'Casablanca', labelAr: 'الدار البيضاء' },
-  rabat: { center: { lat: 33.9981, lng: -6.8488 }, zoom: 13, label: 'Rabat', labelAr: 'الرباط' },
-  marrakech: { center: { lat: 31.6342, lng: -8.0122 }, zoom: 13, label: 'Marrakech', labelAr: 'مراكش' }
-};
+// Marqueurs Samsars combinant les mocks et toutes les données de la base
+export const ALL_SAMSARS_PINS: MapSamsarPin[] = [
+  ...MOCK_SAMSARS_PINS,
+  ...SAMSARS_DATA.filter(s => !MOCK_SAMSARS_PINS.some(m => m.id === s.id)).map(s => {
+    const cityObj = CITIES_DATA.find(c => c.id === s.city);
+    return {
+      id: s.id,
+      name: s.name,
+      nameAr: s.alias || s.name,
+      city: cityObj ? cityObj.name : s.city,
+      quarter: s.districts[0] || (cityObj ? cityObj.districts[0]?.name || '' : ''),
+      cityId: s.city,
+      lat: s.lat || (cityObj?.lat ?? 33.5731),
+      lng: s.lng || (cityObj?.lng ?? -7.5898),
+      avatar: s.avatar,
+      rating: s.rating,
+      reviewCount: s.reviewsCount,
+      phone: s.phone,
+      whatsappPhone: s.whatsapp.replace(/\+/g, ''),
+      specialty: s.bioFrench ? (s.bioFrench.length > 55 ? s.bioFrench.slice(0, 55) + '...' : s.bioFrench) : 'Samsar Référent',
+      specialtyAr: s.bioDarija ? (s.bioDarija.length > 55 ? s.bioDarija.slice(0, 55) + '...' : s.bioDarija) : 'سمسار معتمد'
+    };
+  })
+];
+
+export interface CityViewItem {
+  id: string;
+  name: string;
+  nameAr: string;
+  center: { lat: number; lng: number };
+  zoom: number;
+  icon: string;
+}
+
+// Génération dynamique de toutes les villes disponibles dans la base de données
+export const GET_CITY_VIEWS = (): CityViewItem[] => [
+  {
+    id: 'morocco',
+    name: 'Tout le Maroc',
+    nameAr: 'المغرب كامل',
+    center: { lat: 32.0, lng: -6.0 },
+    zoom: 6,
+    icon: '🇲🇦'
+  },
+  ...CITIES_DATA.map(c => ({
+    id: c.id,
+    name: c.name,
+    nameAr: c.nameAr,
+    center: { lat: c.lat, lng: c.lng },
+    zoom: c.defaultZoom || 12,
+    icon: '📍'
+  }))
+];
 
 interface SamsarGoogleMapProps {
   language?: 'fr' | 'ar';
   onBack?: () => void;
   onSwitchToList?: () => void;
+  title?: React.ReactNode;
+  subtitle?: React.ReactNode;
 }
 
 export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({ 
   language = 'fr',
   onBack,
-  onSwitchToList
+  onSwitchToList,
+  title,
+  subtitle
 }) => {
   const isAr = language === 'ar';
+  const displayTitle = title ?? (isAr ? 'خريطة السماسرة' : 'Carte des Samsars');
+  const displaySubtitle = subtitle ?? (isAr ? 'حدد موقع السماسرة المعتمدين عبر الخريطة التفاعلية' : 'Localisez les professionnels certifiés autour de vous');
   const apiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyCP4nVZwtEyxb1RxipK4LOlvTCHy1qc4TM";
+  const cityViews = GET_CITY_VIEWS();
 
   // 1. POSITION INITIALE FORCÉE : Maroc ({ lat: 32.0, lng: -6.0 }) et Zoom 6
   const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: 32.0, lng: -6.0 });
@@ -166,63 +222,73 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
   }, []); // Tableau vide = s'exécute une seule fois
 
   return (
-    <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden bg-stone-100">
-      {/* 2. RENDRE LA BARRE DE FILTRES SCROLLABLE HORIZONTALEMENT */}
-      <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-10 flex items-center justify-between gap-2 bg-white/95 backdrop-blur-md shadow-xl border border-stone-200/90 rounded-2xl p-1 pointer-events-auto">
-        <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-none flex-1 min-w-0 items-center">
-          {Object.entries(CITY_VIEWS).map(([key, view]) => {
-            const isSelected = activeCityKey === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  setActiveCityKey(key);
-                  setSelectedPin(null);
-                  setCenter(view.center);
-                  setZoom(view.zoom);
-                }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-                  isSelected
-                    ? 'bg-[#006233] text-white shadow-xs'
-                    : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200/80'
-                }`}
-              >
-                <span>{key === 'morocco' ? '🇲🇦' : '📍'}</span>
-                <span>{isAr ? view.labelAr : view.label}</span>
-              </button>
-            );
-          })}
-        </div>
+    <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden bg-stone-50">
+      {/* BLOC D'EN-TÊTE PRINCIPAL : Titre, Description, puis Barre de filtres (non-superposée au-dessus de la carte) */}
+      <div className="w-full shrink-0 pt-2 sm:pt-4 px-3 sm:px-6 z-10 bg-white/80 backdrop-blur-xs border-b border-stone-200/60 shadow-2xs">
+        <PageTitle 
+          title={displayTitle} 
+          subtitle={displaySubtitle}
+          className="mb-3 sm:mb-4"
+        />
 
-        {onSwitchToList && (
-          <button
-            type="button"
-            onClick={onSwitchToList}
-            className="px-3 py-1.5 mr-1.5 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white text-xs font-bold transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
-            title={isAr ? 'عرض القائمة' : 'Voir la liste'}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isAr ? 'عرض القائمة' : 'Liste'}</span>
-          </button>
-        )}
+        {/* Barre de filtres des villes : juste en dessous de la description et au-dessus de la carte */}
+        <div className="w-full mb-4 sm:mb-6">
+          <div className="flex items-center justify-between gap-2 bg-stone-100/90 backdrop-blur-md shadow-xs border border-stone-200/90 rounded-2xl p-1.5 max-w-5xl mx-auto">
+            <div className="overflow-x-auto whitespace-nowrap scrollbar-none flex items-center gap-2 px-3 py-1.5 flex-1 min-w-0">
+              {cityViews.map((city) => {
+                const isSelected = activeCityKey === city.id;
+                return (
+                  <button
+                    key={city.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveCityKey(city.id);
+                      setSelectedPin(null);
+                      setCenter(city.center);
+                      setZoom(city.zoom);
+                    }}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-[#006233] text-white shadow-xs'
+                        : 'bg-white hover:bg-stone-50 text-stone-700 border border-stone-200/80'
+                    }`}
+                  >
+                    <span>{city.icon}</span>
+                    <span>{isAr ? city.nameAr : city.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {onSwitchToList && (
+              <button
+                type="button"
+                onClick={onSwitchToList}
+                className="px-3 py-1.5 mr-1 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white text-xs font-bold transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
+                title={isAr ? 'عرض القائمة' : 'Voir la liste'}
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{isAr ? 'عرض القائمة' : 'Liste'}</span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* 3. DISCRÉTISER LE BOUTON PLAN/SATELLITE : petite icône flottante (🗺️) en bas à droite au-dessus du zoom */}
-      <button
-        type="button"
-        onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}
-        className="absolute bottom-20 right-4 z-10 bg-white hover:bg-stone-50 rounded-full p-2 shadow-lg border border-stone-200/80 text-stone-800 transition active:scale-90 cursor-pointer flex items-center justify-center pointer-events-auto"
-        title={mapType === 'roadmap' ? (isAr ? 'التبديل إلى القمر الصناعي' : 'Passer en vue Satellite') : (isAr ? 'التبديل إلى الخريطة' : 'Passer en vue Plan')}
-        aria-label="Basculer Plan / Satellite"
-      >
-        <span className="text-xl leading-none select-none" role="img" aria-label="Carte">
-          🗺️
-        </span>
-      </button>
-
-      {/* 1. FORCER LA HAUTEUR PLEIN ÉCRAN DE LA CARTE : occupe 100% de l'espace restant sous le header */}
-      <div className="w-full h-full flex-1 relative">
+      {/* CARTE INTERACTIVE : Remplissant tout l'espace disponible sous le header */}
+      <div className="w-full flex-1 relative min-h-0">
+        {/* Bouton Satellite discret */}
+        <button
+          type="button"
+          onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}
+          className="absolute bottom-6 right-4 z-10 bg-white hover:bg-stone-50 rounded-full p-2.5 shadow-lg border border-stone-200/80 text-stone-800 transition active:scale-90 cursor-pointer flex items-center justify-center pointer-events-auto"
+          title={mapType === 'roadmap' ? (isAr ? 'التبديل إلى القمر الصناعي' : 'Passer en vue Satellite') : (isAr ? 'التبديل إلى الخريطة' : 'Passer en vue Plan')}
+          aria-label="Basculer Plan / Satellite"
+        >
+          <span className="text-xl leading-none select-none" role="img" aria-label="Carte">
+            🗺️
+          </span>
+        </button>
         <APIProvider apiKey={apiKey}>
           <GoogleMap
             mapId="DEMO_MAP_ID"
@@ -241,7 +307,7 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
           >
 
             {/* Marqueurs (Pins) de nos Samsars avec photo de profil directe */}
-            {MOCK_SAMSARS_PINS.map((pin) => {
+            {ALL_SAMSARS_PINS.map((pin) => {
               const isSelected = selectedPin?.id === pin.id;
               return (
                 <AdvancedMarker
