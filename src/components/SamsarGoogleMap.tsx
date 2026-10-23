@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   APIProvider, 
   Map as GoogleMap, 
-  AdvancedMarker,
-  AdvancedMarkerAnchorPoint,
+  useMap,
   InfoWindow 
 } from '@vis.gl/react-google-maps';
 import { CITIES_DATA, SAMSARS_DATA } from '../data/samsars';
@@ -20,8 +20,12 @@ import {
   ExternalLink,
   ArrowLeft,
   ArrowRight,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
+
+declare const google: any;
 
 export interface MapSamsarPin {
   id: string;
@@ -183,6 +187,137 @@ export const GET_CITY_VIEWS = (): CityViewItem[] => [
   }))
 ];
 
+/**
+ * Composant OverlayView personnalisé pour Google Maps
+ * Permet d'afficher des pastilles HTML (photos de profil rondes) sans nécessiter de Map ID
+ */
+interface MapOverlayProps {
+  position: { lat: number; lng: number };
+  children: React.ReactNode;
+  onClick?: () => void;
+  zIndex?: number;
+}
+
+const MapOverlay: React.FC<MapOverlayProps> = ({
+  position,
+  children,
+  onClick,
+  zIndex = 10
+}) => {
+  const map = useMap();
+  const [container] = useState(() => {
+    const el = document.createElement('div');
+    el.style.position = 'absolute';
+    el.style.transform = 'translate(-50%, -50%)';
+    return el;
+  });
+
+  useEffect(() => {
+    container.style.zIndex = String(zIndex);
+  }, [zIndex, container]);
+
+  useEffect(() => {
+    if (!map || typeof google === 'undefined' || !google.maps || !google.maps.OverlayView) return;
+
+    class Overlay extends google.maps.OverlayView {
+      onAdd() {
+        const panes = this.getPanes();
+        panes?.overlayMouseTarget.appendChild(container);
+      }
+
+      draw() {
+        const projection = this.getProjection();
+        if (!projection) return;
+        const point = projection.fromLatLngToDivPixel(
+          new google.maps.LatLng(position.lat, position.lng)
+        );
+        if (point) {
+          container.style.left = `${point.x}px`;
+          container.style.top = `${point.y}px`;
+        }
+      }
+
+      onRemove() {
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+      }
+    }
+
+    const overlay = new Overlay();
+    overlay.setMap(map);
+
+    return () => {
+      overlay.setMap(null);
+    };
+  }, [map, position.lat, position.lng, container]);
+
+  return createPortal(
+    <div onClick={onClick} className="cursor-pointer">
+      {children}
+    </div>,
+    container
+  );
+};
+
+/**
+ * Contrôleur Google Maps pour la gestion dynamique :
+ * 1. Visibilité des légendes via styles (sans mapId)
+ * 2. Basculement natif roadmap / terrain / satellite / hybrid
+ * 3. Désactivation des contrôles caméra / rotation natifs pour éviter toute superposition
+ */
+interface MapControllerProps {
+  mapType: 'plan' | 'satellite';
+  showRelief: boolean;
+  showLegends: boolean;
+}
+
+const MapController: React.FC<MapControllerProps> = ({
+  mapType,
+  showRelief,
+  showLegends
+}) => {
+  const map = useMap();
+
+  // 1. Appliquer dynamiquement la visibilité des légendes via styles et désactiver les contrôles natifs
+  useEffect(() => {
+    if (!map || typeof google === 'undefined') return;
+    const styles: any[] = [
+      {
+        featureType: 'all',
+        elementType: 'labels',
+        stylers: [{ visibility: showLegends ? 'on' : 'off' }]
+      }
+    ];
+    map.setOptions({ 
+      styles,
+      cameraControl: false,
+      rotateControl: false,
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+        position: typeof google !== 'undefined' && google?.maps?.ControlPosition?.RIGHT_TOP
+          ? google.maps.ControlPosition.RIGHT_TOP
+          : 7
+      },
+      tilt: 0
+    });
+  }, [map, showLegends]);
+
+  // 2. Basculer le type de carte natif Google
+  useEffect(() => {
+    if (!map || typeof google === 'undefined') return;
+    let targetType = 'roadmap';
+    if (mapType === 'satellite') {
+      targetType = showLegends ? 'hybrid' : 'satellite';
+    } else {
+      targetType = showRelief ? 'terrain' : 'roadmap';
+    }
+    map.setMapTypeId(targetType);
+  }, [map, mapType, showRelief, showLegends]);
+
+  return null;
+};
+
 interface SamsarGoogleMapProps {
   language?: 'fr' | 'ar';
   onBack?: () => void;
@@ -209,7 +344,39 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
   const [zoom, setZoom] = useState<number>(6);
   const [activeCityKey, setActiveCityKey] = useState<string>('morocco');
   const [selectedPin, setSelectedPin] = useState<MapSamsarPin | null>(null);
-  const [mapType, setMapType] = useState<'roadmap' | 'satellite' | 'hybrid'>('roadmap');
+  // Trois états distincts et totalement indépendants (zéro effet de bord)
+  const [mapType, setMapType] = useState<'plan' | 'satellite'>('plan');
+  const [showRelief, setShowRelief] = useState<boolean>(false);
+  const [showLegends, setShowLegends] = useState<boolean>(true);
+
+  // Fonctions de bascule strictement isolées
+  const handleToggleMapType = () => {
+    setMapType(prev => (prev === 'plan' ? 'satellite' : 'plan'));
+  };
+
+  const handleToggleRelief = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowRelief(e.target.checked);
+  };
+
+  const handleToggleLegends = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowLegends(e.target.checked);
+  };
+
+  // Type de carte actif dérivé dynamiquement selon mapType et les options
+  const activeMapTypeId = mapType === 'satellite'
+    ? (showLegends ? 'hybrid' : 'satellite')
+    : (showRelief ? 'terrain' : 'roadmap');
+
+  // Styles pour masquer les légendes en mode Plan si l'option Légendes est désactivée
+  const mapStyles = (!showLegends && mapType === 'plan')
+    ? [
+        {
+          featureType: 'all',
+          elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        }
+      ]
+    : undefined;
 
   // 2. DÉSACTIVER LE RECENTRAGE AUTOMATIQUE :
   // Aucun panTo ni fitBounds automatique n'est exécuté après le chargement des marqueurs.
@@ -277,21 +444,89 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
 
       {/* CARTE INTERACTIVE : Remplissant tout l'espace disponible sous le header */}
       <div className="w-full flex-1 relative min-h-0">
-        {/* Bouton Satellite discret */}
-        <button
-          type="button"
-          onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}
-          className="absolute bottom-6 right-4 z-10 bg-white hover:bg-stone-50 rounded-full p-2.5 shadow-lg border border-stone-200/80 text-stone-800 transition active:scale-90 cursor-pointer flex items-center justify-center pointer-events-auto"
-          title={mapType === 'roadmap' ? (isAr ? 'التبديل إلى القمر الصناعي' : 'Passer en vue Satellite') : (isAr ? 'التبديل إلى الخريطة' : 'Passer en vue Plan')}
-          aria-label="Basculer Plan / Satellite"
+        {/* Panneau de configuration & couches de la carte en haut à gauche */}
+        <div 
+          className="absolute top-3 sm:top-4 start-3 sm:start-4 z-10 bg-white/95 backdrop-blur-md border border-stone-200/90 rounded-2xl shadow-lg p-1.5 sm:px-3 sm:py-2 flex items-center gap-2 sm:gap-3 text-xs font-semibold text-stone-800 pointer-events-auto transition hover:bg-white"
+          title={isAr ? 'خيارات وطبقات الخريطة' : 'Configuration et couches de la carte'}
         >
-          <span className="text-xl leading-none select-none" role="img" aria-label="Carte">
-            🗺️
-          </span>
-        </button>
+          {/* Bouton bascule Plan / Satellite (Caméra) */}
+          <button
+            type="button"
+            onClick={handleToggleMapType}
+            className={`px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs ${
+              mapType === 'satellite' 
+                ? 'bg-stone-900 text-white' 
+                : 'bg-[#006233] text-white'
+            }`}
+            title={mapType === 'plan' ? (isAr ? 'التبديل إلى القمر الصناعي' : 'Passer en vue Satellite') : (isAr ? 'التبديل إلى الخريطة' : 'Passer en vue Plan')}
+            aria-label="Basculer Plan / Satellite"
+          >
+            <span className="text-base leading-none select-none">
+              {mapType === 'satellite' ? '🛰️' : '🗺️'}
+            </span>
+            <span className="text-[11px] font-bold">
+              {mapType === 'satellite' ? (isAr ? 'قمر صناعي' : 'Satellite') : (isAr ? 'خريطة' : 'Plan')}
+            </span>
+          </button>
+
+          {/* Option Relief : affichée uniquement en vue Plan */}
+          {mapType === 'plan' && (
+            <>
+              <span className="text-stone-300 select-none">|</span>
+              <label className="flex items-center gap-1.5 cursor-pointer select-none px-0.5">
+                <input
+                  type="checkbox"
+                  checked={showRelief}
+                  onChange={handleToggleRelief}
+                  className="w-4 h-4 rounded text-[#006233] focus:ring-[#006233] border-stone-300 accent-[#006233] cursor-pointer"
+                />
+                <span className={showRelief ? 'text-[#006233] font-bold' : 'text-stone-700'}>
+                  {isAr ? 'تضاريس' : 'Relief'}
+                </span>
+              </label>
+            </>
+          )}
+
+          <span className="text-stone-300 select-none">|</span>
+
+          {/* Option Légendes */}
+          <label className="flex items-center gap-1.5 cursor-pointer select-none px-0.5">
+            <input
+              type="checkbox"
+              checked={showLegends}
+              onChange={handleToggleLegends}
+              className="w-4 h-4 rounded text-[#006233] focus:ring-[#006233] border-stone-300 accent-[#006233] cursor-pointer"
+            />
+            <span className={showLegends ? 'text-[#006233] font-bold' : 'text-stone-700'}>
+              {isAr ? 'تسميات' : 'Légendes'}
+            </span>
+          </label>
+        </div>
+
+        {/* Contrôles de zoom (+ et -) rabaissés tout en bas à droite (bottom-6) sans superposition */}
+        <div className="absolute bottom-6 end-4 z-10 flex flex-col bg-white rounded-2xl shadow-lg border border-stone-200/90 overflow-hidden pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => setZoom(prev => Math.min(prev + 1, 20))}
+            className="w-10 h-10 hover:bg-stone-50 text-stone-700 transition border-b border-stone-200/80 flex items-center justify-center cursor-pointer active:scale-90"
+            title={isAr ? 'تكبير' : 'Zoom avant (+)'}
+            aria-label="Zoom In"
+          >
+            <ZoomIn className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoom(prev => Math.max(prev - 1, 3))}
+            className="w-10 h-10 hover:bg-stone-50 text-stone-700 transition flex items-center justify-center cursor-pointer active:scale-90"
+            title={isAr ? 'تصغير' : 'Zoom arrière (-)'}
+            aria-label="Zoom Out"
+          >
+            <ZoomOut className="w-4 h-4" />
+          </button>
+        </div>
+
         <APIProvider apiKey={apiKey}>
           <GoogleMap
-            mapId="DEMO_MAP_ID"
             defaultCenter={{ lat: 32.0, lng: -6.0 }}
             defaultZoom={6}
             center={center}
@@ -300,24 +535,41 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
               setCenter(ev.detail.center);
               setZoom(ev.detail.zoom);
             }}
-            mapTypeId={mapType}
+            mapTypeId={activeMapTypeId}
+            styles={mapStyles}
+            mapTypeControl={false}
+            zoomControl={false}
+            streetViewControl={false}
+            cameraControl={false}
+            rotateControl={false}
+            fullscreenControl={true}
+            fullscreenControlOptions={{
+              position: typeof google !== 'undefined' && google?.maps?.ControlPosition?.RIGHT_TOP
+                ? google.maps.ControlPosition.RIGHT_TOP
+                : 7
+            }}
             gestureHandling="greedy"
             disableDefaultUI={false}
             style={{ width: '100%', height: '100%' }}
           >
+            {/* Contrôleur dynamique des styles et calques de relief/légendes */}
+            <MapController 
+              mapType={mapType} 
+              showRelief={showRelief} 
+              showLegends={showLegends} 
+            />
 
             {/* Marqueurs (Pins) de nos Samsars avec photo de profil directe */}
             {ALL_SAMSARS_PINS.map((pin) => {
               const isSelected = selectedPin?.id === pin.id;
               return (
-                <AdvancedMarker
+                <MapOverlay
                   key={pin.id}
                   position={{ lat: pin.lat, lng: pin.lng }}
-                  title={`${pin.name} - ${pin.quarter}, ${pin.city}`}
                   onClick={() => setSelectedPin(pin)}
-                  anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
                 >
                   <div 
+                    title={`${pin.name} - ${pin.quarter}, ${pin.city}`}
                     className={`w-10 h-10 rounded-full border-2 ${
                       isSelected 
                         ? 'border-amber-500 ring-4 ring-amber-300 shadow-xl scale-110' 
@@ -330,7 +582,7 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
                       className="w-full h-full object-cover pointer-events-none" 
                     />
                   </div>
-                </AdvancedMarker>
+                </MapOverlay>
               );
             })}
 
@@ -408,8 +660,8 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
         </APIProvider>
 
         {/* Infobulle guide flottante en bas de la carte */}
-        <div className="absolute bottom-4 left-4 z-10 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-lg text-[11px] text-stone-700 font-semibold">
-          <span className="text-[#006233] font-bold">👤 {MOCK_SAMSARS_PINS.length} {isAr ? 'سماسرة معتمدون' : 'Samsars'}</span>
+        <div className="absolute bottom-4 start-4 z-10 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-lg text-[11px] text-stone-700 font-semibold">
+          <span className="text-[#006233] font-bold">👤 {ALL_SAMSARS_PINS.length} {isAr ? 'سماسرة معتمدون' : 'Samsars'}</span>
           <span className="text-stone-300">•</span>
           <span>{isAr ? 'انقر على أي نقطة للتواصل عبر واتساب أو الهاتف' : 'Touchez un marqueur vert pour contacter directement par WhatsApp ou Appel'}</span>
         </div>
