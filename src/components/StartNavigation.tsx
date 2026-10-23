@@ -36,6 +36,12 @@ import { AppHeader } from './AppHeader';
 import { PageTitle } from './PageTitle';
 import { SplashScreen } from './SplashScreen';
 import { PostListingForm } from './PostListingForm';
+import { FuzzyConfirmationModal } from './FuzzyConfirmationModal';
+import { 
+  findBestMatches, 
+  COMMON_STOP_WORDS, 
+  FuzzyCandidate 
+} from '../utils/fuzzyMatch';
 
 export type StartScreen = 
   | 'splash'
@@ -2180,6 +2186,206 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
     setMicStatusMessage(`Micro en pause • Cliquez pour dicter en ${voiceLanguage === 'darija' ? 'Darija' : 'Français'}`);
   };
 
+  // ============================================================================
+  // SYSTÈME DE CORRESPONDANCE FLOUE (FUZZY MATCHING) POUR LA DICTÉE VOCALE
+  // ============================================================================
+  const [fuzzyModalState, setFuzzyModalState] = useState<{
+    isOpen: boolean;
+    originalWord: string;
+    originalSentence: string;
+    wordsArray: string[];
+    wordIndex: number;
+    isRefining: boolean;
+    candidates: FuzzyCandidate[];
+  }>({
+    isOpen: false,
+    originalWord: '',
+    originalSentence: '',
+    wordsArray: [],
+    wordIndex: -1,
+    isRefining: false,
+    candidates: []
+  });
+
+  const handleSelectFuzzyCandidate = (candidate: FuzzyCandidate) => {
+    const { wordsArray, wordIndex, isRefining } = fuzzyModalState;
+    const newWords = [...wordsArray];
+    if (wordIndex >= 0 && wordIndex < newWords.length) {
+      newWords[wordIndex] = candidate.word;
+    }
+    const correctedText = newWords.join(' ').trim();
+    setFuzzyModalState(prev => ({ ...prev, isOpen: false }));
+    setTexteBrutCapte(correctedText);
+    setTexteEcoute(correctedText);
+    texteEcouteRef.current = correctedText;
+    setMicStatusMessage(`Correction validée : "${correctedText}"`);
+
+    if (isRefining) {
+      handleRefineVoiceSearch(correctedText);
+    } else {
+      handleTranslatedText(correctedText);
+    }
+  };
+
+  const handleCancelFuzzyModal = () => {
+    setFuzzyModalState(prev => ({ ...prev, isOpen: false }));
+    setMicStatusMessage(
+      language === 'ar'
+        ? 'تم إلغاء الاقتراح. يمكنك إعادة التحدث بوضوح.'
+        : 'Suggestion annulée. Vous pouvez répéter votre recherche.'
+    );
+  };
+
+  /**
+   * Analyse floue (Fuzzy Matching) intermédiaire sur la transcription vocale.
+   * Règle 1 (>= 90%) : Correction silencieuse immédiate.
+   * Règle 2 (50% à 89%) : Déclenche la modale de confirmation.
+   * Règle 3 (< 50%) : Rejet et invitation vocale à répéter.
+   */
+  const processVoiceWithFuzzyMatch = (rawText: string, isRefining: boolean) => {
+    const text = (rawText || '').trim();
+    if (!text) return;
+
+    // 1. Rassembler les dictionnaires pour la comparaison
+    const allCandidates: { word: string; category: 'city' | 'type' | 'operation'; label: string }[] = [];
+
+    // Types de biens
+    Object.keys(typeMapping).forEach(key => {
+      allCandidates.push({ word: key, category: 'type', label: typeMapping[key] });
+    });
+
+    // Villes
+    Object.keys(cityMapping).forEach(key => {
+      allCandidates.push({ word: key, category: 'city', label: cityMapping[key] });
+    });
+
+    // Opérations
+    Object.keys(operationMapping).forEach(key => {
+      allCandidates.push({ word: key, category: 'operation', label: operationMapping[key] });
+    });
+
+    const candidateWords = allCandidates.map(c => c.word);
+
+    // Découper le texte en mots
+    const words = text.split(/\s+/);
+    const correctedWords = [...words];
+
+    let hasAmbiguity = false;
+    let ambiguityData: {
+      word: string;
+      index: number;
+      candidates: FuzzyCandidate[];
+    } | null = null;
+
+    let hasRecognizedKeyword = false;
+
+    for (let i = 0; i < words.length; i++) {
+      const rawWord = words[i];
+      const cleanWord = rawWord.replace(/[.,!?;:«»"']/g, '').toLowerCase().trim();
+
+      if (!cleanWord || cleanWord.length < 2) continue;
+
+      // Ignorer les mots de liaison/stop-words courants
+      if (COMMON_STOP_WORDS.has(cleanWord)) continue;
+
+      // Ignorer les chiffres / budgets
+      if (/^\d+(m|k|dh)?$/i.test(cleanWord) || /^(mlyon|million|alf)$/i.test(cleanWord)) {
+        hasRecognizedKeyword = true;
+        continue;
+      }
+
+      // Vérifier si le mot est DÉJÀ exactement dans un dictionnaire
+      if (typeMapping[cleanWord] || cityMapping[cleanWord] || operationMapping[cleanWord]) {
+        hasRecognizedKeyword = true;
+        continue;
+      }
+
+      // Recherche des meilleures correspondances Levenshtein
+      const matches = findBestMatches(cleanWord, candidateWords, 5);
+      const best = matches[0];
+
+      if (best) {
+        // Règle 1 : Score >= 90% -> Correction automatique silencieuse
+        if (best.score >= 90) {
+          hasRecognizedKeyword = true;
+          const matchedItem = allCandidates.find(c => c.word.toLowerCase() === best.word.toLowerCase());
+          correctedWords[i] = matchedItem ? matchedItem.word : best.word;
+          console.log(`[Fuzzy Match Auto-Correct] "${cleanWord}" -> "${correctedWords[i]}" (${best.score}%)`);
+        }
+        // Règle 2 : Score entre 50% et 89% -> Doute / Demande de confirmation
+        else if (best.score >= 50 && best.score < 90) {
+          if (!hasAmbiguity) {
+            hasAmbiguity = true;
+            const topProps: FuzzyCandidate[] = matches
+              .filter(m => m.score >= 50)
+              .slice(0, 3)
+              .map(m => {
+                const item = allCandidates.find(c => c.word.toLowerCase() === m.word.toLowerCase());
+                return {
+                  word: m.word,
+                  score: m.score,
+                  category: item?.category,
+                  label: item?.label || m.word
+                };
+              });
+
+            ambiguityData = {
+              word: cleanWord,
+              index: i,
+              candidates: topProps
+            };
+          }
+        }
+      }
+    }
+
+    // SI RÈGLE 2 (Doute entre 50% et 89%) : Ouvrir la modale et interrompre l'exécution directe
+    if (hasAmbiguity && ambiguityData) {
+      setFuzzyModalState({
+        isOpen: true,
+        originalWord: ambiguityData.word,
+        originalSentence: text,
+        wordsArray: correctedWords,
+        wordIndex: ambiguityData.index,
+        isRefining,
+        candidates: ambiguityData.candidates
+      });
+      return;
+    }
+
+    // SI RÈGLE 3 : Rejet si aucun critère immobilier n'a été reconnu ou score < 50%
+    if (!hasRecognizedKeyword) {
+      const isAr = language === 'ar';
+      const msg = isAr 
+        ? 'لم أفهم، هل يمكنك الإعادة من فضلك؟' 
+        : 'Je n\'ai pas compris, pouvez-vous répéter ?';
+
+      setMicStatusMessage(msg);
+
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(msg);
+        utterance.lang = isAr ? 'ar-MA' : 'fr-FR';
+        utterance.rate = 0.9;
+        const voices = window.speechSynthesis.getVoices();
+        const voice = isAr
+          ? voices.find(v => v.lang.toLowerCase() === 'ar-ma' || v.lang.startsWith('ar'))
+          : voices.find(v => v.lang.startsWith('fr'));
+        if (voice) utterance.voice = voice;
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+
+    // SINON (Tous les critères valides ou auto-corrigés >= 90%) : Exécution normale
+    const finalText = correctedWords.join(' ').trim();
+    if (isRefining) {
+      handleRefineVoiceSearch(finalText);
+    } else {
+      handleTranslatedText(finalText);
+    }
+  };
+
   // 1. DÉTRUIRE ET RECRÉER LE MICRO À CHAQUE CLIC (Le vrai fix - Évite le Stale Closure)
   // ACTION 2 : Support du Double Micro (Darija ar-MA vs Français fr-FR)
   const startListening = (langOverride?: 'darija' | 'fr', navigateToListening: boolean = false) => {
@@ -2254,13 +2460,9 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
           setTexteEcoute(cleanTranscript);
           setMicStatusMessage(`Voix captée (${lang === 'darija' ? 'Darija' : 'Français'}) : "${cleanTranscript}"`);
 
-          // SI ON EST DÉJÀ SUR L'ÉCRAN RÉSULTATS : FUSION INTELLIGENTE DES FILTRES
-          // SINON : PREMIÈRE RECHERCHE AVEC INITIALISATION
-          if (currentScreenRef.current === 'voice_results') {
-            handleRefineVoiceSearch(cleanTranscript);
-          } else {
-            handleTranslatedText(cleanTranscript);
-          }
+          // Traitement avec correspondance floue (Fuzzy Matching)
+          const isRefining = currentScreenRef.current === 'voice_results';
+          processVoiceWithFuzzyMatch(cleanTranscript, isRefining);
         }
       };
 
@@ -2892,7 +3094,11 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
   const handleMenuSelect = (option: string) => {
     if (isListeningMic) stopListening();
     if (option === 'classic' || option === 'home') {
-      setCurrentStep('home');
+      if (onGoHome) {
+        onGoHome();
+      } else {
+        setCurrentStep('home');
+      }
     } else {
       setCurrentStep(option as StartScreen);
     }
@@ -4798,6 +5004,17 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modale de confirmation intelligente en cas de doute vocal (Fuzzy Matching) */}
+      <FuzzyConfirmationModal
+        isOpen={fuzzyModalState.isOpen}
+        originalWord={fuzzyModalState.originalWord}
+        originalSentence={fuzzyModalState.originalSentence}
+        candidates={fuzzyModalState.candidates}
+        onSelectCandidate={handleSelectFuzzyCandidate}
+        onCancel={handleCancelFuzzyModal}
+        language={language}
+      />
 
       {/* Footer épuré (masqué en mode carte plein écran immersif) */}
       {!isMapScreen && (

@@ -8,6 +8,7 @@ export interface MainMenuProps {
   onNavigate: (page: string) => void;
   onBackToMode?: () => void;
   onGoHome?: () => void;
+  onToggleLanguage?: () => void;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
@@ -15,7 +16,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   mode = 'classic',
   onNavigate,
   onBackToMode,
-  onGoHome
+  onGoHome,
+  onToggleLanguage
 }) => {
   const { themeConfig } = useTheme();
   const isAr = language === 'ar';
@@ -31,11 +33,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         language={language}
         currentStep="home"
         onGoHome={onGoHome}
+        onToggleLanguage={onToggleLanguage}
         onSelectMenuOption={(opt) => {
           if (opt === 'vocal') onNavigate('voice-search');
-          if (opt === 'samsar_choice' || opt === 'find_samsar' || opt === 'samsar-choice') onNavigate('samsar-choice');
-          if (opt === 'search_property' || opt === 'buy') onNavigate('buy');
-          if (opt === 'post_listing' || opt === 'sell') onNavigate('sell');
+          else if (opt === 'samsar_choice' || opt === 'find_samsar' || opt === 'samsar-choice') onNavigate('samsar-choice');
+          else if (opt === 'samsar_map' || opt === 'samsar-map') onNavigate('samsar-map');
+          else if (opt === 'search_property' || opt === 'buy') onNavigate('buy');
+          else if (opt === 'post_listing' || opt === 'sell') onNavigate('sell');
         }}
       />
 

@@ -19,7 +19,7 @@ function MainAppContent() {
     const handleGlobalNav = (e: Event) => {
       const customEvent = e as CustomEvent<string>;
       const option = customEvent.detail;
-      if (option === 'vocal') {
+      if (option === 'vocal' || option === 'voice-search') {
         setSelectedMode('vocal');
         setCurrentStep('home');
         setSubPage('voice-search');
@@ -30,9 +30,12 @@ function MainAppContent() {
       } else if (option === 'find_samsar' || option === 'samsar_choice' || option === 'samsar-choice') {
         setCurrentStep('home');
         setSubPage('samsar-choice');
-      } else if (option === 'samsar_map') {
+      } else if (option === 'samsar_map' || option === 'samsar-map') {
         setCurrentStep('home');
         setSubPage('samsar-map');
+      } else if (option === 'samsar_list' || option === 'samsar-list') {
+        setCurrentStep('home');
+        setSubPage('samsar-list');
       } else if (option === 'search_property' || option === 'buy') {
         setCurrentStep('home');
         setSubPage('buy');
@@ -42,14 +45,29 @@ function MainAppContent() {
       }
     };
 
+    const handleGlobalLang = (e: Event) => {
+      const customEvent = e as CustomEvent<'fr' | 'ar'>;
+      if (customEvent.detail === 'fr' || customEvent.detail === 'ar') {
+        setSelectedLang(customEvent.detail);
+      }
+    };
+
     window.addEventListener('dsamsar:navigate', handleGlobalNav);
-    return () => window.removeEventListener('dsamsar:navigate', handleGlobalNav);
+    window.addEventListener('dsamsar:language', handleGlobalLang);
+    return () => {
+      window.removeEventListener('dsamsar:navigate', handleGlobalNav);
+      window.removeEventListener('dsamsar:language', handleGlobalLang);
+    };
   }, []);
 
   const handleResetToStart = () => {
     setCurrentStep('language');
     setSubPage(null);
     setSelectedLang('fr');
+  };
+
+  const handleToggleLanguage = () => {
+    setSelectedLang((prev) => (prev === 'ar' ? 'fr' : 'ar'));
   };
 
   return (
@@ -65,6 +83,7 @@ function MainAppContent() {
         {/* ÉCRAN 1 : CHOIX DE LA LANGUE */}
         {currentStep === 'language' && (
           <LanguageScreen 
+            language={selectedLang}
             onSelect={(lang) => {
               setSelectedLang(lang);
               setCurrentStep('mode');
@@ -86,6 +105,7 @@ function MainAppContent() {
               }
             }}
             onBack={() => setCurrentStep('language')}
+            onToggleLanguage={handleToggleLanguage}
           />
         )}
 
@@ -97,6 +117,7 @@ function MainAppContent() {
             onNavigate={(page) => setSubPage(page)}
             onBackToMode={() => setCurrentStep('mode')}
             onGoHome={handleResetToStart}
+            onToggleLanguage={handleToggleLanguage}
           />
         )}
 
@@ -108,12 +129,14 @@ function MainAppContent() {
             onGoHome={handleResetToStart}
             onSelectMap={() => setSubPage('samsar-map')}
             onSelectList={() => setSubPage('samsar-list')}
+            onToggleLanguage={handleToggleLanguage}
           />
         )}
 
         {/* SOUS-PAGE : CARTE INTERACTIVE DES SAMSARS */}
         {currentStep === 'home' && subPage === 'samsar-map' && (
           <StartNavigation
+            key="samsar-map"
             initialStep="samsar_map"
             language={selectedLang}
             mode={selectedMode}
@@ -126,6 +149,7 @@ function MainAppContent() {
         {/* SOUS-PAGE : LISTE ET RECHERCHE DES SAMSARS */}
         {currentStep === 'home' && subPage === 'samsar-list' && (
           <StartNavigation
+            key="samsar-list"
             initialStep="find_samsar"
             language={selectedLang}
             mode={selectedMode}
@@ -138,6 +162,7 @@ function MainAppContent() {
         {/* SOUS-PAGE : RECHERCHER UN BIEN (ACHETER / LOUER) */}
         {currentStep === 'home' && subPage === 'buy' && (
           <StartNavigation
+            key="buy"
             initialStep="search_property"
             language={selectedLang}
             mode={selectedMode}
@@ -150,6 +175,7 @@ function MainAppContent() {
         {/* SOUS-PAGE : DÉPOSER UNE ANNONCE (VENDRE / LOUER) */}
         {currentStep === 'home' && subPage === 'sell' && (
           <StartNavigation
+            key="sell"
             initialStep="post_listing"
             language={selectedLang}
             mode={selectedMode}
@@ -162,6 +188,7 @@ function MainAppContent() {
         {/* SOUS-PAGE : RECHERCHE VOCALE */}
         {currentStep === 'home' && subPage === 'voice-search' && (
           <StartNavigation
+            key="voice-search"
             initialStep="vocal"
             language={selectedLang}
             mode={selectedMode}

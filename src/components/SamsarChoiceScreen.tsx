@@ -9,6 +9,7 @@ export interface SamsarChoiceScreenProps {
   onGoHome?: () => void;
   onSelectMap: () => void;
   onSelectList: () => void;
+  onToggleLanguage?: () => void;
 }
 
 export const SamsarChoiceScreen: React.FC<SamsarChoiceScreenProps> = ({
@@ -16,7 +17,8 @@ export const SamsarChoiceScreen: React.FC<SamsarChoiceScreenProps> = ({
   onBack,
   onGoHome,
   onSelectMap,
-  onSelectList
+  onSelectList,
+  onToggleLanguage
 }) => {
   const { themeConfig } = useTheme();
   const isAr = language === 'ar';
@@ -32,6 +34,8 @@ export const SamsarChoiceScreen: React.FC<SamsarChoiceScreenProps> = ({
         language={language}
         showHomeButton={true}
         onGoHome={onGoHome || onBack}
+        onToggleLanguage={onToggleLanguage}
+        currentStep="samsar_choice"
       />
 
       <main className="flex-1 flex flex-col items-center justify-center p-6 pt-24 pb-12 w-full max-w-md mx-auto text-center">

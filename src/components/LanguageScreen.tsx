@@ -4,10 +4,11 @@ import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 interface LanguageScreenProps {
+  language?: 'fr' | 'ar';
   onSelect: (lang: 'fr' | 'ar') => void;
 }
 
-export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
+export const LanguageScreen: React.FC<LanguageScreenProps> = ({ language = 'fr', onSelect }) => {
   const { themeConfig } = useTheme();
 
   return (
@@ -15,7 +16,8 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onSelect }) => {
       {/* Header minimaliste avec logo pour point d'ancrage de l'animation */}
       <AppHeader
         showBackButton={false}
-        language="fr"
+        language={language}
+        currentStep="language"
       />
 
       {/* Contenu minimaliste Écran 1 */}

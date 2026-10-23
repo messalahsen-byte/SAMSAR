@@ -7,12 +7,14 @@ interface ModeScreenProps {
   language?: string;
   onSelect: (mode: 'vocal' | 'classic') => void;
   onBack?: () => void;
+  onToggleLanguage?: () => void;
 }
 
 export const ModeScreen: React.FC<ModeScreenProps> = ({
   language = 'fr',
   onSelect,
-  onBack
+  onBack,
+  onToggleLanguage
 }) => {
   const { themeConfig } = useTheme();
   const isAr = language === 'ar';
@@ -26,6 +28,8 @@ export const ModeScreen: React.FC<ModeScreenProps> = ({
         showBackButton={true}
         onBack={onBack}
         language={isAr ? 'ar' : 'fr'}
+        onToggleLanguage={onToggleLanguage}
+        currentStep="mode"
       />
 
       <main className="flex-1 flex flex-col items-center justify-center p-6 pt-24 pb-12 w-full max-w-md mx-auto text-center">

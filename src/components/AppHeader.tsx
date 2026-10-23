@@ -41,13 +41,40 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     if (onSelectMenuOption) {
       onSelectMenuOption(option);
     }
+    // Déclenche l'événement global pour synchroniser l'ensemble de l'application
+    window.dispatchEvent(new CustomEvent('dsamsar:navigate', { detail: option }));
+  };
+
+  const handleToggleLang = () => {
+    setIsMenuOpen(false);
+    const nextLang = isAr ? 'fr' : 'ar';
+    if (onToggleLanguage) {
+      onToggleLanguage();
+    }
+    window.dispatchEvent(new CustomEvent('dsamsar:language', { detail: nextLang }));
   };
 
   const handleHomeReset = () => {
+    setIsMenuOpen(false);
     if (setCurrentStep) setCurrentStep('language');
     if (setSubPage) setSubPage(null);
     if (setSelectedLang) setSelectedLang('fr');
-    if (onGoHome) onGoHome();
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      window.dispatchEvent(new CustomEvent('dsamsar:navigate', { detail: 'classic' }));
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (currentStep === 'language') return;
+    if (onGoHome) {
+      onGoHome();
+    } else if (onBack) {
+      onBack();
+    } else {
+      window.dispatchEvent(new CustomEvent('dsamsar:navigate', { detail: 'classic' }));
+    }
   };
 
   const shouldDisplayHomeButton = showHomeButton !== undefined
@@ -72,7 +99,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         <div 
           id="app-header-logo"
-          onClick={onBack}
+          onClick={handleLogoClick}
           className="flex items-center gap-2 select-none cursor-pointer hover:opacity-90 active:scale-98 transition"
         >
           <img 
@@ -106,9 +133,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <div className="relative">
           <button
             type="button"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-lg text-stone-800 hover:text-stone-950 hover:bg-gray-100 transition active:scale-95 cursor-pointer flex items-center justify-center"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen((prev) => !prev);
+            }}
+            className="p-2 rounded-lg text-stone-800 hover:text-stone-950 hover:bg-gray-100 transition active:scale-95 cursor-pointer flex items-center justify-center relative z-50"
             aria-label="Menu"
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? (
               <X className="w-6 h-6 text-stone-800 stroke-[2]" />
@@ -119,125 +150,150 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             )}
           </button>
 
-        {/* Dropdown Menu Flottant */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <>
-              <div 
-                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" 
-                onClick={() => setIsMenuOpen(false)} 
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -6 }}
-                transition={{ duration: 0.15 }}
-                className={`absolute top-full mt-2.5 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans ${
-                  isAr ? 'left-0 text-right' : 'right-0 text-left'
-                }`}
-                dir={isAr ? 'rtl' : 'ltr'}
-              >
-                <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-stone-400">
-                    {isAr ? 'القائمة الرئيسية' : 'Menu Principal'}
-                  </span>
-                  <button 
+          {/* Dropdown Menu Flottant */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                  }} 
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className={`absolute top-full mt-2.5 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans ${
+                    isAr ? 'left-0 text-right' : 'right-0 text-left'
+                  }`}
+                  dir={isAr ? 'rtl' : 'ltr'}
+                >
+                  <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-stone-400">
+                      {isAr ? 'القائمة الرئيسية' : 'Menu Principal'}
+                    </span>
+                    <button 
+                      type="button"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Mode Vocal */}
+                  <button
                     type="button"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuClick('vocal');
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                      currentStep === 'vocal' || currentStep === 'voice-search'
+                        ? 'bg-emerald-50 text-[#006233] font-black' 
+                        : 'text-stone-700 hover:bg-stone-50'
+                    }`}
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <Mic className="w-4 h-4 text-[#006233] shrink-0" />
+                    <span>{isAr ? 'البحث الصوتي 🎤' : 'Mode Vocal 🎤'}</span>
                   </button>
-                </div>
 
-                {/* Mode Vocal */}
-                <button
-                  type="button"
-                  onClick={() => handleMenuClick('vocal')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                    currentStep === 'vocal' 
-                      ? 'bg-emerald-50 text-[#006233] font-black' 
-                      : 'text-stone-700 hover:bg-stone-50'
-                  }`}
-                >
-                  <Mic className="w-4 h-4 text-[#006233] shrink-0" />
-                  <span>{isAr ? 'البحث الصوتي 🎤' : 'Mode Vocal 🎤'}</span>
-                </button>
+                  {/* Mode Classique */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuClick('classic');
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                      currentStep === 'classic' || (currentStep === 'home' && !subPage)
+                        ? 'bg-amber-50 text-amber-900 font-black' 
+                        : 'text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <Home className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>{isAr ? 'القائمة الرئيسية' : 'Mode Classique (Menu)'}</span>
+                  </button>
 
-                {/* Mode Classique */}
-                <button
-                  type="button"
-                  onClick={() => handleMenuClick('classic')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                    currentStep === 'classic' 
-                      ? 'bg-amber-50 text-amber-900 font-black' 
-                      : 'text-stone-700 hover:bg-stone-50'
-                  }`}
-                >
-                  <Home className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>{isAr ? 'القائمة الرئيسية' : 'Mode Classique (Menu)'}</span>
-                </button>
+                  {/* Trouver un Samsar */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuClick('find_samsar');
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                      currentStep === 'samsar_choice' || currentStep === 'find_samsar' || currentStep === 'samsar-choice'
+                        ? 'bg-amber-50 text-amber-900 font-black' 
+                        : 'text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <User className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>{isAr ? 'سماسرتنا المعتمدون' : 'Trouver un Samsar'}</span>
+                  </button>
 
-                {/* Trouver un Samsar */}
-                <button
-                  type="button"
-                  onClick={() => handleMenuClick('find_samsar')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                    currentStep === 'samsar_choice' || currentStep === 'find_samsar'
-                      ? 'bg-amber-50 text-amber-900 font-black' 
-                      : 'text-stone-700 hover:bg-stone-50'
-                  }`}
-                >
-                  <User className="w-4 h-4 text-amber-700 shrink-0" />
-                  <span>{isAr ? 'سماسرتنا المعتمدون' : 'Trouver un Samsar'}</span>
-                </button>
+                  {/* Carte des Samsars */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuClick('samsar_map');
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                      currentStep === 'samsar_map' || currentStep === 'samsar-map'
+                        ? 'bg-emerald-50 text-emerald-800 font-black' 
+                        : 'text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <MapPin className="w-4 h-4 text-emerald-700 shrink-0" />
+                    <span>{isAr ? 'خريطة السماسرة' : 'Carte des Samsars'}</span>
+                  </button>
 
-                {/* Carte des Samsars */}
-                <button
-                  type="button"
-                  onClick={() => handleMenuClick('samsar_map')}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer text-stone-700 hover:bg-stone-50"
-                >
-                  <MapPin className="w-4 h-4 text-emerald-700 shrink-0" />
-                  <span>{isAr ? 'خريطة السماسرة' : 'Carte des Samsars'}</span>
-                </button>
+                  {/* Acheter */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuClick('search_property');
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                      currentStep === 'search_property' || currentStep === 'buy'
+                        ? 'bg-emerald-50 text-[#006233] font-black' 
+                        : 'text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <Search className="w-4 h-4 text-[#006233] shrink-0" />
+                    <span>{isAr ? 'شراء عقار' : 'Acheter un bien'}</span>
+                  </button>
 
-                {/* Acheter */}
-                <button
-                  type="button"
-                  onClick={() => handleMenuClick('search_property')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                    currentStep === 'search_property' 
-                      ? 'bg-emerald-50 text-[#006233] font-black' 
-                      : 'text-stone-700 hover:bg-stone-50'
-                  }`}
-                >
-                  <Search className="w-4 h-4 text-[#006233] shrink-0" />
-                  <span>{isAr ? 'شراء عقار' : 'Acheter un bien'}</span>
-                </button>
+                  {/* Vendre */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuClick('post_listing');
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                      currentStep === 'post_listing' || currentStep === 'sell'
+                        ? 'bg-amber-50 text-amber-900 font-black' 
+                        : 'text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <PlusCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>{isAr ? 'نشر عقاري (بيع / كراء)' : 'Déposer mon bien (Vendre)'}</span>
+                  </button>
 
-                {/* Vendre */}
-                <button
-                  type="button"
-                  onClick={() => handleMenuClick('post_listing')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                    currentStep === 'post_listing' 
-                      ? 'bg-amber-50 text-amber-900 font-black' 
-                      : 'text-stone-700 hover:bg-stone-50'
-                  }`}
-                >
-                  <PlusCircle className="w-4 h-4 text-amber-700 shrink-0" />
-                  <span>{isAr ? 'نشر عقاري (بيع / كراء)' : 'Déposer mon bien (Vendre)'}</span>
-                </button>
-
-                {/* Option discrète de changement de langue dans le menu si besoin */}
-                {onToggleLanguage && (
+                  {/* Option de changement de langue */}
                   <div className="pt-1.5 border-t border-stone-100">
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onToggleLanguage();
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleLang();
                       }}
                       className="w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold text-stone-600 hover:bg-stone-100 transition cursor-pointer"
                     >
@@ -245,16 +301,15 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                         <Globe className="w-3.5 h-3.5 text-stone-500" />
                         <span>{isAr ? 'اللغة' : 'Langue'}</span>
                       </span>
-                      <span className="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
+                      <span className="text-[11px] font-semibold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
                         {isAr ? 'Passer en Français 🇫🇷' : 'التحويل للعربية 🇲🇦'}
                       </span>
                     </button>
                   </div>
-                )}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
