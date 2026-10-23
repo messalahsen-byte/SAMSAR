@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   APIProvider, 
@@ -20,6 +20,8 @@ import {
   ExternalLink,
   ArrowLeft,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   SlidersHorizontal,
   ZoomIn,
   ZoomOut
@@ -349,6 +351,178 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
   const [showRelief, setShowRelief] = useState<boolean>(false);
   const [showLegends, setShowLegends] = useState<boolean>(true);
 
+  // Défilement horizontal fluide et drag-to-scroll sur PC pour la barre des villes
+  const cityScrollRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0); // de 0 à 1
+  const [thumbRatio, setThumbRatio] = useState(0.25); // ratio visible
+  const isMouseDownRef = useRef(false);
+  const isTrackDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollStartRef = useRef(0);
+  const hasDraggedRef = useRef(false);
+
+  const checkScroll = () => {
+    const el = cityScrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const maxScroll = scrollWidth - clientWidth;
+    if (maxScroll <= 0) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      setScrollProgress(0);
+      setThumbRatio(1);
+      return;
+    }
+
+    const ratio = Math.max(0.15, Math.min(1, clientWidth / scrollWidth));
+    setThumbRatio(ratio);
+
+    if (isAr) {
+      const absScroll = Math.abs(scrollLeft);
+      setCanScrollRight(absScroll > 5);
+      setCanScrollLeft(absScroll < maxScroll - 5);
+      setScrollProgress(Math.min(1, Math.max(0, absScroll / maxScroll)));
+    } else {
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < maxScroll - 5);
+      setScrollProgress(Math.min(1, Math.max(0, scrollLeft / maxScroll)));
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const el = cityScrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', checkScroll, { passive: true });
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [cityViews, isAr]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    const el = cityScrollRef.current;
+    if (!el) return;
+    const delta = direction === 'left' ? -250 : 250;
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  };
+
+  // Glissement sur la petite barre défilante (slider / scrollbar personnalisée)
+  const scrollFromTrackEvent = (clientX: number) => {
+    const track = trackRef.current;
+    const container = cityScrollRef.current;
+    if (!track || !container) return;
+
+    const rect = track.getBoundingClientRect();
+    const trackWidth = rect.width;
+    if (trackWidth <= 0) return;
+
+    const clickX = clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, clickX / trackWidth));
+    const maxScroll = container.scrollWidth - container.clientWidth;
+
+    if (isAr) {
+      container.scrollLeft = -(ratio * maxScroll);
+    } else {
+      container.scrollLeft = ratio * maxScroll;
+    }
+  };
+
+  const handleTrackMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    isTrackDraggingRef.current = true;
+    scrollFromTrackEvent(e.clientX);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!isTrackDraggingRef.current) return;
+      scrollFromTrackEvent(moveEvent.clientX);
+    };
+
+    const onMouseUp = () => {
+      isTrackDraggingRef.current = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const handleTrackTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length !== 1) return;
+    isTrackDraggingRef.current = true;
+    scrollFromTrackEvent(e.touches[0].clientX);
+
+    const onTouchMove = (moveEvent: TouchEvent) => {
+      if (!isTrackDraggingRef.current || moveEvent.touches.length !== 1) return;
+      scrollFromTrackEvent(moveEvent.touches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+      isTrackDraggingRef.current = false;
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const el = cityScrollRef.current;
+    if (!el) return;
+    isMouseDownRef.current = true;
+    startXRef.current = e.pageX - el.offsetLeft;
+    scrollStartRef.current = el.scrollLeft;
+    hasDraggedRef.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDownRef.current) return;
+    const el = cityScrollRef.current;
+    if (!el) return;
+    const x = e.pageX - el.offsetLeft;
+    const walk = x - startXRef.current;
+    if (Math.abs(walk) > 4) {
+      hasDraggedRef.current = true;
+      if (!isDragging) setIsDragging(true);
+      el.scrollLeft = scrollStartRef.current - walk;
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (!isMouseDownRef.current) return;
+    isMouseDownRef.current = false;
+    setIsDragging(false);
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 80);
+  };
+
+  const handleMouseLeave = () => {
+    if (isMouseDownRef.current) {
+      isMouseDownRef.current = false;
+      setIsDragging(false);
+      setTimeout(() => {
+        hasDraggedRef.current = false;
+      }, 80);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.deltaY !== 0 && e.deltaX === 0) {
+      const el = cityScrollRef.current;
+      if (!el) return;
+      el.scrollLeft += e.deltaY;
+    }
+  };
+
   // Fonctions de bascule strictement isolées
   const handleToggleMapType = () => {
     setMapType(prev => (prev === 'plan' ? 'satellite' : 'plan'));
@@ -401,37 +575,100 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
         {/* Barre de filtres des villes : juste en dessous de la description et au-dessus de la carte */}
         <div className="w-full mb-4 sm:mb-6">
           <div className="flex items-center justify-between gap-2 bg-stone-100/90 backdrop-blur-md shadow-xs border border-stone-200/90 rounded-2xl p-1.5 max-w-5xl mx-auto">
-            <div className="overflow-x-auto whitespace-nowrap scrollbar-none flex items-center gap-2 px-3 py-1.5 flex-1 min-w-0">
-              {cityViews.map((city) => {
-                const isSelected = activeCityKey === city.id;
-                return (
+            <div className="flex flex-col flex-1 min-w-0">
+              <div className="relative flex-1 min-w-0 flex items-center">
+                {/* Bouton fléché gauche (Desktop uniquement, masqué tout au début) */}
+                {canScrollLeft && (
                   <button
-                    key={city.id}
                     type="button"
-                    onClick={() => {
-                      setActiveCityKey(city.id);
-                      setSelectedPin(null);
-                      setCenter(city.center);
-                      setZoom(city.zoom);
-                    }}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-                      isSelected
-                        ? 'bg-[#006233] text-white shadow-xs'
-                        : 'bg-white hover:bg-stone-50 text-stone-700 border border-stone-200/80'
-                    }`}
+                    onClick={() => handleScroll('left')}
+                    className="hidden md:flex absolute start-0.5 z-20 items-center justify-center w-8 h-8 rounded-full bg-white shadow-md border border-stone-200/90 hover:bg-stone-50 text-stone-700 transition cursor-pointer active:scale-90"
+                    title={isAr ? 'السابق' : 'Défiler vers la gauche'}
+                    aria-label="Scroll left"
                   >
-                    <span>{city.icon}</span>
-                    <span>{isAr ? city.nameAr : city.name}</span>
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                );
-              })}
+                )}
+
+                {/* Conteneur défilable et glissable (Drag-to-scroll & molette sur PC, swipe tactile sur mobile) */}
+                <div
+                  ref={cityScrollRef}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseLeave}
+                  onWheel={handleWheel}
+                  className={`overflow-x-auto whitespace-nowrap scrollbar-none flex items-center gap-2 px-3 py-1.5 flex-1 min-w-0 select-none ${
+                    isDragging ? 'cursor-grabbing' : 'md:cursor-grab'
+                  }`}
+                >
+                  {cityViews.map((city) => {
+                    const isSelected = activeCityKey === city.id;
+                    return (
+                      <button
+                        key={city.id}
+                        type="button"
+                        onClick={() => {
+                          if (hasDraggedRef.current) return;
+                          setActiveCityKey(city.id);
+                          setSelectedPin(null);
+                          setCenter(city.center);
+                          setZoom(city.zoom);
+                        }}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-[#006233] text-white shadow-xs'
+                            : 'bg-white hover:bg-stone-50 text-stone-700 border border-stone-200/80'
+                        }`}
+                      >
+                        <span>{city.icon}</span>
+                        <span>{isAr ? city.nameAr : city.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Bouton fléché droite (Desktop uniquement, masqué tout au bout) */}
+                {canScrollRight && (
+                  <button
+                    type="button"
+                    onClick={() => handleScroll('right')}
+                    className="hidden md:flex absolute end-0.5 z-20 items-center justify-center w-8 h-8 rounded-full bg-white shadow-md border border-stone-200/90 hover:bg-stone-50 text-stone-700 transition cursor-pointer active:scale-90"
+                    title={isAr ? 'التالي' : 'Défiler vers la droite'}
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Petite barre défilante interactive à glisser pour parcourir toutes les villes */}
+              {thumbRatio < 0.99 && (
+                <div className="flex items-center justify-center pt-1 pb-0.5">
+                  <div
+                    ref={trackRef}
+                    onMouseDown={handleTrackMouseDown}
+                    onTouchStart={handleTrackTouchStart}
+                    className="w-48 sm:w-72 max-w-[85%] h-1.5 sm:h-2 bg-stone-300/80 hover:bg-stone-300 rounded-full cursor-pointer relative overflow-hidden select-none transition-all group"
+                    title={isAr ? 'اسحب للتنقل بين جميع المدن' : 'Glissez cette petite barre pour voir toutes les villes'}
+                  >
+                    <div
+                      style={{
+                        width: `${thumbRatio * 100}%`,
+                        left: `${scrollProgress * (100 - thumbRatio * 100)}%`
+                      }}
+                      className="absolute top-0 bottom-0 bg-[#006233] group-hover:bg-emerald-700 rounded-full cursor-grab active:cursor-grabbing shadow-xs"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {onSwitchToList && (
               <button
                 type="button"
                 onClick={onSwitchToList}
-                className="px-3 py-1.5 mr-1 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white text-xs font-bold transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
+                className="px-3 py-1.5 mr-1 rounded-xl bg-[#006233] hover:bg-emerald-800 text-white text-xs font-bold transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0 self-center"
                 title={isAr ? 'عرض القائمة' : 'Voir la liste'}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
