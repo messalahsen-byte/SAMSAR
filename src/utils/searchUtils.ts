@@ -22,7 +22,9 @@ export interface ParsedVoiceFilters {
 export interface ResultatFiltreVocal {
   filtreAction: 'achat' | 'location' | null;
   filtreVille: string | null;
+  filtreQuartier?: string | null;
   filtreType: PropertyType | null;
+  filtreBudget?: string | null;
   filtreChambres?: number | null;
   resultats: PropertyListing[] | any[];
 }
@@ -564,4 +566,157 @@ export function buildSamsarSearchableText(samsar: import('../data/samsars').Sams
   ].join(' ');
 
   return normalizeSearchText(rawCombined);
+}
+
+/**
+ * Détection précise des quartiers marocains dans une transcription vocale
+ */
+export function detectQuarterFromText(text: string): { quarter: string; city: string } | null {
+  if (!text) return null;
+  const norm = normalizeSearchText(text);
+
+  const quartersMap: { name: string; city: string; aliases: string[] }[] = [
+    { name: 'Californie', city: 'Casablanca', aliases: ['californie', 'californi', 'كاليفورنيا'] },
+    { name: 'Bouskoura', city: 'Casablanca', aliases: ['bouskoura', 'bouskora', 'boskoura', 'بوسكورة'] },
+    { name: 'Maârif', city: 'Casablanca', aliases: ['maarif', 'maârif', 'marif', 'المعاريف', 'معاريف'] },
+    { name: 'Ain Diab', city: 'Casablanca', aliases: ['ain diab', 'aindiab', 'aïn diab', 'عين الذئاب', 'عين دياب'] },
+    { name: 'Anfa', city: 'Casablanca', aliases: ['anfa', 'أنفا', 'انفا'] },
+    { name: 'Gauthier', city: 'Casablanca', aliases: ['gauthier', 'gothier', 'جوتييه', 'غوتيه'] },
+    { name: 'Bourgogne', city: 'Casablanca', aliases: ['bourgogne', 'borgone', 'بوركون', 'بورغون'] },
+    { name: 'Racine', city: 'Casablanca', aliases: ['racine', 'راسين'] },
+    { name: 'Palmier', city: 'Casablanca', aliases: ['palmier', 'palmiers', 'بالميي'] },
+    { name: 'Oulfa', city: 'Casablanca', aliases: ['oulfa', 'loulfa', 'الالفة', 'الألفة'] },
+    { name: 'Sidi Maarouf', city: 'Casablanca', aliases: ['sidi maarouf', 'sidi maârouf', 'سيدي معروف'] },
+    { name: 'Ain Sebaa', city: 'Casablanca', aliases: ['ain sebaa', 'ain sbaa', 'عين السبع'] },
+    { name: 'Hay Hassani', city: 'Casablanca', aliases: ['hay hassani', 'lhay lhassani', 'الحي الحسني'] },
+    { name: 'Derb Sultan', city: 'Casablanca', aliases: ['derb sultan', 'درب سلطان'] },
+    { name: 'Belvedere', city: 'Casablanca', aliases: ['belvedere', 'بيلفيدير'] },
+    { name: 'Lissasfa', city: 'Casablanca', aliases: ['lissasfa', 'ليسساسفا', 'الليمون'] },
+    { name: 'Agdal', city: 'Rabat', aliases: ['agdal', 'agdall', 'أكدال', 'اكدال'] },
+    { name: 'Hay Riad', city: 'Rabat', aliases: ['hay riad', 'hay ryad', 'حي الرياض'] },
+    { name: 'Souissi', city: 'Rabat', aliases: ['souissi', 'swissi', 'السويسي'] },
+    { name: 'Hassan', city: 'Rabat', aliases: ['quartier hassan', 'f hassan', 'حسان'] },
+    { name: 'Ocean', city: 'Rabat', aliases: ['quartier ocean', 'l ocean', 'المحيط'] },
+    { name: 'Guéliz', city: 'Marrakech', aliases: ['gueliz', 'guéliz', 'jiliz', 'جيليز', 'كليز'] },
+    { name: 'Hivernage', city: 'Marrakech', aliases: ['hivernage', 'lhivernage', 'الشتوية', 'ليفرناج'] },
+    { name: 'Targa', city: 'Marrakech', aliases: ['targa', 'تاركة'] },
+    { name: 'Malabata', city: 'Tanger', aliases: ['malabata', 'مالاباطا', 'مالاباطة'] },
+    { name: 'Marshan', city: 'Tanger', aliases: ['marshan', 'مرشان'] },
+    { name: 'Centre Ville', city: 'Casablanca', aliases: ['centre ville', 'centre-ville', 'وسط المدينة', 'سونطر فيل'] }
+  ];
+
+  for (const item of quartersMap) {
+    for (const alias of item.aliases) {
+      const aliasNorm = normalizeSearchText(alias);
+      const regex = new RegExp(`(^|\\s)${aliasNorm}(\\s|$)`, 'i');
+      if (regex.test(norm) || norm.includes(aliasNorm)) {
+        return { quarter: item.name, city: item.city };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Détection du budget max dans une transcription vocale
+ */
+export function detectBudgetFromText(text: string): string | null {
+  if (!text) return null;
+  const norm = normalizeSearchText(text);
+
+  // 2 Millions (2m)
+  if (/(\b2\s*(m|million|millions|lyon|lyoun|melyoun)\b|joj\s*m|جوج\s*مليون|2\s*مليون)/i.test(norm)) {
+    return '2m';
+  }
+
+  // 1 Million (1m)
+  if (/(\b1\s*(m|million|millions|lyon|lyoun|melyoun)\b|wahd\s*m|واحد\s*مليون|1\s*مليون|\bmlyon\b)/i.test(norm)) {
+    return '1m';
+  }
+
+  // 3.5 Millions (3m)
+  if (/(\b3(\.5)?\s*(m|million|millions|lyon|lyoun|melyoun)\b|3\s*مليون|تلاتة\s*مليون|3\.5\s*مليون)/i.test(norm)) {
+    return '3m';
+  }
+
+  // 500 000 DH (500k)
+  if (/(\b500\s*(k|mille|alf|000)\b|500\s*الف|خمسين\s*مليون|50\s*mlyon\s*centime)/i.test(norm)) {
+    return '500k';
+  }
+
+  // Nombres bruts
+  const digitsMatch = norm.match(/\b(\d{1,3}(?:[0-9]{3})+|\d+)\s*(dh|dirhams?|درهم)?\b/);
+  if (digitsMatch) {
+    const val = parseInt(digitsMatch[1].replace(/\s/g, ''), 10);
+    if (val >= 2500000) return '3m';
+    if (val >= 1500000) return '2m';
+    if (val >= 750000) return '1m';
+    if (val >= 300000) return '500k';
+  }
+
+  return null;
+}
+
+/**
+ * Filtrage des annonces selon les 4 critères
+ */
+export function filterListingsBy4Criteria(
+  allListings: PropertyListing[],
+  filters: {
+    city?: string | null;
+    quarter?: string | null;
+    type?: string | null;
+    budget?: string | null;
+    action?: string | null;
+  }
+): PropertyListing[] {
+  const maxPrice = 
+    filters.budget === '500k' ? 500000 :
+    filters.budget === '1m' ? 1000000 :
+    filters.budget === '2m' ? 2000000 :
+    filters.budget === '3m' ? 3500000 :
+    Infinity;
+
+  return allListings.filter((item) => {
+    // Opération (achat / location)
+    if (filters.action) {
+      const itemOp = item.operation || (item.priceNum > 50000 ? 'achat' : 'location');
+      if (itemOp !== filters.action) return false;
+    }
+
+    // Ville
+    if (filters.city) {
+      const cNorm = normalizeSearchText(filters.city);
+      const itemCity = normalizeSearchText(item.city);
+      const itemCityId = normalizeSearchText(item.cityId);
+      const matchCity = itemCity === cNorm || itemCityId === cNorm || itemCity.includes(cNorm) || cNorm.includes(itemCity);
+      if (!matchCity) return false;
+    }
+
+    // Quartier
+    if (filters.quarter) {
+      const qNorm = normalizeSearchText(filters.quarter);
+      const itemQ = normalizeSearchText(item.quarter);
+      const itemQId = normalizeSearchText(item.quarterId);
+      const matchQuarter = itemQ === qNorm || itemQId === qNorm || itemQ.includes(qNorm) || qNorm.includes(itemQ);
+      if (!matchQuarter) return false;
+    }
+
+    // Type de bien
+    if (filters.type) {
+      const tNorm = normalizeSearchText(filters.type);
+      const itemType = normalizeSearchText(item.type);
+      if (itemType !== tNorm && !itemType.includes(tNorm) && !tNorm.includes(itemType)) {
+        return false;
+      }
+    }
+
+    // Budget max
+    if (filters.budget && item.priceNum > maxPrice) {
+      return false;
+    }
+
+    return true;
+  });
 }

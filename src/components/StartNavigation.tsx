@@ -1467,7 +1467,10 @@ export {
   cityMapping,
   CITIES_LIST,
   parseVoiceCommand,
-  filtrerParTexteEcoute
+  filtrerParTexteEcoute,
+  detectQuarterFromText,
+  detectBudgetFromText,
+  filterListingsBy4Criteria
 } from '../utils/searchUtils';
 export type { ParsedVoiceFilters, ResultatFiltreVocal } from '../utils/searchUtils';
 import {
@@ -1475,7 +1478,10 @@ import {
   operationMapping,
   cityMapping,
   parseVoiceCommand,
-  filtrerParTexteEcoute
+  filtrerParTexteEcoute,
+  detectQuarterFromText,
+  detectBudgetFromText,
+  filterListingsBy4Criteria
 } from '../utils/searchUtils';
 import type { ParsedVoiceFilters, ResultatFiltreVocal } from '../utils/searchUtils';
 
@@ -1609,7 +1615,9 @@ export function genererDiagnosticVocal(
   const filtresDesc: string[] = [];
   if (evalResult.filtreAction) filtresDesc.push(`Opération: ${evalResult.filtreAction === 'location' ? 'Location' : 'Achat'}`);
   if (evalResult.filtreVille) filtresDesc.push(`Ville: ${evalResult.filtreVille}`);
+  if (evalResult.filtreQuartier) filtresDesc.push(`Quartier: ${evalResult.filtreQuartier}`);
   if (evalResult.filtreType) filtresDesc.push(`Type: ${evalResult.filtreType}`);
+  if (evalResult.filtreBudget) filtresDesc.push(`Budget: ${evalResult.filtreBudget}`);
   if (evalResult.filtreChambres) filtresDesc.push(`Chambres >= ${evalResult.filtreChambres}`);
 
   const actionDeclenchee = filtresDesc.length > 0
@@ -1789,12 +1797,22 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
     texteEcouteRef.current = texteEcoute;
   }, [texteEcoute]);
 
+  const currentScreenRef = React.useRef(currentScreen);
+  useEffect(() => {
+    currentScreenRef.current = currentScreen;
+  }, [currentScreen]);
+
   // État d'évaluation strict dynamique (avec LocalStorage userProperties synchronisé)
   const [allProperties, setAllProperties] = useState<PropertyListing[]>(() => getAllPropertyListings());
 
   const [voiceEvaluation, setVoiceEvaluation] = useState<ResultatFiltreVocal>(() =>
     filtrerParTexteEcoute("", getAllPropertyListings())
   );
+
+  const voiceEvaluationRef = React.useRef(voiceEvaluation);
+  useEffect(() => {
+    voiceEvaluationRef.current = voiceEvaluation;
+  }, [voiceEvaluation]);
 
   // États des filtres pour la page "Rechercher un bien" (Acheter / Vendre)
   const [selectedCityId, setSelectedCityId] = useState<string>('');
@@ -1905,30 +1923,226 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
     }
   }, [samsarCityFilter]);
 
-  // 2. FORCER LE RESET DES FILTRES DANS LA FONCTION DE TRADUCTION
+  // Formatage lisible du budget max
+  const formatBudgetDisplay = (budget?: string | null) => {
+    if (!budget) return '';
+    if (budget === '500k') return '500 000 DH max';
+    if (budget === '1m') return '1 000 000 DH max';
+    if (budget === '2m') return '2 000 000 DH max';
+    if (budget === '3m') return '3 500 000 DH max';
+    return `${budget} max`;
+  };
+
+  // 2. FORCER LE RESET DES FILTRES DANS LA FONCTION DE TRADUCTION INITIALE
   const handleTranslatedText = (nouveauTexte: string) => {
     const texteNettoye = (nouveauTexte || '').trim();
     setTexteBrutCapte(texteNettoye);
     setTexteEcoute(texteNettoye);
 
     // FORCER LE NETTOYAGE AVANT MISE À JOUR
-    setFilters({ city: null, type: null, operation: null, price: null });
+    setFilters({ city: null, type: null, operation: null, price: null, neighborhood: null });
 
     // 3. APPLIQUER LES NOUVEAUX CRITÈRES APRÈS LE RESET (STRICT, ZÉRO APPROXIMATION)
     const currentListings = getAllPropertyListings();
     setAllProperties(currentListings);
-    const evaluation = filtrerParTexteEcoute(texteNettoye, currentListings);
+
+    const baseParsed = parseVoiceCommand(texteNettoye);
+    const quarterObj = detectQuarterFromText(texteNettoye);
+    const budgetObj = detectBudgetFromText(texteNettoye);
+
+    const detectedCity = baseParsed.city || (quarterObj ? quarterObj.city : null);
+    const detectedQuarter = quarterObj ? quarterObj.quarter : null;
+    const detectedType = baseParsed.type;
+    const detectedAction = baseParsed.operation;
+    const detectedBudget = budgetObj;
+
+    const hasAnyFilter = !!(detectedCity || detectedQuarter || detectedType || detectedBudget || detectedAction);
+    const filtered = hasAnyFilter
+      ? filterListingsBy4Criteria(currentListings, {
+          city: detectedCity,
+          quarter: detectedQuarter,
+          type: detectedType,
+          budget: detectedBudget,
+          action: detectedAction,
+        })
+      : [];
+
+    const evaluation: ResultatFiltreVocal = {
+      filtreAction: detectedAction,
+      filtreVille: detectedCity,
+      filtreQuartier: detectedQuarter,
+      filtreType: detectedType,
+      filtreBudget: detectedBudget,
+      filtreChambres: null,
+      resultats: filtered,
+    };
 
     setFilters({
-      city: evaluation.filtreVille,
-      type: evaluation.filtreType,
-      operation: evaluation.filtreAction,
-      price: null,
+      city: detectedCity,
+      neighborhood: detectedQuarter,
+      type: detectedType,
+      operation: detectedAction,
+      price: detectedBudget,
     });
 
     setVoiceEvaluation(evaluation);
     setCurrentScreen('voice_results');
     setCurrentStep('voice_results');
+  };
+
+  // 4. FUSION INTELLIGENTE DES 4 FILTRES (VILLE, QUARTIER, TYPE, BUDGET MAX) LORS DU VOCAL SUR LA PAGE RÉSULTATS
+  const handleRefineVoiceSearch = (nouveauTexte: string) => {
+    const texteNettoye = (nouveauTexte || '').trim();
+    if (!texteNettoye) return;
+    setTexteBrutCapte(texteNettoye);
+    setTexteEcoute(texteNettoye);
+
+    const currentListings = getAllPropertyListings();
+    setAllProperties(currentListings);
+
+    const prevEval = voiceEvaluationRef.current || voiceEvaluation;
+    const curCity = prevEval.filtreVille;
+    const curQuarter = prevEval.filtreQuartier;
+    const curType = prevEval.filtreType;
+    const curBudget = prevEval.filtreBudget;
+    const curAction = prevEval.filtreAction;
+
+    const baseParsed = parseVoiceCommand(texteNettoye);
+    const quarterObj = detectQuarterFromText(texteNettoye);
+    const detectedBudget = detectBudgetFromText(texteNettoye);
+
+    const detectedCity = baseParsed.city || (quarterObj ? quarterObj.city : null);
+    const detectedQuarter = quarterObj ? quarterObj.quarter : null;
+    const detectedType = baseParsed.type;
+    const detectedAction = baseParsed.operation;
+
+    // RÈGLE 3 : Nouvelle recherche complète si nouvelle ville ET nouveau type (ex: "appartement à Rabat")
+    const isNewCity = !!detectedCity && (!curCity || detectedCity.toLowerCase() !== curCity.toLowerCase());
+    const isNewType = !!detectedType && (!curType || detectedType.toLowerCase() !== curType.toLowerCase());
+
+    let finalCity = curCity;
+    let finalQuarter = curQuarter;
+    let finalType = curType;
+    let finalBudget = curBudget;
+    let finalAction = curAction;
+
+    if (detectedCity && detectedType && (isNewCity || isNewType || (!curCity && !curType))) {
+      // Nouvelle recherche complète : on réinitialise les anciens filtres
+      finalCity = detectedCity;
+      finalQuarter = detectedQuarter || null;
+      finalType = detectedType;
+      finalBudget = detectedBudget || null;
+      finalAction = detectedAction || null;
+    } else {
+      // RÈGLE 1 & 2 : Ajout d'un critère manquant ou modification d'un critère existant
+      if (detectedCity) {
+        finalCity = detectedCity;
+        // Si la ville change et le quartier précédent n'y appartient pas
+        if (curQuarter && (!quarterObj || quarterObj.city.toLowerCase() !== detectedCity.toLowerCase())) {
+          finalQuarter = null;
+        }
+      }
+      if (detectedQuarter) {
+        finalQuarter = detectedQuarter;
+        if (quarterObj?.city) {
+          finalCity = quarterObj.city;
+        }
+      }
+      if (detectedType) {
+        finalType = detectedType;
+      }
+      if (detectedBudget) {
+        finalBudget = detectedBudget;
+      }
+      if (detectedAction) {
+        finalAction = detectedAction;
+      }
+    }
+
+    const filtered = filterListingsBy4Criteria(currentListings, {
+      city: finalCity,
+      quarter: finalQuarter,
+      type: finalType,
+      budget: finalBudget,
+      action: finalAction,
+    });
+
+    const updatedEval: ResultatFiltreVocal = {
+      filtreAction: finalAction,
+      filtreVille: finalCity,
+      filtreQuartier: finalQuarter,
+      filtreType: finalType,
+      filtreBudget: finalBudget,
+      filtreChambres: null,
+      resultats: filtered,
+    };
+
+    setFilters({
+      city: finalCity,
+      neighborhood: finalQuarter,
+      type: finalType,
+      operation: finalAction,
+      price: finalBudget,
+    });
+
+    setVoiceEvaluation(updatedEval);
+  };
+
+  // 5. SUPPRESSION INDIVIDUELLE D'UN FILTRE ACTIF (×)
+  const handleRemoveVoiceFilter = (filterKey: 'ville' | 'quartier' | 'type' | 'budget' | 'action') => {
+    const currentListings = getAllPropertyListings();
+    setAllProperties(currentListings);
+
+    const prevEval = voiceEvaluationRef.current || voiceEvaluation;
+    let nextCity = prevEval.filtreVille;
+    let nextQuarter = prevEval.filtreQuartier;
+    let nextType = prevEval.filtreType;
+    let nextBudget = prevEval.filtreBudget;
+    let nextAction = prevEval.filtreAction;
+
+    if (filterKey === 'ville') {
+      nextCity = null;
+      nextQuarter = null; // Supprimer la ville retire aussi le quartier associé
+    } else if (filterKey === 'quartier') {
+      nextQuarter = null;
+    } else if (filterKey === 'type') {
+      nextType = null;
+    } else if (filterKey === 'budget') {
+      nextBudget = null;
+    } else if (filterKey === 'action') {
+      nextAction = null;
+    }
+
+    const hasAnyFilter = !!(nextCity || nextQuarter || nextType || nextBudget || nextAction);
+    const filtered = hasAnyFilter
+      ? filterListingsBy4Criteria(currentListings, {
+          city: nextCity,
+          quarter: nextQuarter,
+          type: nextType,
+          budget: nextBudget,
+          action: nextAction,
+        })
+      : currentListings; // S'il retire tous les critères, afficher l'ensemble des biens disponibles
+
+    const updatedEval: ResultatFiltreVocal = {
+      filtreAction: nextAction,
+      filtreVille: nextCity,
+      filtreQuartier: nextQuarter,
+      filtreType: nextType,
+      filtreBudget: nextBudget,
+      filtreChambres: null,
+      resultats: filtered,
+    };
+
+    setFilters({
+      city: nextCity,
+      neighborhood: nextQuarter,
+      type: nextType,
+      operation: nextAction,
+      price: nextBudget,
+    });
+
+    setVoiceEvaluation(updatedEval);
   };
 
   const handleResetVoiceSearch = () => {
@@ -2040,8 +2254,13 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
           setTexteEcoute(cleanTranscript);
           setMicStatusMessage(`Voix captée (${lang === 'darija' ? 'Darija' : 'Français'}) : "${cleanTranscript}"`);
 
-          // FORCER LE RESET DES FILTRES ET APPLIQUER LA RECHERCHE
-          handleTranslatedText(cleanTranscript);
+          // SI ON EST DÉJÀ SUR L'ÉCRAN RÉSULTATS : FUSION INTELLIGENTE DES FILTRES
+          // SINON : PREMIÈRE RECHERCHE AVEC INITIALISATION
+          if (currentScreenRef.current === 'voice_results') {
+            handleRefineVoiceSearch(cleanTranscript);
+          } else {
+            handleTranslatedText(cleanTranscript);
+          }
         }
       };
 
@@ -2179,28 +2398,129 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
             }
           />
 
-          {/* Badges d'analyse des critères vocaux */}
-          {(voiceEvaluation.filtreVille || voiceEvaluation.filtreType || voiceEvaluation.filtreAction || voiceEvaluation.filtreChambres) && (
+          {/* 1. Composant de recherche vocale compact en haut des résultats */}
+          <div className="bg-gradient-to-r from-emerald-50/80 via-white to-amber-50/80 border border-emerald-100 rounded-2xl p-3.5 sm:p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <span className="font-bold text-stone-900 text-sm sm:text-base">
+                  {language === 'ar' ? '🎤 تدقيق الفلاتر أو بحث جديد' : '🎤 Préciser les filtres ou nouvelle requête'}
+                </span>
+                {isListeningMic && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-red-100 text-red-600 animate-pulse">
+                    {language === 'ar' ? 'جاري الاستماع...' : 'Écoute en cours...'}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                {language === 'ar'
+                  ? "أضف حياً، ميزانية قصوى (مثلاً: 'في بوسكورة'، 'ميزانية 2 مليون') أو اطلب بحثاً جديداً."
+                  : "Ajoutez un quartier, un budget max (ex: 'à Bouskoura', 'budget 2 millions') ou dites une nouvelle recherche."}
+              </p>
+              {micError && (
+                <p className="text-xs text-red-600 font-medium mt-1">
+                  {micStatusMessage}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isListeningMic) {
+                    stopListening();
+                  } else {
+                    startListening(voiceLanguage, false);
+                  }
+                }}
+                className={`px-4 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer ${
+                  isListeningMic
+                    ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+                    : 'bg-[#006233] hover:bg-[#005028] text-white border border-amber-300/40 shadow-emerald-950/15'
+                }`}
+              >
+                <Mic className={`w-4 h-4 ${isListeningMic ? 'animate-bounce text-white' : 'text-amber-300'}`} />
+                <span>
+                  {isListeningMic
+                    ? (language === 'ar' ? 'إيقاف' : 'Arrêter')
+                    : (language === 'ar' ? 'تحدث الآن' : 'Parler')}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* 2. Badges d'analyse des critères vocaux avec suppression individuelle (×) */}
+          {(voiceEvaluation.filtreVille || voiceEvaluation.filtreQuartier || voiceEvaluation.filtreType || voiceEvaluation.filtreBudget || voiceEvaluation.filtreAction || voiceEvaluation.filtreChambres) && (
             <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
               <div className="flex items-center gap-1.5 flex-wrap">
                 {voiceEvaluation.filtreVille && (
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-[#006233] border border-emerald-200 font-bold">
-                    📍 {voiceEvaluation.filtreVille}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-[#006233] border border-emerald-200 font-bold shadow-2xs">
+                    <span>📍 {voiceEvaluation.filtreVille}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVoiceFilter('ville')}
+                      aria-label="Supprimer le filtre ville"
+                      className="w-4 h-4 rounded-full inline-flex items-center justify-center hover:bg-emerald-200/80 transition-colors text-emerald-800 font-black text-xs cursor-pointer ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {voiceEvaluation.filtreQuartier && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-bold shadow-2xs">
+                    <span>🏢 {voiceEvaluation.filtreQuartier}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVoiceFilter('quartier')}
+                      aria-label="Supprimer le filtre quartier"
+                      className="w-4 h-4 rounded-full inline-flex items-center justify-center hover:bg-teal-200/80 transition-colors text-teal-800 font-black text-xs cursor-pointer ml-0.5"
+                    >
+                      ×
+                    </button>
                   </span>
                 )}
                 {voiceEvaluation.filtreType && (
-                  <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-bold capitalize">
-                    🏠 {voiceEvaluation.filtreType}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-bold capitalize shadow-2xs">
+                    <span>🏠 {voiceEvaluation.filtreType}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVoiceFilter('type')}
+                      aria-label="Supprimer le filtre type"
+                      className="w-4 h-4 rounded-full inline-flex items-center justify-center hover:bg-amber-200/80 transition-colors text-amber-800 font-black text-xs cursor-pointer ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {voiceEvaluation.filtreBudget && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-bold shadow-2xs">
+                    <span>💰 {formatBudgetDisplay(voiceEvaluation.filtreBudget)}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVoiceFilter('budget')}
+                      aria-label="Supprimer le filtre budget"
+                      className="w-4 h-4 rounded-full inline-flex items-center justify-center hover:bg-purple-200/80 transition-colors text-purple-800 font-black text-xs cursor-pointer ml-0.5"
+                    >
+                      ×
+                    </button>
                   </span>
                 )}
                 {voiceEvaluation.filtreAction && (
-                  <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-bold capitalize">
-                    🏷️ {voiceEvaluation.filtreAction === 'location' ? (language === 'ar' ? 'كراء' : 'Location') : (language === 'ar' ? 'شراء' : 'Achat')}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-bold capitalize shadow-2xs">
+                    <span>🏷️ {voiceEvaluation.filtreAction === 'location' ? (language === 'ar' ? 'كراء' : 'Location') : (language === 'ar' ? 'شراء' : 'Achat')}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVoiceFilter('action')}
+                      aria-label="Supprimer le filtre action"
+                      className="w-4 h-4 rounded-full inline-flex items-center justify-center hover:bg-blue-200/80 transition-colors text-blue-800 font-black text-xs cursor-pointer ml-0.5"
+                    >
+                      ×
+                    </button>
                   </span>
                 )}
                 {voiceEvaluation.filtreChambres && (
-                  <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-bold">
-                    🛏️ {voiceEvaluation.filtreChambres}+ {language === 'ar' ? 'غرف' : 'ch.'}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-stone-100 text-stone-800 border border-stone-200 font-bold shadow-2xs">
+                    <span>🛏️ {voiceEvaluation.filtreChambres}+ {language === 'ar' ? 'غرف' : 'ch.'}</span>
                   </span>
                 )}
               </div>
