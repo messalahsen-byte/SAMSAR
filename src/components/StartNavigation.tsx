@@ -2082,7 +2082,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
       neighborhood: finalQuarter,
       type: finalType,
       operation: finalAction,
-      price: finalBudget,
+      price: finalBudget || null,
     });
 
     setVoiceEvaluation(updatedEval);
@@ -2139,7 +2139,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
       neighborhood: nextQuarter,
       type: nextType,
       operation: nextAction,
-      price: nextBudget,
+      price: nextBudget || null,
     });
 
     setVoiceEvaluation(updatedEval);

@@ -90,8 +90,8 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
           >
             <MoroccoFlagStarLogo />
-            <span className="font-black text-stone-900 text-base sm:text-lg font-serif tracking-tight">
-              DIRECT<span className="text-amber-600">SAMSAR</span>
+            <span className="font-black text-[#006233] text-base sm:text-lg font-serif tracking-tight">
+              Direct<span className="text-amber-600">Samsar</span>
             </span>
           </button>
         </div>
@@ -169,8 +169,8 @@ export const Header: React.FC<HeaderProps> = ({
                       }
                     }}
                   />
-                  <span className="font-black text-stone-900 text-sm font-serif">
-                    DIRECT<span className="text-amber-600">SAMSAR</span>
+                  <span className="font-black text-[#006233] text-sm font-serif">
+                    Direct<span className="text-amber-600">Samsar</span>
                   </span>
                 </div>
                 <button

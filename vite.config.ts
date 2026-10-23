@@ -9,8 +9,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig(() => {
+  const isSsl = process.env.HTTPS === 'true' || process.env.VITE_SSL === 'true';
+
   return {
-    plugins: [react(), tailwindcss(), basicSsl()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      ...(isSsl ? [basicSsl()] : [])
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

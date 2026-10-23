@@ -661,8 +661,8 @@ export function detectBudgetFromText(text: string): string | null {
 /**
  * Filtrage des annonces selon les 4 critères
  */
-export function filterListingsBy4Criteria(
-  allListings: PropertyListing[],
+export function filterListingsBy4Criteria<T = any>(
+  allListings: T[],
   filters: {
     city?: string | null;
     quarter?: string | null;
@@ -670,7 +670,7 @@ export function filterListingsBy4Criteria(
     budget?: string | null;
     action?: string | null;
   }
-): PropertyListing[] {
+): T[] {
   const maxPrice = 
     filters.budget === '500k' ? 500000 :
     filters.budget === '1m' ? 1000000 :
@@ -678,18 +678,18 @@ export function filterListingsBy4Criteria(
     filters.budget === '3m' ? 3500000 :
     Infinity;
 
-  return allListings.filter((item) => {
+  return allListings.filter((item: any) => {
     // Opération (achat / location)
     if (filters.action) {
-      const itemOp = item.operation || (item.priceNum > 50000 ? 'achat' : 'location');
+      const itemOp = item.operation || ((item.priceNum ?? item.priceMad ?? 0) > 50000 ? 'achat' : 'location');
       if (itemOp !== filters.action) return false;
     }
 
     // Ville
     if (filters.city) {
       const cNorm = normalizeSearchText(filters.city);
-      const itemCity = normalizeSearchText(item.city);
-      const itemCityId = normalizeSearchText(item.cityId);
+      const itemCity = normalizeSearchText(item.city || '');
+      const itemCityId = normalizeSearchText(item.cityId || '');
       const matchCity = itemCity === cNorm || itemCityId === cNorm || itemCity.includes(cNorm) || cNorm.includes(itemCity);
       if (!matchCity) return false;
     }
@@ -697,8 +697,8 @@ export function filterListingsBy4Criteria(
     // Quartier
     if (filters.quarter) {
       const qNorm = normalizeSearchText(filters.quarter);
-      const itemQ = normalizeSearchText(item.quarter);
-      const itemQId = normalizeSearchText(item.quarterId);
+      const itemQ = normalizeSearchText(item.quarter || item.district || '');
+      const itemQId = normalizeSearchText(item.quarterId || '');
       const matchQuarter = itemQ === qNorm || itemQId === qNorm || itemQ.includes(qNorm) || qNorm.includes(itemQ);
       if (!matchQuarter) return false;
     }
@@ -706,14 +706,15 @@ export function filterListingsBy4Criteria(
     // Type de bien
     if (filters.type) {
       const tNorm = normalizeSearchText(filters.type);
-      const itemType = normalizeSearchText(item.type);
+      const itemType = normalizeSearchText(item.type || item.propertyType || '');
       if (itemType !== tNorm && !itemType.includes(tNorm) && !tNorm.includes(itemType)) {
         return false;
       }
     }
 
     // Budget max
-    if (filters.budget && item.priceNum > maxPrice) {
+    const itemPrice = item.priceNum ?? item.priceMad ?? 0;
+    if (filters.budget && itemPrice > maxPrice) {
       return false;
     }
 
