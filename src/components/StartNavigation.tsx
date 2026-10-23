@@ -2048,15 +2048,16 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
       // 1. AJOUTER UN DÉTECTEUR D'ERREURS (Indispensable)
       recognition.onerror = (event: any) => {
         console.error("Erreur Micro:", event.error);
-        try {
-          alert("Erreur micro: " + event.error);
-        } catch (e) {}
         setIsListeningMic(false);
         setMicError(event.error);
-        if (event.error === 'not-allowed') {
-          setMicStatusMessage('Micro bloqué ou refusé par le navigateur (permission ou iframe).');
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setMicStatusMessage(
+            language === 'ar'
+              ? 'الوصول إلى الميكروفون غير مصرح به أو الاتصال غير آمن. يرجى تفعيل الميكروفون في إعدادات المتصفح.'
+              : 'Accès micro non autorisé ou connexion non sécurisée. Activez le micro dans les paramètres de votre navigateur.'
+          );
         } else if (event.error === 'no-speech') {
-          setMicStatusMessage('Aucune voix détectée.');
+          setMicStatusMessage(language === 'ar' ? 'لم يتم التقاط أي صوت.' : 'Aucune voix détectée.');
         } else {
           setMicStatusMessage(`Erreur micro : ${event.error}`);
         }
@@ -2915,9 +2916,17 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                   <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold ${
                     isListeningMic 
                       ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' 
-                      : 'bg-stone-100 text-stone-700 border border-stone-200'
+                      : (micError === 'not-allowed' || micError === 'service-not-allowed')
+                        ? 'bg-amber-50 text-amber-900 border border-amber-300'
+                        : 'bg-stone-100 text-stone-700 border border-stone-200'
                   }`}>
-                    <span className={`w-2 h-2 rounded-full ${isListeningMic ? 'bg-emerald-600 animate-ping' : 'bg-stone-400'}`} />
+                    <span className={`w-2 h-2 rounded-full ${
+                      isListeningMic 
+                        ? 'bg-emerald-600 animate-ping' 
+                        : (micError === 'not-allowed' || micError === 'service-not-allowed')
+                          ? 'bg-amber-500'
+                          : 'bg-stone-400'
+                    }`} />
                     <span>
                       {isListeningMic 
                         ? `Micro ACTIF (${voiceLanguage === 'darija' ? 'ar-MA' : 'fr-FR'}) • Parlez maintenant` 
@@ -2925,6 +2934,23 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {/* Message discret et bienveillant si le micro est bloqué ou non sécurisé */}
+                {(micError === 'not-allowed' || micError === 'service-not-allowed') && (
+                  <div className="mt-2.5 px-4 py-2.5 rounded-2xl bg-amber-50/90 border border-amber-200/90 text-amber-900 text-xs text-center max-w-sm mx-auto shadow-2xs space-y-1 animate-fade-in">
+                    <p className="font-bold flex items-center justify-center gap-1.5 text-amber-800">
+                      <span>🔒</span>
+                      <span>
+                        {language === 'ar' ? 'إذن الميكروفون مطلوب' : 'Accès au microphone requis'}
+                      </span>
+                    </p>
+                    <p className="text-stone-600 text-[11px] leading-relaxed">
+                      {language === 'ar'
+                        ? 'الوصول إلى الميكروفون غير مصرح به أو الاتصال غير مشفر (HTTPS). يرجى السماح بالوصول في إعدادات المتصفح أو التأكد من استخدام اتصال آمن.'
+                        : 'Accès micro non autorisé ou connexion non sécurisée. Activez le micro dans les paramètres de votre navigateur.'}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Avertissement Iframe si nécessaire */}

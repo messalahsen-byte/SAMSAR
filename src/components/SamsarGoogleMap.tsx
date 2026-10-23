@@ -317,18 +317,20 @@ const MapController: React.FC<MapControllerProps> = ({
     map.setMapTypeId(targetType);
   }, [map, mapType, showRelief, showLegends]);
 
-  // 3. Forcer le redimensionnement de la carte au changement d'orientation et au redimensionnement de fenêtre
+  // 3. Forcer le redimensionnement propre de la carte au changement d'orientation et verrouiller le scroll horizontal
   useEffect(() => {
     if (!map || typeof google === 'undefined') return;
 
     const handleResize = () => {
-      google.maps.event.trigger(map, 'resize');
+      // Réinitialise tout décalage horizontal accidentel à la rotation
+      window.scrollTo({ left: 0, behavior: 'instant' });
+
+      // Léger délai (150ms) pour attendre la stabilisation des nouvelles dimensions du viewport mobile
       setTimeout(() => {
+        if (!map || typeof google === 'undefined') return;
+        window.scrollTo({ left: 0, behavior: 'instant' });
         google.maps.event.trigger(map, 'resize');
       }, 150);
-      setTimeout(() => {
-        google.maps.event.trigger(map, 'resize');
-      }, 350);
     };
 
     window.addEventListener('resize', handleResize);
