@@ -29,3 +29,24 @@ button:active, a:active, [role="button"]:active {
   touch-action: manipulation;
 }
 
+/* Mode paysage mobile ou écrans à hauteur réduite (max-height: 520px) */
+@media (max-height: 520px) {
+  .map-landscape-header {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+  .map-landscape-title {
+    margin-bottom: 0.25rem !important;
+  }
+  .map-landscape-title h1 {
+    font-size: 1.125rem !important;
+    line-height: 1.25rem !important;
+  }
+  .map-landscape-title p {
+    display: none !important;
+  }
+  .map-landscape-citybar {
+    margin-bottom: 0.25rem !important;
+  }
+}
+

@@ -2580,7 +2580,7 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
   return (
     <div 
       dir={isAr ? 'rtl' : 'ltr'} 
-      className={`w-full ${isMapScreen ? 'flex flex-col h-screen overflow-hidden' : 'flex flex-col h-full overflow-y-auto justify-between'} bg-[#FAFAFA] text-stone-900 font-sans ${isAr ? 'text-right' : 'text-left'}`}
+      className={`w-full ${isMapScreen ? 'flex flex-col min-h-screen md:h-screen overflow-y-auto md:overflow-hidden' : 'flex flex-col h-full overflow-y-auto justify-between'} bg-[#FAFAFA] text-stone-900 font-sans ${isAr ? 'text-right' : 'text-left'}`}
     >
       {/* 1. COMPOSANT UNIQUE "AppHeader" (fixed top-0 left-0 w-full h-16 z-50) */}
       <AppHeader
@@ -2596,12 +2596,12 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
 
       {/* =========================================================
        * MODE PLEIN ÉCRAN IMMERSIF : CARTE DES SAMSARS
-       * - Occupe 100% de la hauteur disponible sous le header
-       * - Zéro scroll vertical de page
+       * - Occupe 100% de la hauteur disponible sous le header sur grand écran
+       * - Défilement fluide et hauteur minimale garantie sur mobile/paysage
        * - Contrôles flottants intégrés sur la carte
        * ========================================================= */}
       {isMapScreen ? (
-        <div className="flex-1 w-full flex flex-col h-screen overflow-hidden pt-16 sm:pt-20">
+        <div className="flex-1 w-full flex flex-col min-h-screen md:h-screen overflow-y-auto md:overflow-hidden pt-16 sm:pt-20">
           <SamsarGoogleMap 
             language={language}
             title={language === 'ar' ? 'خريطة السماسرة' : 'Carte des Samsars'} 

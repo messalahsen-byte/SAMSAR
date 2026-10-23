@@ -317,6 +317,29 @@ const MapController: React.FC<MapControllerProps> = ({
     map.setMapTypeId(targetType);
   }, [map, mapType, showRelief, showLegends]);
 
+  // 3. Forcer le redimensionnement de la carte au changement d'orientation et au redimensionnement de fenêtre
+  useEffect(() => {
+    if (!map || typeof google === 'undefined') return;
+
+    const handleResize = () => {
+      google.maps.event.trigger(map, 'resize');
+      setTimeout(() => {
+        google.maps.event.trigger(map, 'resize');
+      }, 150);
+      setTimeout(() => {
+        google.maps.event.trigger(map, 'resize');
+      }, 350);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [map]);
+
   return null;
 };
 
@@ -563,17 +586,17 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
   }, []); // Tableau vide = s'exécute une seule fois
 
   return (
-    <div className="w-full h-full flex-1 relative flex flex-col overflow-hidden bg-stone-50">
+    <div className="w-full h-full flex-1 relative flex flex-col overflow-y-auto md:overflow-hidden bg-stone-50">
       {/* BLOC D'EN-TÊTE PRINCIPAL : Titre, Description, puis Barre de filtres (non-superposée au-dessus de la carte) */}
-      <div className="w-full shrink-0 pt-2 sm:pt-4 px-3 sm:px-6 z-10 bg-white/80 backdrop-blur-xs border-b border-stone-200/60 shadow-2xs">
+      <div className="w-full shrink-0 pt-2 sm:pt-4 px-3 sm:px-6 z-10 bg-white/80 backdrop-blur-xs border-b border-stone-200/60 shadow-2xs map-landscape-header">
         <PageTitle 
           title={displayTitle} 
           subtitle={displaySubtitle}
-          className="mb-3 sm:mb-4"
+          className="mb-3 sm:mb-4 map-landscape-title"
         />
 
         {/* Barre de filtres des villes : juste en dessous de la description et au-dessus de la carte */}
-        <div className="w-full mb-4 sm:mb-6">
+        <div className="w-full mb-4 sm:mb-6 map-landscape-citybar">
           <div className="flex items-center justify-between gap-2 bg-stone-100/90 backdrop-blur-md shadow-xs border border-stone-200/90 rounded-2xl p-1.5 max-w-5xl mx-auto">
             <div className="flex flex-col flex-1 min-w-0">
               <div className="relative flex-1 min-w-0 flex items-center">
@@ -680,7 +703,7 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
       </div>
 
       {/* CARTE INTERACTIVE : Remplissant tout l'espace disponible sous le header */}
-      <div className="w-full flex-1 relative min-h-0">
+      <div className="w-full relative flex-1 h-[65vh] min-h-[350px] max-lg:landscape:h-[75vh] md:h-auto md:min-h-0">
         {/* Panneau de configuration & couches de la carte en haut à gauche */}
         <div 
           className="absolute top-3 sm:top-4 start-3 sm:start-4 z-10 bg-white/95 backdrop-blur-md border border-stone-200/90 rounded-2xl shadow-lg p-1.5 sm:px-3 sm:py-2 flex items-center gap-2 sm:gap-3 text-xs font-semibold text-stone-800 pointer-events-auto transition hover:bg-white"
@@ -762,7 +785,9 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
           </button>
         </div>
 
-        <APIProvider apiKey={apiKey}>
+        {/* Canevas Google Maps enveloppé en absolute inset-0 pour garantir une hauteur réelle à 100% */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <APIProvider apiKey={apiKey}>
           <GoogleMap
             defaultCenter={{ lat: 32.0, lng: -6.0 }}
             defaultZoom={6}
@@ -895,6 +920,7 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
             )}
           </GoogleMap>
         </APIProvider>
+      </div>
 
         {/* Infobulle guide flottante en bas de la carte */}
         <div className="absolute bottom-4 start-4 z-10 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-lg text-[11px] text-stone-700 font-semibold">
