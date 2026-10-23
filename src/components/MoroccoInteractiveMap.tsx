@@ -247,29 +247,19 @@ export const MoroccoInteractiveMap: React.FC<MoroccoInteractiveMapProps> = ({
           const isChouiter = samsar.id === 'samsar-chwiter';
 
           const samsarHtml = `
-            <div class="cursor-pointer transition transform hover:scale-115 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-              <div class="relative">
-                <img 
-                  src="${samsar.avatar}" 
-                  class="w-11 h-11 rounded-2xl object-cover border-2 ${
-                    isSelected ? 'border-amber-400 ring-4 ring-amber-500 shadow-xl' : 'border-white shadow-md'
-                  }" 
-                  alt="${samsar.alias}"
-                />
-                <span class="absolute -bottom-1 -right-1 text-xs bg-stone-900 text-white rounded-full p-0.5 border border-white">
-                  ${isChouiter ? '☕' : '👤'}
-                </span>
-              </div>
-              <div class="mt-1 px-2 py-0.5 rounded-lg bg-stone-900/95 text-white text-[10px] font-bold border border-white/60 shadow whitespace-nowrap">
-                ${samsar.alias}
-              </div>
+            <div class="w-10 h-10 rounded-full border-2 ${
+              isSelected ? 'border-amber-500 ring-4 ring-amber-300 shadow-xl scale-110' : 'border-white shadow-lg'
+            } overflow-hidden bg-white cursor-pointer hover:scale-110 transition-transform">
+              <img src="${samsar.avatar}" alt="${samsar.alias}" class="w-full h-full object-cover" />
             </div>
           `;
 
           const samsarIcon = L.divIcon({
             html: samsarHtml,
             className: 'samsar-marker-icon',
-            iconSize: [60, 60]
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20]
           });
 
           const marker = L.marker([samsar.lat!, samsar.lng!], { icon: samsarIcon })

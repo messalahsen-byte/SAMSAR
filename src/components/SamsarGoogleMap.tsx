@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   APIProvider, 
   Map as GoogleMap, 
-  Marker, 
+  AdvancedMarker,
+  AdvancedMarkerAnchorPoint,
   InfoWindow 
 } from '@vis.gl/react-google-maps';
 import { 
@@ -224,6 +225,7 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
       <div className="w-full h-full flex-1 relative">
         <APIProvider apiKey={apiKey}>
           <GoogleMap
+            mapId="DEMO_MAP_ID"
             defaultCenter={{ lat: 32.0, lng: -6.0 }}
             defaultZoom={6}
             center={center}
@@ -238,21 +240,31 @@ export const SamsarGoogleMap: React.FC<SamsarGoogleMapProps> = ({
             style={{ width: '100%', height: '100%' }}
           >
 
-            {/* Marqueurs (Pins) de nos Samsars */}
+            {/* Marqueurs (Pins) de nos Samsars avec photo de profil directe */}
             {MOCK_SAMSARS_PINS.map((pin) => {
               const isSelected = selectedPin?.id === pin.id;
               return (
-                <Marker
+                <AdvancedMarker
                   key={pin.id}
                   position={{ lat: pin.lat, lng: pin.lng }}
                   title={`${pin.name} - ${pin.quarter}, ${pin.city}`}
                   onClick={() => setSelectedPin(pin)}
-                  icon={{
-                    url: isSelected
-                      ? 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="26" fill="%23b45309" stroke="%23ffffff" stroke-width="3.5"/><circle cx="28" cy="28" r="16" fill="%23ffffff"/><text x="28" y="34" font-size="14" font-family="sans-serif" font-weight="900" fill="%23b45309" text-anchor="middle">S</text></svg>'
-                      : 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="%23006233" stroke="%23ffffff" stroke-width="3"/><text x="24" y="31" font-size="16" font-family="sans-serif" font-weight="bold" fill="%23ffffff" text-anchor="middle">👤</text></svg>'
-                  }}
-                />
+                  anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
+                >
+                  <div 
+                    className={`w-10 h-10 rounded-full border-2 ${
+                      isSelected 
+                        ? 'border-amber-500 ring-4 ring-amber-300 shadow-xl scale-110' 
+                        : 'border-white shadow-lg hover:border-emerald-600'
+                    } overflow-hidden bg-white cursor-pointer hover:scale-110 transition-transform`}
+                  >
+                    <img 
+                      src={pin.avatar} 
+                      alt={pin.name} 
+                      className="w-full h-full object-cover pointer-events-none" 
+                    />
+                  </div>
+                </AdvancedMarker>
               );
             })}
 
