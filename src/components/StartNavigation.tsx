@@ -1815,6 +1815,20 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
     }
   }, [filters.city, selectedCityId]);
 
+  // Recherche automatique instantanée (Live Search) pour la page "Acheter un bien"
+  useEffect(() => {
+    if (currentScreen === 'search_property') {
+      const city = selectedCityId || filters.city || '';
+      const quarter = selectedQuarterId || filters.neighborhood || 'all';
+      const type = selectedPropertyType || (filters.type as string) || '';
+      const budget = selectedBudget || 'max';
+
+      const results = filtrerBiensModeClassique(city, quarter, type, budget);
+      setFilteredListings(results);
+      setSearchSubmitted(true);
+    }
+  }, [currentScreen, selectedCityId, filters.city, selectedQuarterId, filters.neighborhood, selectedPropertyType, filters.type, selectedBudget, allProperties]);
+
   // Synchronisation dynamique continue du LocalStorage (userProperties)
   useEffect(() => {
     const handleSync = () => {
@@ -4069,18 +4083,6 @@ export const StartNavigation: React.FC<StartNavigationProps> = ({
                   })}
                 </div>
               </div>
-            </div>
-
-            {/* 4. En bas : Le très gros bouton orange "Rechercher" avec icône de loupe */}
-            <div className="w-full pt-2">
-              <button
-                type="button"
-                onClick={() => handleExecuteSearch()}
-                className="w-full py-5 px-6 rounded-3xl bg-[#F97316] hover:bg-orange-600 active:bg-orange-700 text-white text-xl sm:text-2xl font-black shadow-xl shadow-orange-950/25 hover:shadow-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer group"
-              >
-                <Search className="w-7 h-7 text-white stroke-[2.5] group-hover:scale-110 transition-transform" />
-                <span>{language === 'ar' ? 'Rechercher' : 'Rechercher'}</span>
-              </button>
             </div>
 
             {/* Résultat dynamique : Liste des annonces OU message aucun bien */}
