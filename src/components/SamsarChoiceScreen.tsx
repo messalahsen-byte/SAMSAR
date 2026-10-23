@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppHeader } from './AppHeader';
-import { PageTitle } from './PageTitle';
 import { Map, SlidersHorizontal, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export interface SamsarChoiceScreenProps {
   language?: 'fr' | 'ar';
@@ -18,6 +18,7 @@ export const SamsarChoiceScreen: React.FC<SamsarChoiceScreenProps> = ({
   onSelectMap,
   onSelectList
 }) => {
+  const { themeConfig } = useTheme();
   const isAr = language === 'ar';
 
   return (
@@ -33,87 +34,80 @@ export const SamsarChoiceScreen: React.FC<SamsarChoiceScreenProps> = ({
         onGoHome={onGoHome || onBack}
       />
 
-      <main className="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full px-4 sm:px-6 py-8 pt-20">
-        <PageTitle
-          title={isAr ? 'البحث عن سمسار' : 'Trouver un Samsar'}
-          subtitle={
-            isAr
+      <main className="flex-1 flex flex-col items-center justify-center p-6 pt-24 pb-12 w-full max-w-md mx-auto text-center">
+        {/* Titre épuré harmonisé avec ModeScreen et MainMenu */}
+        <div className="w-full mb-8">
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+            {isAr ? 'البحث عن سمسار' : 'Trouver un Samsar'}
+          </h1>
+          <p className="text-sm text-gray-500 font-medium mt-1">
+            {isAr
               ? 'اختر طريقة البحث المفضلة لديك'
-              : 'Choisissez votre mode de recherche'
-          }
-        />
+              : 'Choisissez votre mode de recherche'}
+          </p>
+        </div>
 
-        {/* 2 GRANDES CARTES / BOUTONS BIEN DISTINCTS */}
-        <div className="w-full flex flex-col gap-5 mt-6">
-          {/* Carte 1 : "Par Carte (Map)" */}
+        {/* 2 BOUTONS HARMONISÉS DE TAILLE STANDARD (1 SEULE LIGNE DE DESCRIPTION CHACUN) */}
+        <div className="w-full space-y-4">
+          {/* Bouton 1 : "Voir sur la Carte" */}
           <button
             type="button"
             onClick={onSelectMap}
-            className="w-full bg-white hover:bg-emerald-50/40 border-2 border-stone-200 hover:border-[#006233] rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-stone-200/70 hover:shadow-2xl transition-all duration-200 active:scale-[0.985] group relative overflow-hidden cursor-pointer text-left"
+            className="w-full min-h-[88px] bg-white rounded-2xl p-5 shadow-sm border-2 border-stone-200 hover:border-[#006233] hover:shadow-lg active:scale-[0.98] transition-all flex items-center gap-4 text-start group cursor-pointer"
             dir={isAr ? 'rtl' : 'ltr'}
           >
-            <div className="flex items-start justify-between w-full">
-              <div className="w-14 h-14 rounded-2xl bg-[#006233] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                <Map className="w-7 h-7 text-white" />
-              </div>
-
-              <div className="w-10 h-10 rounded-full bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center text-emerald-800 transition">
-                {isAr ? (
-                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                ) : (
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-                )}
-              </div>
+            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-200 group-hover:scale-105 transition-all">
+              <Map className="w-6 h-6 text-[#006233]" />
             </div>
 
-            <div className="space-y-1 mt-4">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100/70 text-[11px] font-bold uppercase tracking-wider text-emerald-900 mb-1">
-                <span>{isAr ? 'تفاعلي ومباشر' : 'Géolocalisation'}</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight group-hover:text-[#006233] transition">
-                {isAr ? '🗺️ على الخريطة (Map)' : '🗺️ Voir sur la Carte'}
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-gray-900 text-lg group-hover:text-[#006233] transition-colors truncate">
+                {isAr ? '1. على الخريطة (GPS)' : '1. Voir sur la Carte'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-0.5 truncate">
                 {isAr
-                  ? 'استكشف مواقع السماسرة الأقرب إليك على خريطة تفاعلية'
-                  : 'Localiser les Samsars de confiance directement sur la carte interactive'}
+                  ? 'خريطة تفاعلية وموقع GPS'
+                  : 'Carte interactive & GPS'}
               </p>
+            </div>
+
+            <div className="shrink-0 text-gray-400 group-hover:text-[#006233] group-hover:translate-x-0.5 transition-all">
+              {isAr ? (
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              ) : (
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              )}
             </div>
           </button>
 
-          {/* Carte 2 : "Par Ville et Quartier / Liste" */}
+          {/* Bouton 2 : "Voir la Liste / Formulaire" */}
           <button
             type="button"
             onClick={onSelectList}
-            className="w-full bg-white hover:bg-orange-50/40 border-2 border-stone-200 hover:border-orange-500 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-stone-200/70 hover:shadow-2xl transition-all duration-200 active:scale-[0.985] group relative overflow-hidden cursor-pointer text-left"
+            className={`w-full min-h-[88px] bg-white rounded-2xl p-5 shadow-sm border-2 border-stone-200 ${themeConfig.accentHoverBorderClass} hover:shadow-lg active:scale-[0.98] transition-all flex items-center gap-4 text-start group cursor-pointer`}
             dir={isAr ? 'rtl' : 'ltr'}
           >
-            <div className="flex items-start justify-between w-full">
-              <div className="w-14 h-14 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                <SlidersHorizontal className="w-7 h-7 text-white" />
-              </div>
-
-              <div className="w-10 h-10 rounded-full bg-orange-50 group-hover:bg-orange-100 flex items-center justify-center text-orange-800 transition">
-                {isAr ? (
-                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                ) : (
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-                )}
-              </div>
+            <div className={`w-12 h-12 ${themeConfig.iconBgClass} ${themeConfig.iconTextClass} rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-all`}>
+              <SlidersHorizontal className="w-6 h-6" />
             </div>
 
-            <div className="space-y-1 mt-4">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100/70 text-[11px] font-bold uppercase tracking-wider text-orange-900 mb-1">
-                <span>{isAr ? 'فلاتر دقيقة' : 'Filtres & Quartiers'}</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight group-hover:text-orange-600 transition">
-                {isAr ? '📋 حسب المدينة والحي' : '📋 Voir la Liste / Formulaire'}
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium">
+            <div className="flex-1 min-w-0">
+              <h3 className={`font-bold text-gray-900 text-lg ${themeConfig.accentHoverTextClass} transition-colors truncate`}>
+                {isAr ? '2. حسب المدينة والحي' : '2. Voir la Liste / Formulaire'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-0.5 truncate">
                 {isAr
-                  ? 'قائمة مفصلة بسماسرة ثقات مع تقييمات وفلاتر حسب المدن والأحياء'
-                  : 'Consulter la liste complète de nos Samsars avec filtres par ville et quartier'}
+                  ? 'بحث حسب المدينة والحي'
+                  : 'Recherche par ville et quartier'}
               </p>
+            </div>
+
+            <div className={`shrink-0 text-gray-400 ${themeConfig.arrowHoverTextClass} group-hover:translate-x-0.5 transition-all`}>
+              {isAr ? (
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              ) : (
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              )}
             </div>
           </button>
         </div>

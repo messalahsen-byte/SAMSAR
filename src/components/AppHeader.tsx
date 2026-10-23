@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, X, Mic, Home, User, Search, PlusCircle, MapPin, Globe } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
 
 export interface AppHeaderProps {
   showBackButton?: boolean;
@@ -31,15 +32,15 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   setSubPage,
   setSelectedLang
 }) => {
+  const { themeConfig } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isAr = language === 'ar';
 
-    const handleMenuClick = (option: string) => {
+  const handleMenuClick = (option: string) => {
     setIsMenuOpen(false);
     if (onSelectMenuOption) {
       onSelectMenuOption(option);
     }
-    window.dispatchEvent(new CustomEvent('dsamsar:navigate', { detail: option }));
   };
 
   const handleHomeReset = () => {
@@ -80,7 +81,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0" 
           />
           <span className="text-xl font-bold tracking-tight text-stone-900 font-serif">
-            DIRECT<span className="text-orange-500">SAMSAR</span>
+            DIRECT<span className={`${themeConfig.accentTextClass} transition-colors`}>SAMSAR</span>
           </span>
         </div>
       </div>
@@ -92,13 +93,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             type="button"
             onClick={handleHomeReset}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1 text-sm font-medium text-gray-700 cursor-pointer active:scale-95"
-            title={isAr ? "الرجوع إلى الرئيسية" : "Retour à l'accueil"}
-            aria-label={isAr ? "الرئيسية" : "Accueil"}
+            title="Retour à l'accueil"
+            aria-label="Accueil"
           >
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span className="hidden sm:inline font-medium">{isAr ? 'الرئيسية' : 'Accueil'}</span>
+            <span className="hidden sm:inline font-medium">Accueil</span>
           </button>
         )}
 
@@ -131,7 +132,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className={`absolute top-full mt-2.5 ${isAr ? 'left-0 right-auto text-right' : 'right-0 left-auto text-left'} ltr:right-0 ltr:left-auto rtl:left-0 rtl:right-auto w-64 bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans`}
+                className={`absolute top-full mt-2.5 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-stone-200/90 p-2 z-50 space-y-1 font-sans ${
+                  isAr ? 'left-0 text-right' : 'right-0 text-left'
+                }`}
                 dir={isAr ? 'rtl' : 'ltr'}
               >
                 <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
@@ -243,17 +246,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                         <span>{isAr ? 'اللغة' : 'Langue'}</span>
                       </span>
                       <span className="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
-                        {isAr ? (
-                          <>
-                            <span>Passer en Français</span>
-                            <img src="https://flagcdn.com/w40/fr.png" srcSet="https://flagcdn.com/w80/fr.png 2x" width="16" height="12" alt="France" className="inline-block rounded-xs object-cover ml-1.5" />
-                          </>
-                        ) : (
-                          <>
-                            <span>التحويل للعربية</span>
-                            <img src="https://flagcdn.com/w40/ma.png" srcSet="https://flagcdn.com/w80/ma.png 2x" width="16" height="12" alt="Maroc" className="inline-block rounded-xs object-cover mr-1.5" />
-                          </>
-                        )}
+                        {isAr ? 'Passer en Français 🇫🇷' : 'التحويل للعربية 🇲🇦'}
                       </span>
                     </button>
                   </div>

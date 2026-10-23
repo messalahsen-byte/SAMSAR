@@ -1,10 +1,25 @@
 @import "tailwindcss";
 
-html, body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+@theme {
+  --color-ds-primary: #004d40;
+  --color-ds-secondary: #EABF52;
+  --color-ds-accent: #B50A10;
+  --color-ds-dark: #001a14;
+  --color-ds-light: #ffffff;
+  --color-ds-success: #10B981;
+}
+
+:root {
+  /* Couleurs Principales */
+  --ds-primary: #004d40;        /* Vert Émeraude profond */
+  --ds-secondary: #EABF52;      /* Or/Doré premium */
+  --ds-accent: #B50A10;         /* Rouge bordeaux (drapeau Maroc) */
+  --ds-dark: #001a14;           /* Noir/Vert très foncé */
+  --ds-light: #ffffff;          /* Blanc pur */
+
+  /* Couleurs d'interface */
+  --ds-success: #10B981;        /* Vert validation */
+  --ds-bg-gradient: linear-gradient(135deg, #004d40 0%, #001a14 100%);
 }
 
 @layer utilities {
@@ -35,25 +50,3 @@ button:active, a:active, [role="button"]:active {
 * {
   touch-action: manipulation;
 }
-
-/* Mode paysage mobile ou écrans à hauteur réduite (max-height: 520px) */
-@media (max-height: 520px) {
-  .map-landscape-header {
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-  }
-  .map-landscape-title {
-    margin-bottom: 0.25rem !important;
-  }
-  .map-landscape-title h1 {
-    font-size: 1.125rem !important;
-    line-height: 1.25rem !important;
-  }
-  .map-landscape-title p {
-    display: none !important;
-  }
-  .map-landscape-citybar {
-    margin-bottom: 0.25rem !important;
-  }
-}
-

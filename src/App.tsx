@@ -5,8 +5,10 @@ import { ModeScreen } from './components/ModeScreen';
 import { MainMenu } from './components/MainMenu';
 import { SamsarChoiceScreen } from './components/SamsarChoiceScreen';
 import { StartNavigation } from './components/StartNavigation';
+import { ThemeProvider } from './context/ThemeContext';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
 
-export default function App() {
+function MainAppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [currentStep, setCurrentStep] = useState<'language' | 'mode' | 'home'>('language');
   const [subPage, setSubPage] = useState<string | null>(null);
@@ -54,6 +56,9 @@ export default function App() {
     <div className="relative min-h-screen">
       {/* SPLASHSCREEN (se superpose en plein écran au-dessus) */}
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+
+      {/* SÉLECTEUR INTERACTIF DE PALETTE (visible dès que le splash s'estompe) */}
+      {!showSplash && <ThemeSwitcher />}
 
       {/* CONTENU PRINCIPAL (déjà monté et prêt en arrière-plan, se dévoile en fondu naturel) */}
       <div className={`min-h-screen bg-white ${showSplash ? 'h-screen max-h-screen overflow-hidden pointer-events-none' : ''}`}>
@@ -173,6 +178,14 @@ export default function App() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <MainAppContent />
+    </ThemeProvider>
   );
 }
 
