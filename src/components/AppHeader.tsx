@@ -80,7 +80,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             alt="DirectSamsar" 
             className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0" 
           />
-          <span className="text-xl font-bold tracking-tight text-[#006233] font-serif">
+          <span className="text-xl font-bold tracking-tight text-[#049A5B] font-serif">
             Direct<span className={`${themeConfig.accentTextClass} transition-colors`}>Samsar</span>
           </span>
         </div>

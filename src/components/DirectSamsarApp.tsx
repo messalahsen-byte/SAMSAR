@@ -653,7 +653,7 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
                     }
                   }}
                 />
-                <span className="text-xl font-black text-[#006233] font-serif tracking-tight">
+                <span className="text-xl font-black text-[#049A5B] font-serif tracking-tight">
                   Direct<span className="text-amber-600">Samsar</span>
                 </span>
               </div>
@@ -824,7 +824,7 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
           className="flex items-center gap-2 cursor-pointer select-none active:opacity-80 transition"
         >
           <MoroccoFlagStarLogo />
-          <span className="font-black text-[#006233] text-base sm:text-lg font-serif tracking-tight">
+          <span className="font-black text-[#049A5B] text-base sm:text-lg font-serif tracking-tight">
             Direct<span className="text-amber-600">Samsar</span>
           </span>
         </button>
@@ -852,7 +852,7 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
         <header className="flex items-center justify-between pt-1 pb-2.5 px-1 shrink-0">
           <div className="flex items-center gap-2.5">
             <MoroccoFlagStarLogo />
-            <h1 className="text-2xl font-black tracking-tight text-[#006233] font-serif">
+            <h1 className="text-2xl font-black tracking-tight text-[#049A5B] font-serif">
               Direct<span className="text-amber-600">Samsar</span>
             </h1>
           </div>
@@ -959,7 +959,7 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
                 }
               }}
             />
-            <h1 className="text-xl font-black tracking-tight text-[#006233] font-serif">
+            <h1 className="text-xl font-black tracking-tight text-[#049A5B] font-serif">
               Direct<span className="text-amber-600">Samsar</span>
             </h1>
           </div>
@@ -1459,7 +1459,7 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
                 }
               }}
             />
-            <h1 className="text-xl font-black tracking-tight text-[#006233] font-serif">
+            <h1 className="text-xl font-black tracking-tight text-[#049A5B] font-serif">
               Direct<span className="text-amber-600">Samsar</span>
             </h1>
           </div>
@@ -2334,7 +2334,7 @@ export const DirectSamsarApp: React.FC<DirectSamsarAppProps> = ({
               }
             }}
           />
-          <span className="font-black text-[#006233] text-base font-serif tracking-tight">
+          <span className="font-black text-[#049A5B] text-base font-serif tracking-tight">
             Direct<span className="text-amber-600">Samsar</span>
           </span>
         </button>
